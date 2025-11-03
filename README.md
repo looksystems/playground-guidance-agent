@@ -49,19 +49,18 @@ uv sync
 uv run uvicorn guidance_agent.api.main:app --reload
 
 # Terminal 2: Frontend
-cd frontend
+cd frontend-nuxt
 npm install
 npm run dev
-# Access at http://localhost:5173
+# Access at http://localhost:3000
 ```
 
 ### Running Tests
 
-**Frontend Tests (381 unit tests)**
+**Frontend Tests (83 Playwright tests)**
 ```bash
-cd frontend
-npm test                    # Unit tests
-npm run test:e2e           # E2E tests (Playwright)
+cd frontend-nuxt
+npm test                    # Playwright tests
 npm run test:coverage      # Coverage report
 ```
 
@@ -81,13 +80,13 @@ guidance-agent/
 │   ├── agents/               # AI agent implementations
 │   ├── models/               # Database models
 │   └── knowledge/            # Knowledge base & RAG
-├── frontend/                  # Vue 3 frontend
-│   ├── src/
+├── frontend-nuxt/             # Nuxt 3 frontend
+│   ├── app/
 │   │   ├── components/       # Vue components
-│   │   ├── views/            # Page views
+│   │   ├── pages/            # Page routes (file-based)
 │   │   ├── composables/      # Vue composables
 │   │   └── utils/            # API client
-│   └── e2e/                  # Playwright E2E tests
+│   └── tests/                # Playwright tests
 ├── tests/                     # Backend tests
 ├── docs/                      # Documentation
 ├── docker-compose.yml         # Multi-service orchestration
@@ -97,24 +96,23 @@ guidance-agent/
 ## 🧪 Testing
 
 ### Test Coverage
-- **Frontend**: 381 unit tests (100% pass rate)
+- **Frontend**: 83 Playwright tests (100% pass rate)
 - **Backend**: 31 tests (API + integration)
-- **E2E**: 60+ tests (Playwright)
-- **Total**: 472+ tests
+- **Total**: 114+ tests
 
 ### Running Specific Tests
 ```bash
-# Frontend component tests
-cd frontend && npm test -- Button.test.ts
+# Frontend Playwright tests
+cd frontend-nuxt && npm test
 
 # Backend API tests
 pytest tests/api/test_consultations.py -v
 
-# E2E tests with UI
-cd frontend && npm run test:e2e:ui
+# Playwright tests with UI
+cd frontend-nuxt && npm run test:ui
 
 # Accessibility tests
-cd frontend && npx playwright test accessibility.spec.ts
+cd frontend-nuxt && npx playwright test accessibility.spec.ts
 ```
 
 ## 🚢 Deployment
@@ -160,9 +158,9 @@ See detailed guides:
 ## 🛠️ Technology Stack
 
 **Frontend**:
-- Vue 3, TypeScript, Vite, Tailwind CSS
-- Vue Router, Pinia, Chart.js
-- Vitest (unit), Playwright (E2E)
+- Nuxt 3, Vue 3, TypeScript
+- Nuxt UI 4, Tailwind CSS, Vercel AI SDK
+- Playwright (E2E testing)
 
 **Backend**:
 - FastAPI, Pydantic, SQLAlchemy
@@ -179,7 +177,7 @@ See detailed guides:
 
 ```
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
-│   Vue 3     │ SSE  │   FastAPI   │      │ PostgreSQL  │
+│   Nuxt 3    │ SSE  │   FastAPI   │      │ PostgreSQL  │
 │  Frontend   │<─────│   Backend   │<─────│  + pgvector │
 └─────────────┘      └─────────────┘      └─────────────┘
                             │
@@ -193,7 +191,7 @@ See detailed guides:
 - **Time to first token**: <2 seconds (70% improvement via SSE)
 - **Page load**: <2 seconds
 - **API response**: <100ms (simple queries)
-- **Test execution**: ~12 seconds (381 frontend tests)
+- **Test execution**: ~30 seconds (83 Playwright tests)
 
 ## ✅ Compliance
 
@@ -221,7 +219,8 @@ Built with Test-Driven Development (TDD) using industry best practices.
 
 ---
 
-**Status**: ✅ Production Ready (95%)
-**Tests**: 472+ passing
+**Status**: ✅ Production Ready
+**Tests**: 114+ passing
 **Documentation**: 4000+ lines
 **Implementation**: November 2025
+**Frontend**: Nuxt 3 with 100% migration complete
