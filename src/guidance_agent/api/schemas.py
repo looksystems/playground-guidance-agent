@@ -16,7 +16,7 @@ class CreateConsultationRequest(BaseModel):
     """Request to create a new consultation."""
 
     name: str = Field(..., min_length=1, max_length=100, description="Customer name")
-    age: int = Field(..., ge=40, le=100, description="Customer age (must be 40+)")
+    age: int = Field(..., ge=18, le=68, description="Customer age (18-68)")
     initial_query: str = Field(
         ..., min_length=10, max_length=1000, description="Initial question or concern"
     )
@@ -25,8 +25,10 @@ class CreateConsultationRequest(BaseModel):
     @classmethod
     def validate_age(cls, v: int) -> int:
         """Validate age is appropriate for pension guidance."""
-        if v < 40:
-            raise ValueError("Pension guidance is typically for ages 40+")
+        if v < 18:
+            raise ValueError("Must be at least 18 years old")
+        if v > 68:
+            raise ValueError("Must be 68 years old or younger")
         return v
 
 
@@ -211,6 +213,59 @@ class SSEErrorEvent(BaseModel):
 
     type: Literal["error"] = "error"
     error: str
+
+
+# --- Admin Settings ---
+
+
+class AdminSettingsResponse(BaseModel):
+    """Admin settings response."""
+
+    systemName: str = Field(..., min_length=1, max_length=255)
+    supportEmail: str = Field(..., pattern=r'^[^@]+@[^@]+\.[^@]+$')
+    sessionTimeout: int = Field(..., ge=1, le=1440, description="Session timeout in minutes")
+    fcaComplianceEnabled: bool
+    riskAssessmentRequired: bool
+    autoArchive: bool
+    emailNotifications: bool
+    complianceAlerts: bool
+    dailyDigest: bool
+    aiModel: str = Field(..., min_length=1, max_length=100)
+    temperature: float = Field(..., ge=0.0, le=2.0)
+    maxTokens: int = Field(..., ge=1, le=100000)
+
+    @field_validator("supportEmail")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        """Validate email format."""
+        if "@" not in v or "." not in v.split("@")[-1]:
+            raise ValueError("Invalid email format")
+        return v
+
+
+class UpdateAdminSettingsRequest(BaseModel):
+    """Request to update admin settings."""
+
+    systemName: str = Field(..., min_length=1, max_length=255)
+    supportEmail: str = Field(..., pattern=r'^[^@]+@[^@]+\.[^@]+$')
+    sessionTimeout: int = Field(..., ge=1, le=1440, description="Session timeout in minutes")
+    fcaComplianceEnabled: bool
+    riskAssessmentRequired: bool
+    autoArchive: bool
+    emailNotifications: bool
+    complianceAlerts: bool
+    dailyDigest: bool
+    aiModel: str = Field(..., min_length=1, max_length=100)
+    temperature: float = Field(..., ge=0.0, le=2.0)
+    maxTokens: int = Field(..., ge=1, le=100000)
+
+    @field_validator("supportEmail")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        """Validate email format."""
+        if "@" not in v or "." not in v.split("@")[-1]:
+            raise ValueError("Invalid email format")
+        return v
 
 
 # --- Health Check ---

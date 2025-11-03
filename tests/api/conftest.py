@@ -112,6 +112,25 @@ async def client(mock_db_session, mock_advisor_agent):
 
 
 @pytest.fixture
+async def client_with_real_db(mock_advisor_agent):
+    """Create test client with real database for integration tests."""
+    # Import here to avoid circular dependencies
+    from guidance_agent.api.main import app
+    from guidance_agent.api.dependencies import get_advisor_agent
+
+    # Only override advisor agent, use real database
+    app.dependency_overrides[get_advisor_agent] = lambda: mock_advisor_agent
+
+    # Create async client
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+    # Clean up
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
 def sample_customer_profile_dict():
     """Sample customer profile as dict."""
     return {

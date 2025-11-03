@@ -20,6 +20,13 @@ export default defineNuxtConfig({
     '@pinia/nuxt'
   ],
 
+  icon: {
+    clientBundle: {
+      scan: true
+    },
+    provider: 'iconify'
+  },
+
   css: ['~/app/assets/css/main.css'],
 
   devtools: { enabled: true },

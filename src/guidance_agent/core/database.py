@@ -137,6 +137,35 @@ class PensionKnowledge(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 
+class SystemSettings(Base):
+    """System settings for admin configuration."""
+
+    __tablename__ = "system_settings"
+
+    id = Column(Integer, primary_key=True, default=1)  # Single row table
+    system_name = Column(String(255), nullable=False, default="Pension Guidance Service")
+    support_email = Column(String(255), nullable=False, default="support@pensionguidance.com")
+    session_timeout = Column(Integer, nullable=False, default=30)
+    fca_compliance_enabled = Column(String(10), nullable=False, default="true")
+    risk_assessment_required = Column(String(10), nullable=False, default="true")
+    auto_archive = Column(String(10), nullable=False, default="false")
+    email_notifications = Column(String(10), nullable=False, default="true")
+    compliance_alerts = Column(String(10), nullable=False, default="true")
+    daily_digest = Column(String(10), nullable=False, default="false")
+    ai_model = Column(String(100), nullable=False, default="gpt-4")
+    temperature = Column(Float, nullable=False, default=0.7)
+    max_tokens = Column(Integer, nullable=False, default=2000)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        CheckConstraint("session_timeout >= 1", name="settings_session_timeout_check"),
+        CheckConstraint("temperature >= 0.0 AND temperature <= 2.0", name="settings_temperature_check"),
+        CheckConstraint("max_tokens >= 1", name="settings_max_tokens_check"),
+        CheckConstraint("id = 1", name="settings_single_row_check"),  # Enforce single row
+    )
+
+
 # Database session management
 def get_db() -> Generator[Session, None, None]:
     """Get database session.

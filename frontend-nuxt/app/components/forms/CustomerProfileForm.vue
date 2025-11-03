@@ -41,7 +41,7 @@
           placeholder="Enter your age"
           size="xl"
           :min="18"
-          :max="120"
+          :max="68"
           required
         />
       </UFormField>
@@ -53,31 +53,27 @@
         required
         size="xl"
       >
-        <div class="radio-group-wrapper space-y-3">
+        <div class="radio-group-wrapper space-y-3" role="radiogroup" aria-label="What brings you here today?">
           <div
             v-for="option in topicOptions"
             :key="option.value"
             class="radio-option-wrapper"
-            @click="selectTopic(option.value)"
-            @keydown.enter="selectTopic(option.value)"
-            @keydown.space.prevent="selectTopic(option.value)"
-            :tabindex="0"
-            role="radio"
-            :aria-checked="form.topic === option.value"
-            :aria-label="option.label"
-            :data-testid="`topic-${option.value}`"
           >
-            <label class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-primary-500 hover:bg-primary-50" :class="{
-              'border-primary-500 bg-primary-50': form.topic === option.value,
-              'border-gray-300 bg-white': form.topic !== option.value
-            }">
+            <label
+              class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-primary-500 hover:bg-primary-50"
+              :class="{
+                'border-primary-500 bg-primary-50': form.topic === option.value,
+                'border-gray-300 bg-white': form.topic !== option.value
+              }"
+              :data-testid="`topic-${option.value}`"
+            >
               <input
                 type="radio"
-                :name="'topic'"
+                name="topic"
                 :value="option.value"
-                :checked="form.topic === option.value"
+                v-model="form.topic"
                 class="sr-only"
-                @change="selectTopic(option.value)"
+                :aria-label="option.label"
               />
               <span class="flex items-center justify-center w-5 h-5 mr-3 border-2 rounded-full" :class="{
                 'border-primary-500': form.topic === option.value,
@@ -132,7 +128,7 @@ const error = ref('')
 
 const schema = z.object({
   firstName: z.string().min(2, 'Name must be at least 2 characters'),
-  age: z.number().min(18, 'Must be 18 or older').max(120, 'Age must be 120 or less'),
+  age: z.number().min(18, 'Must be 18 or older').max(68, 'Must be 68 or younger'),
   topic: z.string().min(1, 'Please select a topic')
 })
 
@@ -152,21 +148,26 @@ const topicOptions = [
   { value: 'other', label: 'Other' }
 ]
 
-const selectTopic = (value: string) => {
-  form.topic = value
-}
-
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   loading.value = true
   error.value = ''
 
   try {
+    // Map topic codes to full question text (backend requires 10+ characters)
+    const topicToQuery: Record<string, string> = {
+      'consolidation': 'I want to consolidate my pensions',
+      'withdrawal': 'I am considering pension withdrawal',
+      'understanding': 'I want to understand my pension options',
+      'tax': 'I have questions about tax implications',
+      'other': 'I have other pension questions'
+    }
+
     const data = await $fetch('/api/consultations', {
       method: 'POST',
       body: {
         name: event.data.firstName,
         age: event.data.age,
-        initial_query: event.data.topic
+        initial_query: topicToQuery[event.data.topic] || 'General pension guidance'
       }
     })
 
@@ -184,7 +185,6 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
 defineExpose({
   form,
   topicOptions,
-  selectTopic,
   onSubmit
 })
 </script>

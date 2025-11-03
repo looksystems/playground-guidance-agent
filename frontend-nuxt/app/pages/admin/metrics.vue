@@ -6,58 +6,60 @@
     </div>
 
     <!-- Performance Metrics -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <UCard v-for="i in 4" :key="i">
+        <div class="animate-pulse">
+          <div class="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+          <div class="h-8 bg-gray-200 rounded w-20 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-16"></div>
+        </div>
+      </UCard>
+    </div>
+
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
+      <p class="text-red-800">Failed to load metrics: {{ error.message }}</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <UCard>
         <div>
           <p class="text-sm font-medium text-gray-600">Avg Response Time</p>
-          <p class="mt-2 text-3xl font-bold">2.3s</p>
-          <div class="mt-2 flex items-center gap-1">
-            <UIcon name="i-heroicons-arrow-trending-down-solid" class="w-4 h-4 text-green-600" />
-            <span class="text-sm font-medium text-green-600">-0.3s</span>
-          </div>
+          <p class="mt-2 text-3xl font-bold">{{ performanceMetrics.avg_response_time }}s</p>
+          <p class="mt-2 text-xs text-gray-500">First response time</p>
         </div>
       </UCard>
 
       <UCard>
         <div>
           <p class="text-sm font-medium text-gray-600">Customer Retention</p>
-          <p class="mt-2 text-3xl font-bold">87%</p>
-          <div class="mt-2 flex items-center gap-1">
-            <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-            <span class="text-sm font-medium text-green-600">+5%</span>
-          </div>
+          <p class="mt-2 text-3xl font-bold">{{ performanceMetrics.customer_retention }}%</p>
+          <p class="mt-2 text-xs text-gray-500">Returning customers</p>
         </div>
       </UCard>
 
       <UCard>
         <div>
           <p class="text-sm font-medium text-gray-600">Active Sessions</p>
-          <p class="mt-2 text-3xl font-bold">142</p>
-          <div class="mt-2 flex items-center gap-1">
-            <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-            <span class="text-sm font-medium text-green-600">+12</span>
-          </div>
+          <p class="mt-2 text-3xl font-bold">{{ performanceMetrics.active_sessions }}</p>
+          <p class="mt-2 text-xs text-gray-500">Currently active</p>
         </div>
       </UCard>
 
       <UCard>
         <div>
           <p class="text-sm font-medium text-gray-600">Completion Rate</p>
-          <p class="mt-2 text-3xl font-bold">94%</p>
-          <div class="mt-2 flex items-center gap-1">
-            <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-            <span class="text-sm font-medium text-green-600">+2%</span>
-          </div>
+          <p class="mt-2 text-3xl font-bold">{{ performanceMetrics.completion_rate }}%</p>
+          <p class="mt-2 text-xs text-gray-500">Consultations completed</p>
         </div>
       </UCard>
     </div>
 
     <!-- Compliance Breakdown -->
-    <UCard>
+    <UCard v-if="!pending && !error">
       <template #header>
         <h2 class="text-xl font-semibold">Compliance Breakdown</h2>
       </template>
-      <div class="space-y-4">
+      <div v-if="complianceBreakdown.length > 0" class="space-y-4">
         <div v-for="item in complianceBreakdown" :key="item.category" class="flex items-center justify-between">
           <div class="flex-1">
             <div class="flex items-center justify-between mb-1">
@@ -74,30 +76,39 @@
           </div>
         </div>
       </div>
+      <div v-else class="text-center text-gray-500 py-4">
+        No compliance data available
+      </div>
     </UCard>
 
     <!-- Usage Statistics -->
-    <UCard>
+    <UCard v-if="!pending && !error">
       <template #header>
         <h2 class="text-xl font-semibold">Usage Statistics</h2>
       </template>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 class="text-sm font-medium text-gray-600 mb-3">Top Topics</h3>
-          <div class="space-y-2">
+          <div v-if="topTopics.length > 0" class="space-y-2">
             <div v-for="topic in topTopics" :key="topic.name" class="flex items-center justify-between">
               <span class="text-sm text-gray-700">{{ topic.name }}</span>
               <span class="text-sm font-semibold text-gray-900">{{ topic.count }}</span>
             </div>
           </div>
+          <div v-else class="text-center text-gray-500 py-2">
+            No topic data available
+          </div>
         </div>
         <div>
           <h3 class="text-sm font-medium text-gray-600 mb-3">Peak Hours</h3>
-          <div class="space-y-2">
+          <div v-if="peakHours.length > 0" class="space-y-2">
             <div v-for="hour in peakHours" :key="hour.time" class="flex items-center justify-between">
               <span class="text-sm text-gray-700">{{ hour.time }}</span>
               <span class="text-sm font-semibold text-gray-900">{{ hour.sessions }} sessions</span>
             </div>
+          </div>
+          <div v-else class="text-center text-gray-500 py-2">
+            No peak hour data available
           </div>
         </div>
       </div>
@@ -110,26 +121,29 @@ definePageMeta({
   layout: 'admin'
 })
 
-const complianceBreakdown = ref([
-  { category: 'Risk Assessment', score: 98 },
-  { category: 'Documentation', score: 96 },
-  { category: 'Disclosure Requirements', score: 94 },
-  { category: 'Client Suitability', score: 97 },
-  { category: 'Regulatory Reporting', score: 95 }
-])
+// Fetch metrics from backend API
+const { data: metricsData, pending, error } = await useFetch('/api/admin/metrics', {
+  query: { days: 30 },
+  headers: {
+    'Authorization': 'Bearer admin-token'
+  }
+})
 
-const topTopics = ref([
-  { name: 'Retirement Planning', count: 342 },
-  { name: 'Investment Strategy', count: 298 },
-  { name: 'Tax Planning', count: 187 },
-  { name: 'Estate Planning', count: 156 },
-  { name: 'Pension Transfers', count: 142 }
-])
+// Extract metrics from API response with defaults
+const performanceMetrics = computed(() => metricsData.value?.performance_metrics || {
+  avg_response_time: 0,
+  customer_retention: 0,
+  active_sessions: 0,
+  completion_rate: 0
+})
 
-const peakHours = ref([
-  { time: '9:00 AM - 10:00 AM', sessions: 45 },
-  { time: '2:00 PM - 3:00 PM', sessions: 52 },
-  { time: '10:00 AM - 11:00 AM', sessions: 38 },
-  { time: '3:00 PM - 4:00 PM', sessions: 41 }
-])
+const complianceBreakdown = computed(() => metricsData.value?.compliance_breakdown || [])
+const topTopics = computed(() => metricsData.value?.top_topics || [])
+const peakHours = computed(() => metricsData.value?.peak_hours || [])
+const summary = computed(() => metricsData.value?.summary || {
+  total_consultations: 0,
+  completed_consultations: 0,
+  avg_satisfaction: 0,
+  period_days: 30
+})
 </script>

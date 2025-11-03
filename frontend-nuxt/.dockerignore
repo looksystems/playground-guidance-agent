@@ -1,0 +1,63 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Nuxt dev/build artifacts
+.nuxt
+.output
+.nitro
+dist
+
+# Cache
+.cache
+.temp
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage
+.nyc_output
+*.test.js.snap
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Documentation
+*.md
+!README.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Development files
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+tests
+__tests__
+vitest.config.ts
+qa-test.sh
+
+# Misc
+.editorconfig
+.eslintrc
+.prettierrc
+tsconfig.json

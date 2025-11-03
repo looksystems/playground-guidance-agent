@@ -7,7 +7,31 @@
       <h1 class="text-3xl font-bold mt-4">Consultation Review: {{ id }}</h1>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Loading State -->
+    <div v-if="pending" class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+        <p class="mt-4 text-gray-600">Loading consultation data...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-red-800 mb-2">Error Loading Consultation</h2>
+      <p class="text-red-600">{{ error.message || 'Failed to load consultation data. Please try again.' }}</p>
+      <UButton class="mt-4" @click="refreshNuxtData()">
+        Retry
+      </UButton>
+    </div>
+
+    <!-- No Data State -->
+    <div v-else-if="!consultation" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-yellow-800 mb-2">No Data Available</h2>
+      <p class="text-yellow-600">This consultation does not have any data yet.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Overview Sidebar -->
       <div class="lg:col-span-1">
         <UCard>
@@ -124,48 +148,48 @@ definePageMeta({
 const route = useRoute()
 const id = computed(() => route.params.id as string)
 
-// Mock data for development
-const consultation = ref({
-  customer: 'John Smith',
-  age: 45,
-  compliance: 0.98,
-  transcript: [
-    {
-      turn: 1,
-      isAdvisor: false,
-      content: 'I am interested in retirement planning options.',
-      timestamp: '10:00 AM',
-      complianceScore: null
-    },
-    {
-      turn: 2,
-      isAdvisor: true,
-      content: 'I would be happy to help you with retirement planning. Before we proceed, I need to understand your current financial situation and goals. Can you tell me about your current age and when you plan to retire?',
-      timestamp: '10:01 AM',
-      complianceScore: 0.98
-    },
-    {
-      turn: 3,
-      isAdvisor: false,
-      content: 'I am 45 years old and I would like to retire at 65.',
-      timestamp: '10:02 AM',
-      complianceScore: null
-    },
-    {
-      turn: 4,
-      isAdvisor: true,
-      content: 'Thank you for that information. To provide you with suitable advice, I need to assess your attitude to risk. This is a regulatory requirement under FCA guidelines. Can you tell me how comfortable you are with investment risk?',
-      timestamp: '10:03 AM',
-      complianceScore: 0.96
-    }
-  ],
-  insights: {
-    cases: 12,
-    rules: [
+// Fetch consultation data from backend admin API
+const { data: apiData, pending, error } = await useFetch(`/api/admin/consultations/${id.value}`, {
+  headers: {
+    'Authorization': 'Bearer admin-token'
+  }
+})
+
+// Transform API data to match the expected UI structure
+const consultation = computed(() => {
+  if (!apiData.value) return null
+
+  // Transform conversation to transcript format expected by UI
+  const transcript = apiData.value.conversation
+    .filter((turn: any) => turn.role !== 'system') // Exclude system messages from transcript
+    .map((turn: any, index: number) => ({
+      turn: index + 1,
+      isAdvisor: turn.role === 'advisor',
+      content: turn.content,
+      timestamp: new Date(turn.timestamp).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }),
+      complianceScore: turn.compliance_score
+    }))
+
+  // Extract insights from metadata or use defaults
+  const insights = {
+    cases: apiData.value.outcome?.retrieved_cases || 0,
+    rules: apiData.value.outcome?.applied_rules || [
       'FCA COBS 9.2: Assess client suitability',
       'FCA COBS 4.2: Communicate clearly',
-      'Pension transfer requirements'
+      'FCA COBS 2.1: Act with integrity'
     ]
+  }
+
+  return {
+    customer: apiData.value.customer_name,
+    age: apiData.value.customer_age,
+    compliance: apiData.value.metrics?.avg_compliance_score || 0,
+    transcript,
+    insights
   }
 })
 </script>

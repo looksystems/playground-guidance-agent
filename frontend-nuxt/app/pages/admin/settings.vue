@@ -5,11 +5,21 @@
       <p class="mt-2 text-gray-600">Configure system settings and preferences</p>
     </div>
 
-    <!-- General Settings -->
-    <UCard>
-      <template #header>
-        <h2 class="text-xl font-semibold">General Settings</h2>
-      </template>
+    <!-- Loading State -->
+    <div v-if="initialLoading" class="flex items-center justify-center py-12">
+      <div class="text-center">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <p class="mt-2 text-sm text-gray-500">Loading settings...</p>
+      </div>
+    </div>
+
+    <!-- Settings Forms (hidden while loading) -->
+    <div v-if="!initialLoading" class="space-y-8">
+      <!-- General Settings -->
+      <UCard>
+        <template #header>
+          <h2 class="text-xl font-semibold">General Settings</h2>
+        </template>
       <div class="space-y-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">System Name</label>
@@ -108,10 +118,13 @@
       </div>
     </UCard>
 
-    <!-- Save Button -->
-    <div class="flex justify-end gap-3">
-      <UButton variant="outline" @click="resetSettings">Reset</UButton>
-      <UButton @click="saveSettings">Save Settings</UButton>
+      <!-- Save Button -->
+      <div class="flex justify-end gap-3">
+        <UButton variant="outline" @click="resetSettings" :disabled="loading">Reset</UButton>
+        <UButton @click="saveSettings" :loading="loading" :disabled="loading">
+          {{ loading ? 'Saving...' : 'Save Settings' }}
+        </UButton>
+      </div>
     </div>
   </div>
 </template>
@@ -145,34 +158,101 @@ const aiModels = [
 ]
 
 const toast = useToast()
+const loading = ref(false)
+const initialLoading = ref(true)
 
-const saveSettings = () => {
-  // In a real app, this would save to the backend
-  toast.add({
-    title: 'Settings saved',
-    description: 'Your settings have been saved successfully',
-    color: 'success'
-  })
+// Store original settings for reset
+const originalSettings = ref({})
+
+// Load settings from backend on mount
+onMounted(async () => {
+  await loadSettings()
+})
+
+const loadSettings = async () => {
+  try {
+    initialLoading.value = true
+    const { data, error } = await useFetch('/api/admin/settings', {
+      headers: {
+        'Authorization': 'Bearer admin-token'
+      }
+    })
+
+    if (error.value) {
+      console.error('Failed to load settings:', error.value)
+      toast.add({
+        title: 'Error loading settings',
+        description: 'Could not load settings from server. Using defaults.',
+        color: 'error'
+      })
+      return
+    }
+
+    if (data.value) {
+      settings.value = { ...data.value }
+      originalSettings.value = { ...data.value }
+    }
+  } catch (err) {
+    console.error('Error loading settings:', err)
+    toast.add({
+      title: 'Error loading settings',
+      description: 'An unexpected error occurred.',
+      color: 'error'
+    })
+  } finally {
+    initialLoading.value = false
+  }
+}
+
+const saveSettings = async () => {
+  try {
+    loading.value = true
+
+    const { data, error } = await useFetch('/api/admin/settings', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer admin-token'
+      },
+      body: settings.value
+    })
+
+    if (error.value) {
+      console.error('Failed to save settings:', error.value)
+      toast.add({
+        title: 'Error saving settings',
+        description: 'Could not save settings to server.',
+        color: 'error'
+      })
+      return
+    }
+
+    if (data.value) {
+      settings.value = { ...data.value }
+      originalSettings.value = { ...data.value }
+      toast.add({
+        title: 'Settings saved',
+        description: 'Your settings have been saved successfully',
+        color: 'success'
+      })
+    }
+  } catch (err) {
+    console.error('Error saving settings:', err)
+    toast.add({
+      title: 'Error saving settings',
+      description: 'An unexpected error occurred.',
+      color: 'error'
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const resetSettings = () => {
-  settings.value = {
-    systemName: 'Pension Guidance Service',
-    supportEmail: 'support@pensionguidance.com',
-    sessionTimeout: 30,
-    fcaComplianceEnabled: true,
-    riskAssessmentRequired: true,
-    autoArchive: false,
-    emailNotifications: true,
-    complianceAlerts: true,
-    dailyDigest: false,
-    aiModel: 'gpt-4',
-    temperature: 0.7,
-    maxTokens: 2000
-  }
+  // Reset to originally loaded settings
+  settings.value = { ...originalSettings.value }
   toast.add({
     title: 'Settings reset',
-    description: 'Settings have been reset to defaults',
+    description: 'Settings have been reset to last saved values',
     color: 'warning'
   })
 }

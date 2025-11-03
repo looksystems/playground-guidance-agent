@@ -91,23 +91,102 @@ const tabs = computed(() => {
 // Fetch consultations from API
 const { data: apiData, pending, error } = await useFetch('/api/consultations')
 
-// Transform API data to match UI format
-const consultations = computed(() => {
-  if (!apiData.value?.items) return []
+// Fetch detailed data for each consultation to get metrics and preview
+const consultationsWithDetails = ref<any[]>([])
 
-  return apiData.value.items.map((c: any) => ({
-    id: c.id,
-    title: 'Pension Consultation', // Could be enhanced with conversation summary
-    advisor: c.advisor_name,
-    date: new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-    status: c.status,
-    preview: 'Consultation in progress...', // Could extract first customer message
-    messages: 0, // Would need to count conversation array
-    compliance: 0, // Would need to calculate from conversation
-    satisfactionEmoji: '😊',
-    satisfactionText: 'In progress'
-  }))
-})
+// Load consultation details including metrics
+const loadConsultationDetails = async () => {
+  if (!apiData.value?.items) {
+    consultationsWithDetails.value = []
+    return
+  }
+
+  const detailsPromises = apiData.value.items.map(async (c: any) => {
+    try {
+      // Fetch both detail (for preview) and metrics in parallel
+      const [detailResponse, metricsResponse] = await Promise.all([
+        $fetch(`/api/consultations/${c.id}`),
+        $fetch(`/api/consultations/${c.id}/metrics`)
+      ])
+
+      const detail: any = detailResponse
+      const metrics: any = metricsResponse
+
+      // Extract first customer message for preview
+      const customerMessages = detail.conversation?.filter((msg: any) => msg.role === 'customer') || []
+      const firstCustomerMessage = customerMessages.length > 0 ? customerMessages[0].content : ''
+      const preview = firstCustomerMessage
+        ? firstCustomerMessage.substring(0, 100) + (firstCustomerMessage.length > 100 ? '...' : '')
+        : (c.status === 'active' ? 'Consultation in progress...' : 'No messages yet')
+
+      // Determine satisfaction from outcome
+      let satisfactionEmoji = ''
+      let satisfactionText = ''
+
+      if (c.status === 'completed' && detail.outcome) {
+        const satisfaction = detail.outcome.customer_satisfaction
+        if (satisfaction !== null && satisfaction !== undefined) {
+          if (satisfaction >= 8) {
+            satisfactionEmoji = '😊'
+            satisfactionText = 'Satisfied'
+          } else if (satisfaction >= 6) {
+            satisfactionEmoji = '😐'
+            satisfactionText = 'Neutral'
+          } else {
+            satisfactionEmoji = '😟'
+            satisfactionText = 'Needs improvement'
+          }
+        } else {
+          satisfactionEmoji = '❓'
+          satisfactionText = 'No feedback'
+        }
+      } else {
+        satisfactionEmoji = '⏳'
+        satisfactionText = 'In progress'
+      }
+
+      return {
+        id: c.id,
+        title: 'Pension Consultation',
+        advisor: c.advisor_name,
+        date: new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        status: c.status,
+        preview: preview,
+        messages: metrics.message_count || 0,
+        compliance: Math.round((metrics.avg_compliance_score || 0) * 100),
+        satisfactionEmoji: satisfactionEmoji,
+        satisfactionText: satisfactionText
+      }
+    } catch (err) {
+      console.error(`Failed to load details for consultation ${c.id}:`, err)
+      // Fallback to basic data if detail fetch fails
+      return {
+        id: c.id,
+        title: 'Pension Consultation',
+        advisor: c.advisor_name,
+        date: new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+        status: c.status,
+        preview: 'Unable to load details',
+        messages: 0,
+        compliance: 0,
+        satisfactionEmoji: '❌',
+        satisfactionText: 'Error'
+      }
+    }
+  })
+
+  consultationsWithDetails.value = await Promise.all(detailsPromises)
+}
+
+// Load details when API data is available
+watch(apiData, async (newData) => {
+  if (newData) {
+    await loadConsultationDetails()
+  }
+}, { immediate: true })
+
+// Transform API data to match UI format
+const consultations = computed(() => consultationsWithDetails.value)
 
 const filteredConsultations = computed(() => {
   let filtered = consultations.value

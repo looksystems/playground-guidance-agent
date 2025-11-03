@@ -74,7 +74,7 @@ const menuItems = [[
   {
     label: 'End Consultation',
     icon: 'i-heroicons-x-mark',
-    color: 'red' as const,
+    color: 'error' as const,
     onSelect: handleEndConsultation
   }
 ]]

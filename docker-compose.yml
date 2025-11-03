@@ -86,26 +86,25 @@ services:
       # Mount source code for development (comment out for production)
       - ./src:/app/src:ro
 
-  # Frontend Vue/Nginx service
+  # Frontend Nuxt 3 service
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend-nuxt
       dockerfile: Dockerfile
     environment:
-      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
-      VITE_APP_TITLE: ${VITE_APP_TITLE:-Pension Guidance Chat}
-      VITE_ENVIRONMENT: ${VITE_ENVIRONMENT:-production}
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://backend:8000}
+      NODE_ENV: production
     ports:
-      - "80:80"
+      - "3000:3000"
     depends_on:
       backend:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 5s
+      start_period: 40s
     networks:
       - app-network
     restart: unless-stopped
