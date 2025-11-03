@@ -147,6 +147,10 @@ async def list_consultations_admin(
                 ),
                 compliance_score=turn.get("compliance_score"),
                 compliance_confidence=turn.get("compliance_confidence"),
+                compliance_reasoning=turn.get("compliance_reasoning"),
+                compliance_issues=turn.get("compliance_issues"),
+                compliance_passed=turn.get("compliance_passed"),
+                requires_human_review=turn.get("requires_human_review"),
             )
             for turn in c.conversation
         ]
@@ -226,6 +230,10 @@ async def get_consultation_review(
             ),
             compliance_score=turn.get("compliance_score"),
             compliance_confidence=turn.get("compliance_confidence"),
+            compliance_reasoning=turn.get("compliance_reasoning"),
+            compliance_issues=turn.get("compliance_issues"),
+            compliance_passed=turn.get("compliance_passed"),
+            requires_human_review=turn.get("requires_human_review"),
         )
         for turn in consultation.conversation
     ]
