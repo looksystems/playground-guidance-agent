@@ -11,6 +11,7 @@ from litellm import completion
 
 from guidance_agent.customer.agent import CustomerAgent
 from guidance_agent.core.types import OutcomeResult, OutcomeStatus
+from guidance_agent.core.template_engine import render_template
 
 
 def simulate_outcome(
@@ -30,60 +31,17 @@ def simulate_outcome(
     """
     model = os.getenv("LITELLM_MODEL_CUSTOMER", "gpt-4o-mini")
 
-    # Build conversation summary
-    conversation_text = "\n".join(
-        [f"{msg['role']}: {msg['content']}" for msg in conversation_history]
-    )
-
     # Check if customer has DB pension
     has_db_pension = any(
         pension.is_db_scheme for pension in customer.profile.pensions
     ) if customer.profile.pensions else False
 
-    prompt = f"""Simulate the outcome of a pension guidance consultation.
-
-Customer Profile:
-- Age: {customer.profile.demographics.age if customer.profile.demographics else 'unknown'}
-- Financial literacy: {customer.profile.demographics.financial_literacy if customer.profile.demographics else 'medium'}
-- Goals: {customer.profile.goals}
-- Presenting question: {customer.profile.presenting_question}
-- Has DB pension: {has_db_pension}
-
-Conversation:
-{conversation_text}
-
-Customer comprehension level throughout: {customer.comprehension_level:.2f}
-
-Evaluate the consultation and provide scores:
-
-1. customer_satisfaction (0-10): How satisfied was the customer with the guidance?
-   - Consider: Were questions answered? Was advisor helpful and clear?
-
-2. comprehension (0-10): How well did customer understand the guidance?
-   - Consider: Was language appropriate? Were concepts explained? Understanding checked?
-
-3. goal_alignment (0-10): How well did guidance align with customer's goals?
-   - Consider: Were stated goals addressed? Were underlying concerns resolved?
-
-4. risks_identified (true/false): Were relevant risks identified and explained?
-
-5. guidance_appropriate (true/false): Was guidance appropriate for customer's situation?
-
-6. fca_compliant (true/false): Did advisor stay within guidance boundary (not advice)?
-   - Guidance: General information, options, pros/cons
-   - Advice: Specific recommendations ("you should do X")
-
-7. understanding_checked (true/false): Did advisor check customer understanding?
-
-8. signposted_when_needed (true/false): Did advisor signpost to regulated advice when needed?
-
-9. has_db_pension (true/false): {has_db_pension}
-
-10. db_warning_given (true/false): If DB pension present, was transfer warning given?
-
-11. reasoning: Brief explanation of outcome assessment (1-2 sentences)
-
-Return JSON only, no explanation."""
+    prompt = render_template(
+        "customer/outcome.jinja",
+        customer=customer,
+        conversation_history=conversation_history,
+        has_db_pension=has_db_pension
+    )
 
     try:
         response = completion(

@@ -10,6 +10,7 @@ from typing import List, Dict
 from litellm import completion
 
 from guidance_agent.core.types import CustomerProfile
+from guidance_agent.core.template_engine import render_template
 
 
 class CustomerAgent:
@@ -76,29 +77,11 @@ class CustomerAgent:
         Returns:
             Dict with understanding_level, confusion_points, customer_feeling
         """
-        prompt = f"""Simulate customer comprehension of pension guidance.
-
-Customer Profile:
-- Age: {self.profile.demographics.age if self.profile.demographics else 'unknown'}
-- Financial literacy: {self.profile.demographics.financial_literacy if self.profile.demographics else 'medium'}
-- Goals: {self.profile.goals}
-
-Guidance Provided:
-"{guidance}"
-
-Assess comprehension based on:
-1. Customer's literacy level ({self.profile.demographics.financial_literacy if self.profile.demographics else 'medium'})
-2. Complexity of guidance
-3. Use of technical language vs plain English
-4. Presence of analogies or examples
-5. Whether advisor checked understanding
-
-Determine:
-- understanding_level: "not_understood" | "partially_understood" | "fully_understood"
-- confusion_points: list of specific concepts that confused customer (empty if understood)
-- customer_feeling: "confident" | "uncertain" | "overwhelmed" | "satisfied" | "confused"
-
-Return JSON only, no explanation."""
+        prompt = render_template(
+            "customer/comprehension.jinja",
+            customer=self.profile,
+            guidance=guidance
+        )
 
         try:
             response = completion(
@@ -143,40 +126,12 @@ Return JSON only, no explanation."""
         )
 
         # Build response based on comprehension
-        prompt = f"""Generate realistic customer response in pension guidance conversation.
-
-Customer Profile:
-- Age: {self.profile.demographics.age if self.profile.demographics else 'unknown'}
-- Financial literacy: {self.profile.demographics.financial_literacy if self.profile.demographics else 'medium'}
-- Goals: {self.profile.goals}
-
-Advisor just said:
-"{advisor_message}"
-
-Comprehension Assessment:
-- Understanding: {comprehension['understanding_level']}
-- Confusion points: {comprehension['confusion_points']}
-- Customer feeling: {comprehension['customer_feeling']}
-
-Generate customer's response that:
-1. Reflects their understanding level
-   - If confused: Ask for clarification on specific points
-   - If understood: Acknowledge and move forward or ask about next steps
-   - If partially understood: Express understanding but ask about unclear parts
-
-2. Matches their literacy level ({self.profile.demographics.financial_literacy if self.profile.demographics else 'medium'})
-   - Low: Simple language, may need concepts explained again
-   - Medium: Clear but not overly sophisticated
-   - High: Can engage with more complex explanations
-
-3. Is natural and conversational (1-3 sentences typically)
-
-4. Shows realistic customer behavior:
-   - If overwhelmed: Express anxiety or uncertainty
-   - If confident: Express satisfaction and readiness to proceed
-   - If uncertain: Ask for reassurance or examples
-
-Customer response:"""
+        prompt = render_template(
+            "customer/response.jinja",
+            customer=self.profile,
+            advisor_message=advisor_message,
+            comprehension=comprehension
+        )
 
         try:
             response = completion(

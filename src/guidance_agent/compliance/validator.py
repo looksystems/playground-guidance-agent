@@ -17,6 +17,7 @@ from guidance_agent.core.provider_config import (
     detect_provider,
     get_provider_info,
 )
+from guidance_agent.core.template_engine import render_template
 
 
 class IssueType(str, Enum):
@@ -195,83 +196,12 @@ class ComplianceValidator:
         Returns:
             Formatted validation prompt
         """
-        # Check if customer has DB pension
-        has_db_pension = any(p.is_db_scheme for p in customer.pensions)
-        db_context = ""
-        if has_db_pension:
-            db_context = """
-            IMPORTANT: Customer has a defined benefit (DB) pension scheme.
-            DB transfers require FCA-regulated financial advice and come with
-            significant warnings about giving up guaranteed income.
-            """
-
-        # Get customer literacy level for context
-        literacy = (
-            customer.demographics.financial_literacy
-            if customer.demographics
-            else "medium"
+        return render_template(
+            "compliance/validation.jinja",
+            guidance=guidance,
+            customer=customer,
+            reasoning=reasoning,
         )
-
-        prompt = f"""You are a compliance expert reviewing pension guidance for FCA compliance.
-
-Customer Context:
-- Age: {customer.demographics.age if customer.demographics else 'Unknown'}
-- Financial Literacy: {literacy}
-- Goals: {customer.goals}
-{db_context}
-
-Guidance to Review:
-"{guidance}"
-
-Advisor's Reasoning:
-{reasoning if reasoning else "Not provided"}
-
-FCA Compliance Checklist:
-
-1. **Guidance vs Advice Boundary**
-   - Does the guidance avoid making specific recommendations?
-   - Does it use language like "you could consider" rather than "you should"?
-   - Does it maintain impartiality and present options without preference?
-   - FAIL if it crosses into regulated advice territory
-
-2. **Risk Disclosure**
-   - Are relevant risks clearly explained?
-   - Are tax implications mentioned where relevant?
-   - Is the guidance balanced (pros and cons)?
-   - FAIL if risks are missing or inadequately explained
-
-3. **Clear and Not Misleading**
-   - Is the language appropriate for the customer's literacy level?
-   - Is the guidance clear and unambiguous?
-   - Does it avoid technical jargon without explanation?
-   - FAIL if unclear or potentially misleading
-
-4. **Understanding Verification**
-   - Does the guidance check or encourage customer understanding?
-   - Are follow-up questions asked?
-   - Is comprehension verified before proceeding?
-   - FAIL if no attempt to verify understanding
-
-5. **Signposting**
-   - For DB transfers or complex decisions, is customer signposted to FCA-regulated advisor?
-   - Is appropriate escalation suggested when needed?
-   - FAIL if signposting required but missing
-
-Provide your analysis in this exact format:
-
-ANALYSIS:
-1. Guidance vs Advice boundary: [PASS/FAIL/UNCERTAIN] - [brief explanation]
-2. Risk disclosure: [PASS/FAIL/UNCERTAIN] - [brief explanation]
-3. Clear and not misleading: [PASS/FAIL/UNCERTAIN] - [brief explanation]
-4. Understanding verification: [PASS/FAIL/UNCERTAIN] - [brief explanation]
-5. Signposting: [PASS/FAIL/UNCERTAIN/N/A] - [brief explanation]
-
-OVERALL: [PASS/FAIL/UNCERTAIN]
-CONFIDENCE: [0.00-1.00]
-ISSUES: [comma-separated list of issues, or "None"]
-"""
-
-        return prompt
 
     def _parse_validation_response(self, response: str) -> ValidationResult:
         """Parse LLM validation response into ValidationResult.

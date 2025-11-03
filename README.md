@@ -11,13 +11,16 @@ An enterprise-grade AI agent that provides FCA-compliant pension guidance throug
 - **User-friendly**: Natural conversation flow with typing indicators
 
 ### Admin Dashboard
-- **Compliance monitoring**: Real-time compliance scores per message
+- **Compliance monitoring**: Real-time compliance scores per message with detailed validation reasoning
+- **Validation transparency**: Expandable compliance analysis showing LLM reasoning, issues found, and pass/fail status
 - **Analytics**: Metrics, charts, and time-series data
 - **Review tools**: Detailed transcript review with learning insights
 - **Export**: PDF and JSON export for auditing
+- **Data Management**: Admin interfaces for all 6 core data models (Knowledge Base, Learning System, Customers)
 
 ### AI Capabilities
-- **Compliant guidance**: Real-time FCA compliance validation
+- **Compliant guidance**: Real-time FCA compliance validation with detailed reasoning and issue tracking
+- **Validation transparency**: Full LLM reasoning stored and displayed for audit trails
 - **Learning system**: Improves from past consultations
 - **Context-aware**: Retrieves relevant similar cases
 - **Reflection**: Generates strategic insights
@@ -64,11 +67,21 @@ npm test                    # Playwright tests
 npm run test:coverage      # Coverage report
 ```
 
-**Backend Tests (23 API + 8 integration tests)**
+**Backend Tests (146 API + 8 integration + 40 template + 20 regression tests)**
 ```bash
-pytest tests/api/          # API tests
-pytest tests/integration/  # Integration tests
+pytest tests/api/          # API tests (146 tests)
+pytest tests/integration/  # Integration tests (8 tests)
+pytest tests/templates/    # Template rendering tests (40 tests)
+pytest tests/regression/   # Template migration regression tests (20 tests)
 pytest --cov              # With coverage
+```
+
+**Frontend E2E Tests (99 Playwright tests)**
+```bash
+cd frontend
+npm run test:e2e          # Playwright E2E tests
+npm run test:e2e:ui       # Interactive UI mode
+npm run test:e2e:report   # View HTML report
 ```
 
 ## 📁 Project Structure
@@ -96,9 +109,9 @@ guidance-agent/
 ## 🧪 Testing
 
 ### Test Coverage
-- **Frontend**: 83 Playwright tests (100% pass rate)
-- **Backend**: 31 tests (API + integration)
-- **Total**: 114+ tests
+- **Frontend**: 203 Playwright tests (83 component/page + 99 E2E + 21 validation reasoning, 100% pass rate)
+- **Backend**: 214 tests (146 API + 8 integration + 40 template + 20 regression, 100% pass rate)
+- **Total**: 417+ tests
 
 ### Running Specific Tests
 ```bash
@@ -167,6 +180,7 @@ See detailed guides:
 - LangChain, OpenAI/Claude
 - PostgreSQL + pgvector
 - Phoenix (observability)
+- Jinja2 (prompt templates)
 
 **Infrastructure**:
 - Docker, Docker Compose
@@ -207,7 +221,11 @@ See implementation summaries:
 - [Phase 2: Chat Interface](PHASE2_UI_SUMMARY.md)
 - [Phase 3: Backend API](docs/PHASE3_IMPLEMENTATION_SUMMARY.md)
 - [Phase 4: Admin Dashboard](PHASE4_UI_SUMMARY.md)
-- [Phase 6: Docker Deployment](PHASE6_SUMMARY.md)
+- [Phase 5: Admin Settings Complete](specs/PHASE5_ADMIN_SETTINGS_COMPLETE.md)
+- [Phase 6: Admin Data Models](specs/PHASE6_ADMIN_DATA_MODELS.md) - ✅ Complete (All Phases)
+- [Phase 10: QA Testing Report](specs/PHASE10_QA_COMPLETION_REPORT.md) - ✅ Complete
+- [Validation Reasoning Display](specs/validation-reasoning-display-plan.md) - ✅ Complete (TDD Implementation)
+- [Jinja Template Migration](specs/JINJA_MIGRATION_COMPLETE.md) - ✅ Complete (20 templates, 60 tests, TDD)
 
 ## 📝 License
 
@@ -220,7 +238,8 @@ Built with Test-Driven Development (TDD) using industry best practices.
 ---
 
 **Status**: ✅ Production Ready
-**Tests**: 114+ passing
-**Documentation**: 4000+ lines
+**Tests**: 417+ passing (214 backend, 203 frontend)
+**Documentation**: 8000+ lines
 **Implementation**: November 2025
 **Frontend**: Nuxt 3 with 100% migration complete
+**Latest**: Jinja Template Migration Complete - All 20 prompts migrated with TDD (60 new tests, 100% backward compatible)

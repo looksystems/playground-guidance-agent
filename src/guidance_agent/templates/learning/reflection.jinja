@@ -1,0 +1,39 @@
+{#
+  Failure reflection prompt
+
+  This template analyzes a failed pension guidance consultation and extracts
+  a learning principle.
+
+  Source: learning/reflection.py:45-67 (original_reflect_on_failure_prompt)
+
+  Required variables:
+  - customer: CustomerProfile object (or customer_profile for legacy support)
+  - guidance: String containing the guidance that failed (or guidance_provided for legacy support)
+  - outcome: Outcome object with scores and reasoning
+
+  Returns: Structured text with Principle and Domain
+#}
+{% set customer_profile = customer if customer is defined else customer_profile -%}
+{% set guidance_provided = guidance if guidance is defined else guidance_provided -%}
+Analyze this failed pension guidance consultation and extract a learning principle.
+
+Customer Profile:
+- Age: {{ customer_profile.demographics.age if customer_profile.demographics else 'Unknown' }}
+- Financial Literacy: {{ customer_profile.demographics.financial_literacy if customer_profile.demographics else 'Unknown' }}
+- Question: {{ customer_profile.presenting_question }}
+
+Guidance Provided:
+{{ guidance_provided }}
+
+What Went Wrong:
+- Customer Satisfaction: {{ outcome.customer_satisfaction }}/10
+- Comprehension: {{ outcome.comprehension }}/10
+- Issues: {{ ', '.join(outcome.issues) }}
+- Reasoning: {{ outcome.reasoning }}
+
+Task: Extract ONE specific, actionable principle that would prevent this type of failure.
+
+Format your response as:
+Principle: [specific principle]
+
+Domain: [domain this applies to, e.g., communication, risk_disclosure, compliance, etc.]

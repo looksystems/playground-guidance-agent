@@ -1,0 +1,48 @@
+{#
+  Customer goals and inquiry generation prompt
+
+  This template generates realistic customer goals and presenting question for
+  pension guidance simulation.
+
+  Source: customer/generator.py:287-314 (original_generate_goals_and_inquiry_prompt)
+
+  Required variables:
+  - demographics: CustomerDemographics object (or customer.demographics)
+  - financial: FinancialSituation object (or customer.financial)
+  - pots: List of PensionPot objects (or customer.pensions)
+
+  Returns: JSON with goals and presenting_question
+#}
+{% set demographics = customer.demographics if customer is defined and customer.demographics is defined else demographics -%}
+{% set financial = customer.financial if customer is defined and customer.financial is defined else financial -%}
+{% set pots = customer.pensions if customer is defined and customer.pensions is defined else pots -%}
+Generate realistic customer goals and inquiry for pension guidance simulation.
+
+Customer: Age {{ demographics.age }}, {{ demographics.employment_status }}
+Financial literacy: {{ demographics.financial_literacy }}
+{% if pots -%}
+Number of pensions: {{ pots | length }}
+Total pension value: £{{ "{:,.0f}".format(pots | sum(attribute='current_value')) }}
+{% else -%}
+Number of pensions: 0
+Total pension value: £0
+{% endif -%}
+
+Generate JSON with:
+- goals: customer's main objectives (1-2 sentences)
+- presenting_question: what they ask first (natural, conversational, 1-3 sentences)
+
+Ensure:
+- Question appropriate for literacy level ("{{ demographics.financial_literacy }}")
+- Goals realistic for age {{ demographics.age }}
+- Natural conversational tone
+- Not overly sophisticated (most aren't pension experts)
+- Reflects genuine confusion or need for guidance
+
+Common goals by age:
+- 20s-30s: "Understand basics", "Check I'm saving enough"
+- 40s: "Consolidate pensions", "Reduce fees", "Plan for retirement"
+- 50s-60s: "Maximize retirement income", "Access options", "Tax planning"
+- 65+: "Make pension last", "Understand drawdown"
+
+Return only valid JSON, no explanation.

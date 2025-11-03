@@ -27,38 +27,159 @@
         </div>
       </div>
 
-      <nav class="px-4 space-y-1">
-        <UButton
-          to="/admin"
-          variant="ghost"
-          block
-          justify="start"
-          icon="i-heroicons-chart-bar"
-          :active="$route.path === '/admin'"
-          @click="mobileMenuOpen = false"
-        >
-          Dashboard
-        </UButton>
-        <UButton
-          to="/admin/metrics"
-          variant="ghost"
-          block
-          justify="start"
-          icon="i-heroicons-chart-pie"
-          @click="mobileMenuOpen = false"
-        >
-          Metrics
-        </UButton>
-        <UButton
-          to="/admin/settings"
-          variant="ghost"
-          block
-          justify="start"
-          icon="i-heroicons-cog-6-tooth"
-          @click="mobileMenuOpen = false"
-        >
-          Settings
-        </UButton>
+      <nav class="px-4 pb-4 space-y-6 overflow-y-auto" style="max-height: calc(100vh - 120px);">
+        <!-- Dashboard Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            Dashboard
+          </div>
+          <UButton
+            to="/admin"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-chart-bar"
+            :active="$route.path === '/admin'"
+            @click="mobileMenuOpen = false"
+            class="text-left"
+          >
+            Overview
+          </UButton>
+        </div>
+
+        <!-- Analytics Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            Analytics
+          </div>
+          <UButton
+            to="/admin/metrics"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-chart-pie"
+            :active="$route.path === '/admin/metrics'"
+            @click="mobileMenuOpen = false"
+          >
+            Metrics
+          </UButton>
+        </div>
+
+        <!-- Knowledge Base Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            Knowledge Base
+          </div>
+          <UButton
+            to="/admin/knowledge/fca"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-clipboard-document-list"
+            :active="$route.path.startsWith('/admin/knowledge/fca')"
+            @click="mobileMenuOpen = false"
+          >
+            FCA Knowledge
+          </UButton>
+          <UButton
+            to="/admin/knowledge/pension"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-academic-cap"
+            :active="$route.path.startsWith('/admin/knowledge/pension')"
+            @click="mobileMenuOpen = false"
+          >
+            Pension Knowledge
+          </UButton>
+        </div>
+
+        <!-- Learning System Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            Learning System
+          </div>
+          <UButton
+            to="/admin/learning/memories"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-light-bulb"
+            :active="$route.path.startsWith('/admin/learning/memories')"
+            @click="mobileMenuOpen = false"
+          >
+            Memories
+          </UButton>
+          <UButton
+            to="/admin/learning/cases"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-cube"
+            :active="$route.path.startsWith('/admin/learning/cases')"
+            @click="mobileMenuOpen = false"
+          >
+            Cases
+          </UButton>
+          <UButton
+            to="/admin/learning/rules"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-scale"
+            :active="$route.path.startsWith('/admin/learning/rules')"
+            @click="mobileMenuOpen = false"
+          >
+            Rules
+          </UButton>
+        </div>
+
+        <!-- User Management Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            User Management
+          </div>
+          <UButton
+            to="/admin/users/customers"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-user-group"
+            :active="$route.path.startsWith('/admin/users/customers')"
+            @click="mobileMenuOpen = false"
+          >
+            Customers
+          </UButton>
+          <UButton
+            to="/admin/consultations"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-chat-bubble-left-right"
+            :active="$route.path.startsWith('/admin/consultations')"
+            @click="mobileMenuOpen = false"
+          >
+            Consultations
+          </UButton>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="space-y-1">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+            Settings
+          </div>
+          <UButton
+            to="/admin/settings"
+            variant="ghost"
+            block
+            justify="start"
+            icon="i-heroicons-cog-6-tooth"
+            :active="$route.path.startsWith('/admin/settings')"
+            @click="mobileMenuOpen = false"
+          >
+            System Settings
+          </UButton>
+        </div>
       </nav>
     </aside>
 

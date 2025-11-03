@@ -25,23 +25,34 @@ The system combines these approaches to create an FCA-compliant pension guidance
 │         │          ┌──────────────────┐             │       │
 │         │          │  Memory System   │             │       │
 │         │          ├──────────────────┤             │       │
-│         │          │  Memory Stream   │             │       │
-│         │          │  Case Base       │             │       │
-│         │          │  Rules Base      │             │       │
-│         │          │  Reflection Log  │             │       │
-│         │          └──────────────────┘             │       │
-│         │                     │                      │       │
-│         └─────────────────────┴──────────────────────┘       │
-│                               │                               │
-│                               ▼                               │
-│                    ┌──────────────────┐                      │
-│                    │ Knowledge Bases  │                      │
-│                    ├──────────────────┤                      │
-│                    │ FCA Guidance     │                      │
-│                    │ Pension Rules    │                      │
-│                    │ Tax Regulations  │                      │
-│                    │ Best Practices   │                      │
-│                    └──────────────────┘                      │
+│         │          │  Memory Stream   │◄────────────┼──────┐│
+│         │          │  Case Base       │             │      ││
+│         │          │  Rules Base      │             │      ││
+│         │          │  Reflection Log  │             │      ││
+│         │          └──────────────────┘             │      ││
+│         │                     │                      │      ││
+│         └─────────────────────┴──────────────────────┘      ││
+│                               │                              ││
+│                               ▼                              ││
+│                    ┌──────────────────┐                     ││
+│                    │ Knowledge Bases  │◄────────────────────┤│
+│                    ├──────────────────┤                     ││
+│                    │ FCA Guidance     │                     ││
+│                    │ Pension Rules    │                     ││
+│                    │ Tax Regulations  │                     ││
+│                    │ Best Practices   │                     ││
+│                    └──────────────────┘                     ││
+│                                                              ││
+│  ┌───────────────────────────────────────────────────┐     ││
+│  │            ADMIN DASHBOARD (Phase 6)              │     ││
+│  ├───────────────────────────────────────────────────┤     ││
+│  │  Knowledge Base    │  Learning System  │ Users   │     ││
+│  │  • FCA Knowledge   │  • Memories       │ • Customers   ││
+│  │  • Pension KB      │  • Cases          │ • Consults    ││
+│  │                    │  • Rules          │               ││
+│  └───────────────────────────────────────────────────┘     ││
+│                               │                             ││
+│                               └─────────────────────────────┘│
 │                                                               │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -304,7 +315,7 @@ Every piece of guidance must satisfy FCA requirements.
 
 **Hybrid Compliance Validator:**
 
-The system uses a **hybrid validation approach** combining rule-based hard constraints with LLM-as-judge consensus for nuanced evaluation.
+The system uses a **hybrid validation approach** combining rule-based hard constraints with LLM-as-judge consensus for nuanced evaluation. All validation results, including detailed reasoning, issues found, and confidence scores, are stored and displayed in the admin interface for full transparency and audit capability.
 
 ```python
 class HybridComplianceValidator:
@@ -336,6 +347,8 @@ class HybridComplianceValidator:
                           reasoning: str) -> ValidationResult:
         """
         Two-stage validation: rules first, then LLM-as-judge.
+        Returns comprehensive ValidationResult with reasoning, issues, and flags.
+        All results are stored in consultation conversation JSONB for audit trails.
         """
         # STAGE 1: Rule-based hard constraints (must pass)
         rule_result = self.rule_validator.validate(guidance, customer_situation)
@@ -683,6 +696,311 @@ Like Agent Hospital, virtual time passes faster than real-time:
 4. **Formal Tone**: Instruction-tuned LLMs may be unnaturally formal
    - Mitigation: Fine-tuning on natural customer service dialogues, persona prompting
 
+## Admin Dashboard (Phase 6 Implementation)
+
+### Purpose
+
+The Admin Dashboard provides comprehensive visibility into all system data models, enabling compliance officers, system administrators, and analysts to:
+- Monitor knowledge bases (FCA and Pension guidance)
+- Inspect learning system components (Memories, Cases, Rules)
+- Analyze customer consultation patterns
+- Audit agent behavior and compliance
+
+### Data Models with Admin Interfaces
+
+**1. FCA Knowledge Base**
+- Stores FCA compliance knowledge for RAG retrieval
+- Admin interface: List/detail views with filtering by category, date, and text search
+- Vector embeddings visible (presence indicator)
+- Source tracking for audit trail
+
+**2. Pension Knowledge Base**
+- Domain-specific pension guidance knowledge
+- Admin interface: Category and subcategory filtering
+- Content search and date range filters
+- Vector embeddings for semantic retrieval
+
+**3. Memory Stream**
+- Agent's episodic memory (observations, reflections, plans)
+- Admin interface: Filter by memory type, importance level, timestamp
+- Sort by importance, recency, or last access
+- Color-coded importance indicators (high/medium/low)
+
+**4. Case Base**
+- Successful consultation cases for case-based reasoning
+- Admin interface: Filter by task type, view customer situations and guidance
+- Outcome tracking and visualization
+- Vector similarity search capability
+
+**5. Rules Base**
+- Learned guidance principles from reflection
+- Admin interface: Filter by domain and confidence level
+- Supporting evidence display
+- Confidence-based color coding (high/medium/low)
+
+**6. Customer Management**
+- Aggregated customer profiles with consultation statistics
+- Admin interface: View total consultations, compliance trends, satisfaction scores
+- Topic distribution analysis
+- Consultation history timeline
+
+### Admin Architecture
+
+```
+┌────────────────────────────────────────────────────────┐
+│                   ADMIN DASHBOARD                       │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│  Navigation (6 Sections):                              │
+│  1. Dashboard        - Overview, stats                 │
+│  2. Analytics        - Metrics, charts                 │
+│  3. Knowledge Base   - FCA & Pension Knowledge         │
+│  4. Learning System  - Memories, Cases, Rules          │
+│  5. User Management  - Customers, Consultations        │
+│  6. Settings         - System configuration            │
+│                                                         │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│  Common UI Patterns:                                   │
+│  • List pages: Filters + DataTable + Pagination       │
+│  • Detail pages: DetailCard + Metadata + Timeline     │
+│  • Reusable components: DataTable, FilterBar,         │
+│    DetailCard, MetadataView, VectorIndicator          │
+│                                                         │
+├────────────────────────────────────────────────────────┤
+│                                                         │
+│  API Layer (10 REST Endpoints):                        │
+│  • GET /api/admin/{model}        - List with filters  │
+│  • GET /api/admin/{model}/{id}   - Detail view        │
+│                                                         │
+│  Pagination: 20 items/page (max 100)                  │
+│  Filtering: Category, date range, text search         │
+│  Sorting: Configurable per model                      │
+│                                                         │
+└────────────────────────────────────────────────────────┘
+```
+
+### Implementation Statistics (Phase 6)
+
+**Backend (TDD Methodology):**
+- 10 new REST endpoints (read-only)
+- 12 Pydantic response schemas
+- 110 comprehensive pytest tests (100% pass rate)
+- Pagination, filtering, sorting, error handling
+- ~900 lines of production code
+
+**Frontend (Nuxt 3 + Vue 3):**
+- 5 reusable components (~1,233 lines)
+- 12 admin pages (6 models × 2 pages)
+- Grouped navigation structure
+- Mobile-responsive design
+- Loading/error/empty states
+- ~4,500 lines of production code
+
+**Total Deliverables:**
+- 23 new files created
+- 3 existing files modified
+- ~8,200 lines of code
+- 110 new tests (100% passing)
+
+### Phase 7: Validation Reasoning Display (November 2025) ✅
+
+**Status**: Complete
+
+**Purpose**: Add transparency to compliance validation by storing and displaying detailed LLM reasoning, issues found, and pass/fail status in the admin UI.
+
+**Implementation Approach**: Test-Driven Development (TDD) with parallel backend and frontend agents.
+
+**Backend Changes:**
+- Extended `ConversationTurn` schema with 4 new optional fields
+- Modified consultation router to store full validation results
+- Created 5 comprehensive backend tests (100% passing)
+- Files: `api/schemas.py`, `api/routers/consultations.py`, `tests/api/test_consultations.py`
+
+**Frontend Changes:**
+- Added expandable reasoning section to consultation detail page
+- Implemented toggle functionality with chevron icons
+- Color-coded status badges (PASSED/FAILED/Requires Review)
+- Severity badges for issues (critical/major/minor)
+- Pre-formatted reasoning text display
+- Created 21 E2E tests with manual test plan
+- Files: `pages/admin/consultations/[id].vue`, `tests/e2e/validation-reasoning-display.spec.ts`
+
+**Key Features:**
+- Collapsible/expandable UI (hidden by default)
+- Pass/fail status with confidence indicators
+- Structured issue list by severity
+- Full LLM reasoning preserved
+- Backward compatible with old data
+- Mobile-responsive design
+
+**Testing:**
+- 5 backend API tests (validation storage, serialization, retrieval)
+- 21 frontend E2E tests (display, toggle, backward compatibility)
+- Manual test plan with 25 test scenarios
+- Total: 26 new tests
+
+**Benefits:**
+- Full transparency into AI compliance decisions
+- Complete audit trail for regulatory compliance
+- Debugging support for validation improvements
+- Trust building through explainability
+
+**Validation Data Structure:**
+
+Backend stores comprehensive validation data in conversation JSONB:
+```python
+{
+    "role": "advisor",
+    "content": "...",
+    "timestamp": "...",
+    "compliance_score": 0.95,
+    "compliance_confidence": 0.95,
+    "compliance_reasoning": "The guidance provided stays within FCA boundaries...",
+    "compliance_issues": [
+        {
+            "category": "CLARITY",
+            "severity": "LOW",
+            "description": "Consider adding more detail about risk factors"
+        }
+    ],
+    "compliance_passed": true,
+    "requires_human_review": false
+}
+```
+
+Frontend displays in expandable UI with:
+- Clickable compliance score badge
+- Pass/fail status with color coding (green/red)
+- "Requires Review" orange badge for low-confidence cases
+- Issues list with severity badges (critical/major/minor)
+- Full LLM reasoning in pre-formatted text block
+- Graceful handling of old messages without reasoning
+
+### Phase 8: Jinja Template Migration (November 2025) ✅
+
+**Status**: Complete
+
+**Purpose**: Migrate all prompt strings from Python f-strings to Jinja2 templates for better maintainability, version control, and separation of concerns.
+
+**Implementation Approach**: Test-Driven Development (TDD) with parallel agent execution.
+
+**Migration Summary:**
+- **20 Jinja templates created** (19 planned + 1 bonus evaluation template)
+- **9 Python files migrated** to use `render_template()`
+- **60 tests passing** (40 unit + 20 regression)
+- **~200 lines of code removed** - replaced with clean template calls
+- **100% backward compatible** - templates produce identical output to originals
+
+**Template Organization:**
+```
+src/guidance_agent/templates/
+├── advisor/                  # 6 templates (guidance, reasoning, compliance)
+├── customer/                 # 3 templates (comprehension, response, outcome)
+│   └── generation/          # 4 templates (demographics, financial, pensions, goals)
+├── compliance/              # 1 template (validation)
+├── learning/                # 4 templates (reflection, principle ops, rule judgment)
+├── memory/                  # 1 template (importance rating)
+└── evaluation/              # 1 template (judge evaluation)
+```
+
+**Key Components:**
+- **Template Engine** (`src/guidance_agent/core/template_engine.py`)
+  - Jinja2 environment with custom filters
+  - Helper functions registered as filters
+  - `render()` for string templates, `render_messages()` for JSON templates
+
+- **Custom Filters** (5 total)
+  - `customer_profile` - Formats customer data
+  - `conversation` - Formats conversation history
+  - `cases` - Formats similar cases
+  - `rules` - Formats guidance rules
+  - `memories` - Formats memory nodes
+
+**Testing:**
+- 40 unit tests in `tests/templates/test_template_rendering.py`
+  - Template rendering with minimal and full data
+  - Conditional sections (conversation history, cases, rules)
+  - Custom filter functionality
+  - Edge cases (special characters, unicode, missing data)
+
+- 20 regression tests in `tests/regression/test_template_migration.py`
+  - Compares new template output to original f-strings
+  - Uses whitespace normalization for comparison
+  - Verifies 100% behavioral compatibility
+
+**Benefits:**
+- **Separation of concerns** - Prompts in templates, logic in Python
+- **Version control** - Easy to see prompt changes in git diffs
+- **Maintainability** - Non-developers can edit prompts safely
+- **Testability** - Templates tested independently with full coverage
+- **Reusability** - Filters available across all templates
+
+**Files Modified:**
+- 3 core files (pyproject.toml, template_engine.py, conftest.py)
+- 20 template files created
+- 9 Python files migrated
+- 4 test files created (40 unit + 20 regression tests)
+
+**Documentation:**
+- Complete migration plan: `specs/jinja-template-migration-plan.md`
+- Completion summary: `specs/JINJA_MIGRATION_COMPLETE.md`
+- Template header comments with variables and source references
+
+For complete details, see: [Jinja Migration Complete](JINJA_MIGRATION_COMPLETE.md)
+
+### Key Features
+
+**1. Read-Only Access**
+- Safe exploration without data modification risk
+- Prevents accidental corruption of learning system
+- Suitable for compliance audits and analysis
+
+**2. Comprehensive Filtering**
+- Category/subcategory filtering
+- Date range selection
+- Text search across content
+- Importance/confidence sliders
+- Memory type and task type filters
+
+**3. Vector Embedding Visibility**
+- Visual indicators show which items have embeddings
+- Critical for RAG system transparency
+- Helps diagnose retrieval issues
+
+**4. Aggregated Analytics**
+- Customer statistics (total, active, avg consultations)
+- Knowledge base stats (items, categories)
+- Learning system metrics (memory types, confidence levels)
+
+**5. Audit Trail Support**
+- Complete timestamp tracking (created, updated, accessed)
+- Metadata preservation (JSONB fields)
+- Citation tracking for reflections and rules
+- Export-ready data views
+
+### Future Enhancements (Out of Scope)
+
+- Semantic similarity search (find similar items by content)
+- Edit/delete capabilities (requires authorization system)
+- Bulk operations (multi-select, batch export)
+- Real-time updates (WebSocket/SSE)
+- Advanced analytics (trend analysis, usage statistics)
+
+### Security Considerations
+
+**Current Implementation:**
+- Admin authentication required (via existing auth system)
+- Read-only endpoints (no write operations)
+- Input validation on all query parameters
+- Rate limiting via existing API middleware
+
+**Future Requirements:**
+- Role-based access control (RBAC)
+- Audit logging of all admin actions
+- Row-level security for sensitive data
+- Data masking for PII in customer profiles
+
 ## Next Steps
 
 This architecture specification provides the foundation. See related specs:
@@ -691,3 +1009,4 @@ This architecture specification provides the foundation. See related specs:
 - `virtual-environment.md`: Training simulacrum design
 - `learning-system.md`: Case base and rules base evolution mechanisms
 - `implementation-plan.md`: Technical implementation roadmap
+- `PHASE6_ADMIN_DATA_MODELS.md`: Complete Phase 6 specification and implementation summary

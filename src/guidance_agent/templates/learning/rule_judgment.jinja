@@ -1,0 +1,32 @@
+{#
+  Rule value judgment prompt
+
+  This template judges whether a learned rule is valuable enough to store.
+
+  Source: learning/reflection.py:210-228 (original_judge_rule_value_prompt)
+
+  Required variables:
+  - rule_principle: String containing the rule principle to judge
+  - domain: String containing the domain this rule applies to
+
+  Returns: Structured text with Valuable and Score
+#}
+Judge whether this pension guidance rule is valuable enough to store.
+
+Rule: "{{ rule_principle }}"
+Domain: {{ domain }}
+
+A rule is valuable if it:
+1. Addresses a specific, non-obvious situation
+2. Provides concrete, actionable guidance
+3. Goes beyond common sense
+4. Could prevent real customer harm or confusion
+
+A rule is NOT valuable if it:
+1. States obvious common sense ("be polite", "be clear")
+2. Is too vague or generic
+3. Doesn't add to existing FCA guidance
+
+Format your response as:
+Valuable: [True/False]
+Score: [0.0-1.0]

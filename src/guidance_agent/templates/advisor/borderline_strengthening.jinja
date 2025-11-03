@@ -1,0 +1,43 @@
+{#
+  Borderline case strengthening prompt
+
+  Converts: advisor/agent.py:504-540 inline prompt
+  Original: tests/regression/original_prompts.py:original_handle_borderline_case_prompt
+
+  This prompt is used when guidance passes validation but with low confidence.
+  It asks the LLM to strengthen and clarify the guidance.
+
+  Required variables:
+  - guidance: String containing guidance that passed with borderline confidence
+  - validation: Validation result dict with confidence (float) and reasoning (string)
+
+  Optional variables:
+  - context: RetrievedContext object with fca_requirements
+
+  Note: The validation.confidence should be formatted with .2f precision
+#}
+The following pension guidance passed compliance checks but with borderline confidence ({{ "{:.2f}".format(validation.confidence) if validation.confidence is not string else validation.confidence }}).
+Please strengthen and clarify it while maintaining compliance.
+
+ORIGINAL GUIDANCE:
+{{ guidance }}
+
+{% if validation.reasoning is defined %}
+VALIDATION CONCERNS:
+{{ validation.reasoning }}
+{% endif %}
+
+{% if context is defined and context.fca_requirements is defined %}
+FCA REQUIREMENTS:
+{{ context.fca_requirements }}
+{% endif %}
+
+TASK:
+Strengthen the guidance by:
+1. Making language more precise and clear
+2. Being more explicit about guidance vs advice boundary
+3. Ensuring all risks are clearly stated
+4. Adding understanding verification
+5. Maintaining warmth and helpfulness
+
+STRENGTHENED GUIDANCE:

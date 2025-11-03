@@ -274,3 +274,265 @@ async def test_get_consultation_metrics(
     assert "avg_compliance_score" in data
     assert "customer_satisfaction" in data
     assert data["message_count"] == 10
+
+
+# ========================================
+# NEW TESTS: Validation Reasoning Display
+# ========================================
+
+
+@pytest.mark.asyncio
+async def test_validation_reasoning_stored_in_conversation(
+    client: AsyncClient, sample_consultation_id, mock_db_session
+):
+    """Test that validation reasoning is stored in conversation JSONB.
+
+    This test verifies that when an advisor provides guidance, the full
+    validation details (reasoning, issues, passed flag, review flag) are
+    stored in the conversation JSONB field for later retrieval.
+    """
+    # Mock active consultation
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.end_time = None
+    mock_consultation.conversation = []
+    mock_consultation.meta = {
+        "advisor_name": "Sarah",
+        "customer_age": 52,
+        "initial_query": "Test query",
+    }
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Stream guidance to trigger advisor response
+    response = await client.get(f"/api/consultations/{sample_consultation_id}/stream")
+
+    # Read all SSE events
+    content = b""
+    async for chunk in response.aiter_bytes():
+        content += chunk
+
+    # Verify advisor message was added to conversation
+    assert len(mock_consultation.conversation) == 1
+    advisor_message = mock_consultation.conversation[0]
+
+    # Verify all validation fields are present
+    assert advisor_message["role"] == "advisor"
+    assert "content" in advisor_message
+    assert "compliance_score" in advisor_message
+    assert "compliance_confidence" in advisor_message
+
+    # NEW: Verify validation reasoning fields
+    assert "compliance_reasoning" in advisor_message
+    assert "compliance_issues" in advisor_message
+    assert "compliance_passed" in advisor_message
+    assert "requires_human_review" in advisor_message
+
+    # Verify reasoning is a non-empty string
+    assert isinstance(advisor_message["compliance_reasoning"], str)
+    assert len(advisor_message["compliance_reasoning"]) > 0
+
+    # Verify issues is a list
+    assert isinstance(advisor_message["compliance_issues"], list)
+
+    # Verify flags are booleans
+    assert isinstance(advisor_message["compliance_passed"], bool)
+    assert isinstance(advisor_message["requires_human_review"], bool)
+
+
+@pytest.mark.asyncio
+async def test_validation_issues_serialization(
+    client: AsyncClient, sample_consultation_id, mock_db_session
+):
+    """Test that ValidationIssue objects are properly converted to dicts.
+
+    ValidationIssue dataclass objects must be serialized to JSON-compatible
+    dicts with category, severity, and description fields.
+    """
+    # Mock active consultation
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.end_time = None
+    mock_consultation.conversation = []
+    mock_consultation.meta = {
+        "advisor_name": "Sarah",
+        "customer_age": 52,
+        "initial_query": "Test query",
+    }
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Stream guidance
+    response = await client.get(f"/api/consultations/{sample_consultation_id}/stream")
+
+    async for chunk in response.aiter_bytes():
+        pass  # Consume stream
+
+    # Get advisor message
+    advisor_message = mock_consultation.conversation[0]
+    issues = advisor_message["compliance_issues"]
+
+    # Verify issues structure
+    assert isinstance(issues, list)
+
+    # If there are issues, verify their structure
+    if len(issues) > 0:
+        issue = issues[0]
+        assert isinstance(issue, dict)
+        assert "category" in issue
+        assert "severity" in issue
+        assert "description" in issue
+
+        # Verify field types
+        assert isinstance(issue["category"], str)
+        assert isinstance(issue["severity"], str)
+        assert isinstance(issue["description"], str)
+
+
+@pytest.mark.asyncio
+async def test_validation_passed_flag_stored(
+    client: AsyncClient, sample_consultation_id, mock_db_session
+):
+    """Test that validation passed/failed flag is stored correctly."""
+    # Mock active consultation
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.end_time = None
+    mock_consultation.conversation = []
+    mock_consultation.meta = {
+        "advisor_name": "Sarah",
+        "customer_age": 52,
+        "initial_query": "Test query",
+    }
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Stream guidance
+    response = await client.get(f"/api/consultations/{sample_consultation_id}/stream")
+
+    async for chunk in response.aiter_bytes():
+        pass
+
+    advisor_message = mock_consultation.conversation[0]
+
+    # Verify passed flag is boolean
+    assert "compliance_passed" in advisor_message
+    assert isinstance(advisor_message["compliance_passed"], bool)
+
+
+@pytest.mark.asyncio
+async def test_validation_review_flag_stored(
+    client: AsyncClient, sample_consultation_id, mock_db_session
+):
+    """Test that requires_human_review flag is stored correctly."""
+    # Mock active consultation
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.end_time = None
+    mock_consultation.conversation = []
+    mock_consultation.meta = {
+        "advisor_name": "Sarah",
+        "customer_age": 52,
+        "initial_query": "Test query",
+    }
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Stream guidance
+    response = await client.get(f"/api/consultations/{sample_consultation_id}/stream")
+
+    async for chunk in response.aiter_bytes():
+        pass
+
+    advisor_message = mock_consultation.conversation[0]
+
+    # Verify review flag is boolean
+    assert "requires_human_review" in advisor_message
+    assert isinstance(advisor_message["requires_human_review"], bool)
+
+
+@pytest.mark.asyncio
+async def test_consultation_detail_returns_validation_fields(
+    client: AsyncClient, sample_consultation_id, mock_db_session
+):
+    """Test that consultation detail API returns new validation fields.
+
+    The GET /consultations/{id} endpoint should return the new validation
+    fields in the conversation turns.
+    """
+    # Mock consultation with validation data
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.start_time = datetime.now()
+    mock_consultation.end_time = None
+    mock_consultation.outcome = None
+    mock_consultation.meta = {"advisor_name": "Sarah"}
+    mock_consultation.conversation = [
+        {
+            "role": "customer",
+            "content": "Test question",
+            "timestamp": datetime.now().isoformat(),
+        },
+        {
+            "role": "advisor",
+            "content": "Test guidance",
+            "timestamp": datetime.now().isoformat(),
+            "compliance_score": 0.95,
+            "compliance_confidence": 0.95,
+            "compliance_reasoning": "The guidance stays within FCA boundaries...",
+            "compliance_issues": [
+                {
+                    "category": "clarity",
+                    "severity": "low",
+                    "description": "Could be clearer about risks",
+                }
+            ],
+            "compliance_passed": True,
+            "requires_human_review": False,
+        },
+    ]
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Get consultation detail
+    response = await client.get(f"/api/consultations/{sample_consultation_id}")
+
+    assert response.status_code == 200
+    data = response.json()
+
+    # Verify conversation is returned
+    assert "conversation" in data
+    assert len(data["conversation"]) == 2
+
+    # Find advisor turn
+    advisor_turn = next(t for t in data["conversation"] if t["role"] == "advisor")
+
+    # Verify all validation fields are present in response
+    assert "compliance_score" in advisor_turn
+    assert "compliance_confidence" in advisor_turn
+    assert "compliance_reasoning" in advisor_turn
+    assert "compliance_issues" in advisor_turn
+    assert "compliance_passed" in advisor_turn
+    assert "requires_human_review" in advisor_turn
+
+    # Verify values
+    assert advisor_turn["compliance_reasoning"] == "The guidance stays within FCA boundaries..."
+    assert len(advisor_turn["compliance_issues"]) == 1
+    assert advisor_turn["compliance_issues"][0]["category"] == "clarity"
+    assert advisor_turn["compliance_passed"] is True
+    assert advisor_turn["requires_human_review"] is False

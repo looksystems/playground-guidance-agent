@@ -32,6 +32,7 @@ from guidance_agent.advisor.prompts import (
     build_guidance_prompt_with_reasoning,
     build_guidance_prompt_cached,
 )
+from guidance_agent.core.template_engine import render_template
 
 
 class AdvisorAgent:
@@ -458,36 +459,12 @@ class AdvisorAgent:
         Returns:
             Refined guidance
         """
-        # Build refinement prompt
-        issues_text = "\n".join(
-            [
-                f"- {issue.description} (Suggestion: {issue.suggestion})"
-                for issue in issues
-            ]
+        prompt = render_template(
+            "advisor/compliance_refinement.jinja",
+            guidance=guidance,
+            issues=issues,
+            customer=customer,
         )
-
-        prompt = f"""The following pension guidance failed FCA compliance validation.
-Please revise it to address the issues while maintaining the helpful intent.
-
-ORIGINAL GUIDANCE:
-{guidance}
-
-COMPLIANCE ISSUES:
-{issues_text}
-
-CUSTOMER CONTEXT:
-Age: {customer.demographics.age if customer.demographics else 'Unknown'}
-Financial Literacy: {customer.demographics.financial_literacy if customer.demographics else 'medium'}
-Question: {customer.presenting_question}
-
-TASK:
-Revise the guidance to:
-1. Address all compliance issues
-2. Maintain helpful and relevant content
-3. Use appropriate language for customer's literacy level
-4. Stay clearly within FCA guidance boundary
-
-REVISED GUIDANCE:"""
 
         # Get cache headers
         extra_headers = self._get_cache_headers()
@@ -517,27 +494,12 @@ REVISED GUIDANCE:"""
         Returns:
             Strengthened guidance
         """
-        prompt = f"""The following pension guidance passed compliance checks but with borderline confidence ({validation.confidence:.2f}).
-Please strengthen and clarify it while maintaining compliance.
-
-ORIGINAL GUIDANCE:
-{guidance}
-
-VALIDATION CONCERNS:
-{validation.reasoning}
-
-FCA REQUIREMENTS:
-{context.fca_requirements}
-
-TASK:
-Strengthen the guidance by:
-1. Making language more precise and clear
-2. Being more explicit about guidance vs advice boundary
-3. Ensuring all risks are clearly stated
-4. Adding understanding verification
-5. Maintaining warmth and helpfulness
-
-STRENGTHENED GUIDANCE:"""
+        prompt = render_template(
+            "advisor/borderline_strengthening.jinja",
+            guidance=guidance,
+            validation=validation,
+            context=context,
+        )
 
         # Get cache headers
         extra_headers = self._get_cache_headers()

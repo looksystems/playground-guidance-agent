@@ -15,6 +15,7 @@ from litellm import completion
 from guidance_agent.core.types import OutcomeResult, CustomerProfile
 from guidance_agent.retrieval.retriever import RulesBase
 from guidance_agent.retrieval.embeddings import embed
+from guidance_agent.core.template_engine import render_template
 
 
 def reflect_on_failure(
@@ -43,28 +44,12 @@ def reflect_on_failure(
         'Always check customer understanding when explaining complex concepts'
     """
     # Build reflection prompt
-    prompt = f"""Analyze this failed pension guidance consultation and extract a learning principle.
-
-Customer Profile:
-- Age: {customer_profile.demographics.age if customer_profile.demographics else 'Unknown'}
-- Financial Literacy: {customer_profile.demographics.financial_literacy if customer_profile.demographics else 'Unknown'}
-- Question: {customer_profile.presenting_question}
-
-Guidance Provided:
-{guidance_provided}
-
-What Went Wrong:
-- Customer Satisfaction: {outcome.customer_satisfaction}/10
-- Comprehension: {outcome.comprehension}/10
-- Issues: {', '.join(outcome.issues)}
-- Reasoning: {outcome.reasoning}
-
-Task: Extract ONE specific, actionable principle that would prevent this type of failure.
-
-Format your response as:
-Principle: [specific principle]
-
-Domain: [domain this applies to, e.g., communication, risk_disclosure, compliance, etc.]"""
+    prompt = render_template(
+        "learning/reflection.jinja",
+        customer_profile=customer_profile,
+        guidance_provided=guidance_provided,
+        outcome=outcome,
+    )
 
     # Call LLM
     model = os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
@@ -105,25 +90,10 @@ def validate_principle(principle: str) -> dict[str, Any]:
         >>> validation = validate_principle("Always give investment advice")
         >>> assert validation["valid"] is False  # Crosses advice boundary
     """
-    prompt = f"""Validate this pension guidance principle against FCA guidelines.
-
-Principle: "{principle}"
-
-Check:
-1. Does it stay within the guidance boundary (not crossing into regulated advice)?
-2. Does it align with FCA consumer protection principles?
-3. Is it specific and actionable?
-4. Would following it improve customer outcomes?
-
-If the principle suggests:
-- Recommending specific products → INVALID (advice, not guidance)
-- Making suitability assessments → INVALID (requires regulation)
-- Generic good practices → LOW CONFIDENCE (too vague)
-
-Format your response as:
-Valid: [True/False]
-Confidence: [0.0-1.0]
-Reason: [brief explanation]"""
+    prompt = render_template(
+        "learning/principle_validation.jinja",
+        principle=principle,
+    )
 
     model = os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
     response = completion(
@@ -163,17 +133,11 @@ def refine_principle(principle: str, domain: str) -> str:
         >>> print(refined)
         'When explaining pension risks, cover market risk, longevity risk...'
     """
-    prompt = f"""Refine this pension guidance principle to make it more specific and actionable.
-
-Original Principle: "{principle}"
-Domain: {domain}
-
-Make it:
-1. Specific (what exactly should be done?)
-2. Actionable (clear steps or criteria)
-3. Measurable (how do you know if you followed it?)
-
-Provide the refined principle (2-3 sentences maximum):"""
+    prompt = render_template(
+        "learning/principle_refinement.jinja",
+        principle=principle,
+        domain=domain,
+    )
 
     model = os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
     response = completion(
@@ -207,25 +171,11 @@ def judge_rule_value(rule_principle: str, domain: str) -> bool:
         >>> is_valuable = judge_rule_value("Always be polite", "general")
         >>> assert is_valuable is False  # Too generic
     """
-    prompt = f"""Judge whether this pension guidance rule is valuable enough to store.
-
-Rule: "{rule_principle}"
-Domain: {domain}
-
-A rule is valuable if it:
-1. Addresses a specific, non-obvious situation
-2. Provides concrete, actionable guidance
-3. Goes beyond common sense
-4. Could prevent real customer harm or confusion
-
-A rule is NOT valuable if it:
-1. States obvious common sense ("be polite", "be clear")
-2. Is too vague or generic
-3. Doesn't add to existing FCA guidance
-
-Format your response as:
-Valuable: [True/False]
-Score: [0.0-1.0]"""
+    prompt = render_template(
+        "learning/rule_judgment.jinja",
+        rule_principle=rule_principle,
+        domain=domain,
+    )
 
     model = os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
     response = completion(

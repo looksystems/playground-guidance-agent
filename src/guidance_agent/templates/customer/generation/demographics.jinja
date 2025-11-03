@@ -1,0 +1,32 @@
+{#
+  Customer demographics generation prompt
+
+  This template generates realistic UK customer demographics for pension guidance simulation.
+
+  Source: customer/generator.py:49-70 (original_generate_demographics_prompt)
+
+  Required variables:
+  - age: Integer customer age
+  - literacy: Optional string literacy level (low/medium/high)
+
+  Returns: JSON with gender, location, employment_status, occupation, financial_literacy
+#}
+Generate realistic UK customer demographics for pension guidance simulation.
+
+Age: {{ age }}
+Financial literacy: {{ literacy if literacy else 'varied' }}
+
+Generate JSON with:
+- gender: "M" | "F" | "Other"
+- location: UK city/region
+- employment_status: "employed" | "self-employed" | "unemployed" | "retired"
+- occupation: realistic for age (teacher, nurse, engineer, retail worker, etc.)
+- financial_literacy: "low" | "medium" | "high"
+
+Ensure:
+- Occupation realistic for age and location
+- Employment status realistic for age (retired if 65+)
+- Diverse occupations and backgrounds
+- Financial literacy appropriate to occupation
+
+Return only valid JSON, no explanation.

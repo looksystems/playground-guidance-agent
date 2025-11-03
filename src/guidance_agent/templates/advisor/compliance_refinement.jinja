@@ -1,0 +1,58 @@
+{#
+  Compliance refinement prompt for failed validation
+
+  Converts: advisor/agent.py:461-490 inline prompt
+  Original: tests/regression/original_prompts.py:original_refine_for_compliance_prompt
+
+  This prompt is used when guidance fails FCA compliance validation.
+  It asks the LLM to revise the guidance to address specific compliance issues.
+
+  Required variables:
+  - guidance: String containing the original guidance that failed validation
+  - validation: Validation result dict with issues list and reasoning
+
+  Note: Can also accept legacy format with separate issues and customer variables
+#}
+The following pension guidance failed FCA compliance validation.
+Please revise it to address the issues while maintaining the helpful intent.
+
+ORIGINAL GUIDANCE:
+{{ guidance }}
+
+COMPLIANCE ISSUES:
+{% if validation is defined and validation.issues is defined -%}
+{% for issue in validation.issues -%}
+- {{ issue if issue is string else issue.description }}{% if issue.suggestion is defined %} (Suggestion: {{ issue.suggestion }}){% endif %}
+{% endfor -%}
+{% elif issues is defined -%}
+{% for issue in issues -%}
+- {{ issue.description }} (Suggestion: {{ issue.suggestion }})
+{% endfor -%}
+{% else -%}
+(No specific issues identified)
+{% endif -%}
+
+{% if validation is defined and validation.reasoning is defined %}
+VALIDATION REASONING:
+{{ validation.reasoning }}
+{% endif %}
+
+{% if customer is defined %}
+CUSTOMER CONTEXT:
+Age: {{ customer.demographics.age if customer.demographics else 'Unknown' }}
+Financial Literacy: {{ customer.demographics.financial_literacy if customer.demographics else 'medium' }}
+Question: {{ customer.presenting_question }}
+{% endif %}
+
+TASK:
+Revise the guidance to:
+1. Address all compliance issues
+2. Maintain helpful and relevant content
+{% if customer is defined -%}
+3. Use appropriate language for customer's literacy level
+{% else -%}
+3. Use clear, accessible language
+{% endif -%}
+4. Stay clearly within FCA guidance boundary
+
+REVISED GUIDANCE:

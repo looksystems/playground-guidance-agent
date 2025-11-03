@@ -126,3 +126,7 @@ def mock_embedding_batch():
 def disable_phoenix_tracing(monkeypatch):
     """Disable Phoenix tracing for tests to avoid external dependencies."""
     monkeypatch.setenv("PHOENIX_AUTO_SETUP", "false")
+
+
+# Import template fixtures
+pytest_plugins = ["tests.fixtures.template_data"]

@@ -64,9 +64,24 @@ def mock_advisor_agent():
 
     # Mock _validate_and_record_async
     async def mock_validate(*args, **kwargs):
-        mock_result = MagicMock()
-        mock_result.confidence = 0.97
-        return mock_result
+        from guidance_agent.compliance.validator import ValidationResult, ValidationIssue, IssueType, IssueSeverity
+
+        # Return a full ValidationResult with reasoning and issues
+        return ValidationResult(
+            passed=True,
+            confidence=0.97,
+            issues=[
+                ValidationIssue(
+                    issue_type=IssueType.CLARITY,
+                    severity=IssueSeverity.LOW,
+                    description="Consider adding more detail about risk factors",
+                )
+            ],
+            requires_human_review=False,
+            reasoning="The guidance provided stays within FCA boundaries for guidance vs advice. "
+                      "It provides factual information without making specific recommendations. "
+                      "Risk disclosures are adequate. Clarity is generally good with minor room for improvement.",
+        )
 
     agent._validate_and_record_async = mock_validate
 

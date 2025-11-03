@@ -1,0 +1,21 @@
+{#
+  Observation importance rating prompt
+
+  This template rates the importance of an observation for the memory system.
+
+  Source: core/memory.py:389-397 (original_rate_importance_prompt)
+  Reference: specs/jinja-template-migration-plan.md:461-469 for exact structure
+
+  Required variables:
+  - observation: String containing the observation text to rate
+
+  Returns: Single number between 1 and 10
+#}
+On the scale of 1 to 10, where 1 is purely mundane
+(e.g., routine question about pension balance) and 10 is
+extremely important (e.g., customer about to make life-changing
+pension decision), rate the likely importance of the
+following observation.
+
+Observation: {{ observation }}
+Rating: <fill in>

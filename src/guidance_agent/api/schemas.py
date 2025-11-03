@@ -80,6 +80,10 @@ class ConversationTurn(BaseModel):
     timestamp: datetime
     compliance_score: Optional[float] = None
     compliance_confidence: Optional[float] = None
+    compliance_reasoning: Optional[str] = None
+    compliance_issues: Optional[List[dict]] = None
+    compliance_passed: Optional[bool] = None
+    requires_human_review: Optional[bool] = None
 
 
 class ConsultationDetailResponse(BaseModel):
@@ -266,6 +270,179 @@ class UpdateAdminSettingsRequest(BaseModel):
         if "@" not in v or "." not in v.split("@")[-1]:
             raise ValueError("Invalid email format")
         return v
+
+
+# --- Customer Management Schemas ---
+
+
+class AdminCustomerResponse(BaseModel):
+    """Admin customer response with aggregated data."""
+
+    customer_id: UUID
+    total_consultations: int
+    first_consultation: datetime
+    last_consultation: datetime
+    avg_compliance_score: float
+    avg_satisfaction: Optional[float]
+    topics: List[str]
+    customer_profile: dict
+    recent_consultations: Optional[List[ConsultationResponse]] = None  # Only in detail view
+
+
+class CustomerStats(BaseModel):
+    """Customer statistics for list view."""
+
+    total_customers: int
+    active_customers_30d: int
+    avg_consultations_per_customer: float
+
+
+class PaginatedCustomers(BaseModel):
+    """Paginated list of customers with stats."""
+
+    items: List[AdminCustomerResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+    stats: CustomerStats
+
+
+# --- Knowledge Base Schemas ---
+
+
+class FCAKnowledgeResponse(BaseModel):
+    """FCA Knowledge response."""
+
+    id: UUID
+    content: str
+    source: Optional[str] = None
+    category: str
+    has_embedding: bool
+    meta: dict
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedFCAKnowledge(BaseModel):
+    """Paginated list of FCA Knowledge."""
+
+    items: List[FCAKnowledgeResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class PensionKnowledgeResponse(BaseModel):
+    """Pension Knowledge response."""
+
+    id: UUID
+    content: str
+    category: str
+    subcategory: Optional[str] = None
+    has_embedding: bool
+    meta: dict
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedPensionKnowledge(BaseModel):
+    """Paginated list of Pension Knowledge."""
+
+    items: List[PensionKnowledgeResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+# --- Learning System Schemas ---
+
+
+class MemoryResponse(BaseModel):
+    """Memory response schema."""
+
+    id: UUID
+    description: str
+    timestamp: datetime
+    last_accessed: datetime
+    importance: float  # 0.0-1.0
+    memory_type: Literal["observation", "reflection", "plan"]
+    has_embedding: bool
+    meta: dict
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedMemories(BaseModel):
+    """Paginated memories response."""
+
+    items: List[MemoryResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class CaseResponse(BaseModel):
+    """Case response schema."""
+
+    id: UUID
+    task_type: str
+    customer_situation: str
+    guidance_provided: str
+    outcome: dict
+    has_embedding: bool
+    meta: dict
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedCases(BaseModel):
+    """Paginated cases response."""
+
+    items: List[CaseResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
+
+
+class RuleResponse(BaseModel):
+    """Rule response schema."""
+
+    id: UUID
+    principle: str
+    domain: str
+    confidence: float  # 0.0-1.0
+    supporting_evidence: list
+    evidence_count: int  # Length of supporting_evidence
+    has_embedding: bool
+    meta: dict
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedRules(BaseModel):
+    """Paginated rules response."""
+
+    items: List[RuleResponse]
+    total: int
+    page: int
+    page_size: int
+    pages: int
 
 
 # --- Health Check ---

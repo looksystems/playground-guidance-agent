@@ -39,8 +39,6 @@ env/
 *.swo
 *~
 
-frontend
-
 # Jupyter Notebooks
 .ipynb_checkpoints/
 

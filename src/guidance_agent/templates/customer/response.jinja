@@ -1,0 +1,53 @@
+{#
+  Customer response generation prompt
+
+  This template generates a realistic customer response in a pension guidance conversation
+  based on their comprehension level and literacy.
+
+  Source: customer/agent.py:146-179 (original_customer_respond_prompt)
+
+  Required variables:
+  - customer: CustomerProfile object with demographics and goals (or profile for legacy support)
+  - advisor_message: String containing the advisor's message (or guidance for compatibility)
+  - comprehension: Dict with understanding_level, confusion_points, customer_feeling
+
+  Returns: Natural conversational response from customer
+#}
+{% set profile = customer if customer is defined else profile -%}
+{% set advisor_message = advisor_message if advisor_message is defined else guidance -%}
+Generate realistic customer response in pension guidance conversation.
+
+Customer Profile:
+- Age: {{ profile.demographics.age if profile.demographics else 'unknown' }}
+- Financial literacy: {{ profile.demographics.financial_literacy if profile.demographics else 'medium' }}
+- Goals: {{ profile.goals }}
+
+Advisor just said:
+"{{ advisor_message }}"
+
+{% if comprehension is defined %}
+Comprehension Assessment:
+- Understanding: {{ comprehension['understanding_level'] }}
+- Confusion points: {{ comprehension['confusion_points'] }}
+- Customer feeling: {{ comprehension['customer_feeling'] }}
+{% endif %}
+
+Generate customer's response that:
+1. Reflects their understanding level
+   - If confused: Ask for clarification on specific points
+   - If understood: Acknowledge and move forward or ask about next steps
+   - If partially understood: Express understanding but ask about unclear parts
+
+2. Matches their literacy level ({{ profile.demographics.financial_literacy if profile.demographics else 'medium' }})
+   - Low: Simple language, may need concepts explained again
+   - Medium: Clear but not overly sophisticated
+   - High: Can engage with more complex explanations
+
+3. Is natural and conversational (1-3 sentences typically)
+
+4. Shows realistic customer behavior:
+   - If overwhelmed: Express anxiety or uncertainty
+   - If confident: Express satisfaction and readiness to proceed
+   - If uncertain: Ask for reassurance or examples
+
+Customer response:

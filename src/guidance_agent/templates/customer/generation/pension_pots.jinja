@@ -1,0 +1,44 @@
+{#
+  Pension pot generation prompt
+
+  This template generates realistic pension pot details for UK pension guidance simulation.
+
+  Source: customer/generator.py:203-231 (original_generate_pension_pot_prompt)
+
+  Required variables:
+  - demographics: CustomerDemographics object (or customer.demographics)
+  - pot_number: Integer current pot number
+  - total_pots: Integer total number of pots
+  - pot_type: String type of pension pot
+
+  Returns: JSON with pot_id, provider, pot_type, current_value, projected_value,
+           age_accessible, is_db_scheme, db_guaranteed_amount
+#}
+{% set demographics = customer.demographics if customer is defined and customer.demographics is defined else demographics -%}
+{% set pot_number = pot_number if pot_number is defined else 1 -%}
+{% set total_pots = total_pots if total_pots is defined else 1 -%}
+{% set pot_type = pot_type if pot_type is defined else 'defined_contribution' -%}
+Generate realistic pension pot details for UK pension guidance simulation.
+
+Customer: Age {{ demographics.age }}, {{ demographics.employment_status }}
+Pension pot {{ pot_number }} of {{ total_pots }}
+Type: {{ pot_type }}
+
+Generate JSON with:
+- pot_id: unique identifier (e.g., "pot{{ pot_number }}")
+- provider: realistic UK provider (NEST, Aviva, Royal London, Standard Life, etc.)
+- pot_type: "{{ pot_type }}"
+- current_value: realistic for age and career stage (£0-£200k typically)
+- projected_value: future value (typically 1.2-1.5x current for DC)
+- age_accessible: typically 55 or 58
+- is_db_scheme: {{ 'true' if pot_type == "defined_benefit" else 'false' }}
+- db_guaranteed_amount: annual amount if DB, else null
+
+Ensure:
+- Values consistent with age {{ demographics.age }}
+- DC pensions have current_value > 0
+- DB pensions have db_guaranteed_amount > 0
+- Realistic providers for pot age
+- Older pots may have legacy providers
+
+Return only valid JSON, no explanation.

@@ -1,0 +1,37 @@
+{#
+  Guidance generation prompt with pre-computed reasoning
+
+  Converts: advisor/prompts.py:364-403 (build_guidance_prompt_with_reasoning)
+  Original: tests/regression/original_prompts.py:original_build_guidance_prompt_with_reasoning
+
+  Required variables:
+  - customer: CustomerProfile object with demographics, presenting_question
+  - context: RetrievedContext object with fca_requirements
+  - reasoning: String containing chain-of-thought reasoning from prior step
+
+  Filters used:
+  - customer_profile: formats customer profile
+#}
+You have analyzed a customer's pension question. Now provide guidance based on your reasoning.
+
+CUSTOMER PROFILE:
+{{ customer | customer_profile }}
+
+CUSTOMER'S QUESTION:
+"{{ customer.presenting_question }}"
+
+YOUR REASONING:
+{{ reasoning }}
+
+FCA REQUIREMENTS:
+{{ context.fca_requirements if context.fca_requirements else "Stay within guidance boundary, avoid regulated advice" }}
+
+TASK:
+Based on your reasoning above, provide pension guidance that:
+1. Addresses the customer's question
+2. Uses appropriate language for their literacy level
+3. Presents balanced information
+4. Stays within FCA guidance boundary
+5. Checks customer understanding
+
+Your guidance:

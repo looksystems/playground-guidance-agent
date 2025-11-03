@@ -16,6 +16,7 @@ from guidance_agent.core.types import (
     FinancialSituation,
     PensionPot,
 )
+from guidance_agent.core.template_engine import render_template
 
 
 def generate_demographics(
@@ -49,25 +50,11 @@ def generate_demographics(
     # Generate using LLM for realism
     model = os.getenv("LITELLM_MODEL_CUSTOMER", "gpt-4o-mini")
 
-    prompt = f"""Generate realistic UK customer demographics for pension guidance simulation.
-
-Age: {age}
-Financial literacy: {literacy if literacy else 'varied'}
-
-Generate JSON with:
-- gender: "M" | "F" | "Other"
-- location: UK city/region
-- employment_status: "employed" | "self-employed" | "unemployed" | "retired"
-- occupation: realistic for age (teacher, nurse, engineer, retail worker, etc.)
-- financial_literacy: "low" | "medium" | "high"
-
-Ensure:
-- Occupation realistic for age and location
-- Employment status realistic for age (retired if 65+)
-- Diverse occupations and backgrounds
-- Financial literacy appropriate to occupation
-
-Return only valid JSON, no explanation."""
+    prompt = render_template(
+        "customer/generation/demographics.jinja",
+        age=age,
+        literacy=literacy
+    )
 
     try:
         response = completion(
@@ -112,30 +99,10 @@ def generate_financial_situation(demographics: CustomerDemographics) -> Financia
     """
     model = os.getenv("LITELLM_MODEL_CUSTOMER", "gpt-4o-mini")
 
-    prompt = f"""Generate realistic financial situation for UK pension guidance simulation.
-
-Customer: Age {demographics.age}, {demographics.employment_status}
-Location: {demographics.location}
-
-Based on UK statistics:
-- Age {demographics.age}
-- Employment: {demographics.employment_status}
-
-Generate JSON with:
-- annual_income: realistic for age/status (£20k-£80k typically)
-- total_assets: pension + savings (age-appropriate)
-- total_debt: realistic (mortgage, loans, credit cards)
-- dependents: number of dependents (age-appropriate)
-- risk_tolerance: "low" | "medium" | "high"
-
-Guidelines:
-- Younger: Lower income/assets, possibly higher debt
-- Mid-career: Moderate income/assets, family debt
-- Near retirement: Higher assets, lower debt
-- Retired: Lower income (pension), higher assets
-- Unemployed: Minimal income, rely on savings
-
-Return only valid JSON, no explanation."""
+    prompt = render_template(
+        "customer/generation/financial.jinja",
+        customer=demographics
+    )
 
     try:
         response = completion(
@@ -205,30 +172,13 @@ def generate_pension_pots(
         can_have_db = demographics.age > 45 or demographics.employment_status == "retired"
         pot_type = "defined_benefit" if can_have_db and random.random() < 0.15 else "defined_contribution"
 
-        prompt = f"""Generate realistic pension pot details for UK pension guidance simulation.
-
-Customer: Age {demographics.age}, {demographics.employment_status}
-Pension pot {i+1} of {num_pots}
-Type: {pot_type}
-
-Generate JSON with:
-- pot_id: unique identifier (e.g., "pot{i+1}")
-- provider: realistic UK provider (NEST, Aviva, Royal London, Standard Life, etc.)
-- pot_type: "{pot_type}"
-- current_value: realistic for age and career stage (£0-£200k typically)
-- projected_value: future value (typically 1.2-1.5x current for DC)
-- age_accessible: typically 55 or 58
-- is_db_scheme: {str(pot_type == "defined_benefit").lower()}
-- db_guaranteed_amount: annual amount if DB, else null
-
-Ensure:
-- Values consistent with age {demographics.age}
-- DC pensions have current_value > 0
-- DB pensions have db_guaranteed_amount > 0
-- Realistic providers for pot age
-- Older pots may have legacy providers
-
-Return only valid JSON, no explanation."""
+        prompt = render_template(
+            "customer/generation/pension_pots.jinja",
+            customer=demographics,
+            pot_number=i+1,
+            total_pots=num_pots,
+            pot_type=pot_type
+        )
 
         try:
             response = completion(
@@ -286,31 +236,17 @@ def generate_goals_and_inquiry(
     """
     model = os.getenv("LITELLM_MODEL_CUSTOMER", "gpt-4o-mini")
 
-    prompt = f"""Generate realistic customer goals and inquiry for pension guidance simulation.
+    # Create a temporary profile object with the required fields for the template
+    temp_profile = type('obj', (object,), {
+        'demographics': demographics,
+        'financial': financial,
+        'pensions': pots
+    })()
 
-Customer: Age {demographics.age}, {demographics.employment_status}
-Financial literacy: {demographics.financial_literacy}
-Number of pensions: {len(pots)}
-Total pension value: £{sum(p.current_value for p in pots):,.0f}
-
-Generate JSON with:
-- goals: customer's main objectives (1-2 sentences)
-- presenting_question: what they ask first (natural, conversational, 1-3 sentences)
-
-Ensure:
-- Question appropriate for literacy level ("{demographics.financial_literacy}")
-- Goals realistic for age {demographics.age}
-- Natural conversational tone
-- Not overly sophisticated (most aren't pension experts)
-- Reflects genuine confusion or need for guidance
-
-Common goals by age:
-- 20s-30s: "Understand basics", "Check I'm saving enough"
-- 40s: "Consolidate pensions", "Reduce fees", "Plan for retirement"
-- 50s-60s: "Maximize retirement income", "Access options", "Tax planning"
-- 65+: "Make pension last", "Understand drawdown"
-
-Return only valid JSON, no explanation."""
+    prompt = render_template(
+        "customer/generation/goals.jinja",
+        customer=temp_profile
+    )
 
     try:
         response = completion(

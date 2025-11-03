@@ -1,0 +1,24 @@
+{#
+  Principle refinement prompt
+
+  This template refines a learned principle to make it more specific and actionable.
+
+  Source: learning/reflection.py:166-176 (original_refine_principle_prompt)
+
+  Required variables:
+  - principle: String containing the principle to refine
+  - domain: String containing the domain this principle applies to
+
+  Returns: Refined principle (2-3 sentences maximum)
+#}
+Refine this pension guidance principle to make it more specific and actionable.
+
+Original Principle: "{{ principle }}"
+Domain: {{ domain }}
+
+Make it:
+1. Specific (what exactly should be done?)
+2. Actionable (clear steps or criteria)
+3. Measurable (how do you know if you followed it?)
+
+Provide the refined principle (2-3 sentences maximum):

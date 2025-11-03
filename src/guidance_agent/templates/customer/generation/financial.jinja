@@ -1,0 +1,38 @@
+{#
+  Financial situation generation prompt
+
+  This template generates realistic financial situation for UK pension guidance simulation
+  based on customer demographics.
+
+  Source: customer/generator.py:113-138 (original_generate_financial_situation_prompt)
+
+  Required variables:
+  - demographics: CustomerDemographics object (or customer.demographics)
+
+  Returns: JSON with annual_income, total_assets, total_debt, dependents, risk_tolerance
+#}
+{% set demographics = customer.demographics if customer is defined and customer.demographics is defined else demographics %}
+Generate realistic financial situation for UK pension guidance simulation.
+
+Customer: Age {{ demographics.age }}, {{ demographics.employment_status }}
+Location: {{ demographics.location }}
+
+Based on UK statistics:
+- Age {{ demographics.age }}
+- Employment: {{ demographics.employment_status }}
+
+Generate JSON with:
+- annual_income: realistic for age/status (£20k-£80k typically)
+- total_assets: pension + savings (age-appropriate)
+- total_debt: realistic (mortgage, loans, credit cards)
+- dependents: number of dependents (age-appropriate)
+- risk_tolerance: "low" | "medium" | "high"
+
+Guidelines:
+- Younger: Lower income/assets, possibly higher debt
+- Mid-career: Moderate income/assets, family debt
+- Near retirement: Higher assets, lower debt
+- Retired: Lower income (pension), higher assets
+- Unemployed: Minimal income, rely on savings
+
+Return only valid JSON, no explanation.

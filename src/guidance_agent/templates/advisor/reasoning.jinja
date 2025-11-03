@@ -1,0 +1,43 @@
+{#
+  Chain-of-thought reasoning prompt
+
+  Converts: advisor/prompts.py:319-361 (build_reasoning_prompt)
+  Original: tests/regression/original_prompts.py:original_build_reasoning_prompt
+
+  Required variables:
+  - customer: CustomerProfile object with demographics, presenting_question
+  - context: RetrievedContext object with cases, rules, fca_requirements
+
+  Filters used:
+  - customer_profile: formats customer profile
+  - cases: formats similar cases
+  - rules: formats guidance rules
+#}
+Before providing guidance, think through the situation step-by-step.
+
+CUSTOMER PROFILE:
+{{ customer | customer_profile }}
+
+CUSTOMER'S QUESTION:
+"{{ customer.presenting_question }}"
+
+RETRIEVED CONTEXT:
+Similar Cases:
+{{ context.cases | cases }}
+
+Learned Rules:
+{{ context.rules | rules }}
+
+FCA REQUIREMENTS:
+{{ context.fca_requirements if context.fca_requirements else "Stay within guidance boundary" }}
+
+TASK:
+Think through this step-by-step:
+1. What is the customer really asking?
+2. What are the key considerations for this situation?
+3. What similar cases or rules are relevant?
+4. What risks or important points must be covered?
+5. How should I adapt my language for their literacy level?
+6. What checks should I include to ensure understanding?
+
+Your reasoning:

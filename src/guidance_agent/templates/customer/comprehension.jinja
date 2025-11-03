@@ -1,0 +1,38 @@
+{#
+  Customer comprehension simulation prompt
+
+  This template simulates how well a customer understands pension guidance based on
+  their financial literacy level and the complexity of the guidance provided.
+
+  Source: customer/agent.py:78-101 (original_simulate_comprehension_prompt)
+
+  Required variables:
+  - customer: CustomerProfile object with demographics and goals (or profile for legacy support)
+  - guidance: String containing the guidance provided by advisor
+
+  Returns: JSON with understanding_level, confusion_points, customer_feeling
+#}
+{% set profile = customer if customer is defined else profile -%}
+Simulate customer comprehension of pension guidance.
+
+Customer Profile:
+- Age: {{ profile.demographics.age if profile.demographics else 'unknown' }}
+- Financial literacy: {{ profile.demographics.financial_literacy if profile.demographics else 'medium' }}
+- Goals: {{ profile.goals }}
+
+Guidance Provided:
+"{{ guidance }}"
+
+Assess comprehension based on:
+1. Customer's literacy level ({{ profile.demographics.financial_literacy if profile.demographics else 'medium' }})
+2. Complexity of guidance
+3. Use of technical language vs plain English
+4. Presence of analogies or examples
+5. Whether advisor checked understanding
+
+Determine:
+- understanding_level: "not_understood" | "partially_understood" | "fully_understood"
+- confusion_points: list of specific concepts that confused customer (empty if understood)
+- customer_feeling: "confident" | "uncertain" | "overwhelmed" | "satisfied" | "confused"
+
+Return JSON only, no explanation.

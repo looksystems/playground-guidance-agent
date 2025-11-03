@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 from litellm import completion
 
 from guidance_agent.core.types import MemoryType
+from guidance_agent.core.template_engine import render_template
 
 
 @dataclass
@@ -387,14 +388,10 @@ def rate_importance(observation: str) -> float:
         >>> print(f"Importance: {importance:.2f}")
         Importance: 0.20
     """
-    prompt = f"""On the scale of 1 to 10, where 1 is purely mundane
-(e.g., routine question about pension balance) and 10 is
-extremely important (e.g., customer about to make life-changing
-pension decision), rate the likely importance of the
-following observation.
-
-Observation: {observation}
-Rating: <fill in>"""
+    prompt = render_template(
+        "memory/importance_rating.jinja",
+        observation=observation,
+    )
 
     try:
         # Use LiteLLM for provider flexibility

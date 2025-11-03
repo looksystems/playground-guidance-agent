@@ -1,0 +1,67 @@
+{#
+  Consultation outcome simulation prompt
+
+  This template simulates the outcome of a pension guidance consultation by evaluating
+  the conversation and providing scores across multiple dimensions.
+
+  Source: customer/simulator.py:43-86 (original_simulate_outcome_prompt)
+
+  Required variables:
+  - customer: CustomerProfile object (or CustomerAgent with .profile attribute for legacy)
+  - conversation_history: List of conversation messages
+  - has_db_pension: Boolean indicating if customer has DB pension (optional, will be inferred)
+
+  Returns: JSON with satisfaction scores, compliance checks, and reasoning
+#}
+{% set profile = customer.profile if customer.profile is defined else customer -%}
+{% if has_db_pension is not defined -%}
+{% set has_db_pension = profile.pensions | selectattr('is_db_scheme') | list | length > 0 if profile.pensions else false -%}
+{% endif -%}
+Simulate the outcome of a pension guidance consultation.
+
+Customer Profile:
+- Age: {{ profile.demographics.age if profile.demographics else 'unknown' }}
+- Financial literacy: {{ profile.demographics.financial_literacy if profile.demographics else 'medium' }}
+- Goals: {{ profile.goals }}
+- Presenting question: {{ profile.presenting_question }}
+- Has DB pension: {{ has_db_pension }}
+
+Conversation:
+{% for msg in conversation_history -%}
+{{ msg['role'] }}: {{ msg['content'] }}
+{% endfor %}
+
+{% if customer.comprehension_level is defined %}
+Customer comprehension level throughout: {{ "{:.2f}".format(customer.comprehension_level) }}
+{% endif %}
+
+Evaluate the consultation and provide scores:
+
+1. customer_satisfaction (0-10): How satisfied was the customer with the guidance?
+   - Consider: Were questions answered? Was advisor helpful and clear?
+
+2. comprehension (0-10): How well did customer understand the guidance?
+   - Consider: Was language appropriate? Were concepts explained? Understanding checked?
+
+3. goal_alignment (0-10): How well did guidance align with customer's goals?
+   - Consider: Were stated goals addressed? Were underlying concerns resolved?
+
+4. risks_identified (true/false): Were relevant risks identified and explained?
+
+5. guidance_appropriate (true/false): Was guidance appropriate for customer's situation?
+
+6. fca_compliant (true/false): Did advisor stay within guidance boundary (not advice)?
+   - Guidance: General information, options, pros/cons
+   - Advice: Specific recommendations ("you should do X")
+
+7. understanding_checked (true/false): Did advisor check customer understanding?
+
+8. signposted_when_needed (true/false): Did advisor signpost to regulated advice when needed?
+
+9. has_db_pension (true/false): {{ has_db_pension }}
+
+10. db_warning_given (true/false): If DB pension present, was transfer warning given?
+
+11. reasoning: Brief explanation of outcome assessment (1-2 sentences)
+
+Return JSON only, no explanation.

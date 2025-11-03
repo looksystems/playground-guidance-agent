@@ -1,0 +1,31 @@
+{#
+  Principle validation prompt
+
+  This template validates a learned principle against FCA guidelines.
+
+  Source: learning/reflection.py:108-126 (original_validate_principle_prompt)
+
+  Required variables:
+  - principle: String containing the principle to validate
+
+  Returns: Structured text with Valid, Confidence, Reason
+#}
+Validate this pension guidance principle against FCA guidelines.
+
+Principle: "{{ principle }}"
+
+Check:
+1. Does it stay within the guidance boundary (not crossing into regulated advice)?
+2. Does it align with FCA consumer protection principles?
+3. Is it specific and actionable?
+4. Would following it improve customer outcomes?
+
+If the principle suggests:
+- Recommending specific products → INVALID (advice, not guidance)
+- Making suitability assessments → INVALID (requires regulation)
+- Generic good practices → LOW CONFIDENCE (too vague)
+
+Format your response as:
+Valid: [True/False]
+Confidence: [0.0-1.0]
+Reason: [brief explanation]

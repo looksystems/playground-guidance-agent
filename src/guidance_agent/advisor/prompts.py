@@ -13,6 +13,7 @@ from guidance_agent.core.types import (
     RetrievedContext,
 )
 from guidance_agent.core.memory import MemoryNode
+from guidance_agent.core.template_engine import render_template, get_template_engine
 
 
 def format_customer_profile(customer: CustomerProfile) -> str:
@@ -169,51 +170,13 @@ def build_guidance_prompt(
     Returns:
         Complete guidance generation prompt
     """
-    prompt = f"""You are {advisor.name}, a pension guidance specialist.
-
-{advisor.description}
-
-Your role is to provide FCA-compliant pension GUIDANCE (not advice). This means:
-- Present options without recommending specific choices
-- Use language like "you could consider" rather than "you should"
-- Explain pros and cons of different options
-- Ensure customer understanding throughout
-- Signpost to FCA-regulated advisors for complex decisions
-
-CUSTOMER PROFILE:
-{format_customer_profile(customer)}
-
-CONVERSATION HISTORY:
-{format_conversation(conversation_history)}
-
-RETRIEVED CONTEXT:
-
-Similar Past Cases:
-{format_cases(context.cases)}
-
-Learned Guidance Rules:
-{format_rules(context.rules)}
-
-Relevant Memories:
-{format_memories(context.memories)}
-
-FCA REQUIREMENTS:
-{context.fca_requirements if context.fca_requirements else "Stay within guidance boundary, avoid regulated advice"}
-
-CUSTOMER'S CURRENT QUESTION:
-"{customer.presenting_question}"
-
-TASK:
-Provide appropriate pension guidance that:
-1. Addresses the customer's specific question
-2. Uses language appropriate for their literacy level ({customer.demographics.financial_literacy if customer.demographics else 'medium'})
-3. Presents balanced information (pros and cons)
-4. Stays clearly within the FCA guidance boundary
-5. Checks customer understanding
-
-Your guidance:"""
-
-    return prompt
+    return render_template(
+        "advisor/guidance_main.jinja",
+        advisor=advisor,
+        customer=customer,
+        context=context,
+        conversation_history=conversation_history,
+    )
 
 
 def build_guidance_prompt_cached(
@@ -238,82 +201,13 @@ def build_guidance_prompt_cached(
     Returns:
         List of message dictionaries with cache control markers
     """
-    # Part 1: System prompt (static, always cached)
-    system_prompt = {
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": f"""You are {advisor.name}, a pension guidance specialist.
-
-{advisor.description}
-
-Your role is to provide FCA-compliant pension GUIDANCE (not advice). This means:
-- Present options without recommending specific choices
-- Use language like "you could consider" rather than "you should"
-- Explain pros and cons of different options
-- Ensure customer understanding throughout
-- Signpost to FCA-regulated advisors for complex decisions""",
-                "cache_control": {"type": "ephemeral"},
-            }
-        ],
-    }
-
-    # Part 2: FCA requirements and learned rules (static, always cached)
-    fca_context = {
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": f"""FCA Requirements and Guidelines:
-
-{context.fca_requirements if context.fca_requirements else "Stay within guidance boundary, avoid regulated advice"}
-
-Learned Guidance Rules:
-{format_rules(context.rules)}""",
-                "cache_control": {"type": "ephemeral"},
-            }
-        ],
-    }
-
-    # Part 3: Customer context and similar cases (semi-static, cached within conversation)
-    customer_context = {
-        "role": "system",
-        "content": [
-            {
-                "type": "text",
-                "text": f"""Customer Profile:
-{format_customer_profile(customer)}
-
-Similar Past Cases:
-{format_cases(context.cases)}
-
-Relevant Memories:
-{format_memories(context.memories)}""",
-                "cache_control": {"type": "ephemeral"},
-            }
-        ],
-    }
-
-    # Part 4: Conversation and current question (variable, not cached)
-    user_message = {
-        "role": "user",
-        "content": f"""Previous conversation:
-{format_conversation(conversation_history)}
-
-Customer's current question: "{customer.presenting_question}"
-
-Please provide appropriate pension guidance that:
-1. Addresses the customer's specific question
-2. Uses language appropriate for their literacy level ({customer.demographics.financial_literacy if customer.demographics else 'medium'})
-3. Presents balanced information (pros and cons)
-4. Stays clearly within the FCA guidance boundary
-5. Checks customer understanding
-
-Your guidance:""",
-    }
-
-    return [system_prompt, fca_context, customer_context, user_message]
+    return get_template_engine().render_messages(
+        "advisor/guidance_cached.jinja",
+        advisor=advisor,
+        customer=customer,
+        context=context,
+        conversation_history=conversation_history,
+    )
 
 
 def build_reasoning_prompt(
@@ -329,36 +223,11 @@ def build_reasoning_prompt(
     Returns:
         Reasoning prompt
     """
-    prompt = f"""Before providing guidance, think through the situation step-by-step.
-
-CUSTOMER PROFILE:
-{format_customer_profile(customer)}
-
-CUSTOMER'S QUESTION:
-"{customer.presenting_question}"
-
-RETRIEVED CONTEXT:
-Similar Cases:
-{format_cases(context.cases)}
-
-Learned Rules:
-{format_rules(context.rules)}
-
-FCA REQUIREMENTS:
-{context.fca_requirements if context.fca_requirements else "Stay within guidance boundary"}
-
-TASK:
-Think through this step-by-step:
-1. What is the customer really asking?
-2. What are the key considerations for this situation?
-3. What similar cases or rules are relevant?
-4. What risks or important points must be covered?
-5. How should I adapt my language for their literacy level?
-6. What checks should I include to ensure understanding?
-
-Your reasoning:"""
-
-    return prompt
+    return render_template(
+        "advisor/reasoning.jinja",
+        customer=customer,
+        context=context,
+    )
 
 
 def build_guidance_prompt_with_reasoning(
@@ -376,28 +245,9 @@ def build_guidance_prompt_with_reasoning(
     Returns:
         Guidance prompt with reasoning
     """
-    prompt = f"""You have analyzed a customer's pension question. Now provide guidance based on your reasoning.
-
-CUSTOMER PROFILE:
-{format_customer_profile(customer)}
-
-CUSTOMER'S QUESTION:
-"{customer.presenting_question}"
-
-YOUR REASONING:
-{reasoning}
-
-FCA REQUIREMENTS:
-{context.fca_requirements if context.fca_requirements else "Stay within guidance boundary, avoid regulated advice"}
-
-TASK:
-Based on your reasoning above, provide pension guidance that:
-1. Addresses the customer's question
-2. Uses appropriate language for their literacy level
-3. Presents balanced information
-4. Stays within FCA guidance boundary
-5. Checks customer understanding
-
-Your guidance:"""
-
-    return prompt
+    return render_template(
+        "advisor/guidance_with_reasoning.jinja",
+        customer=customer,
+        context=context,
+        reasoning=reasoning,
+    )

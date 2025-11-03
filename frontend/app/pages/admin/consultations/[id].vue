@@ -52,11 +52,13 @@
 
             <div>
               <div class="text-sm font-medium text-gray-600 mb-2">Compliance</div>
-              <UMeter
-                :value="(consultation?.compliance || 0) * 100"
-                :max="100"
-                color="success"
-              />
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  class="h-2 rounded-full transition-all"
+                  :class="(consultation?.compliance || 0) >= 0.8 ? 'bg-green-500' : (consultation?.compliance || 0) >= 0.6 ? 'bg-yellow-500' : 'bg-red-500'"
+                  :style="{ width: `${((consultation?.compliance || 0) * 100)}%` }"
+                ></div>
+              </div>
               <div class="text-sm mt-1">{{ ((consultation?.compliance || 0) * 100).toFixed(1) }}%</div>
             </div>
 
@@ -93,16 +95,78 @@
                 <span class="text-xs text-gray-600">{{ turn.timestamp }}</span>
               </div>
 
-              <p class="text-gray-900 mb-2">"{{ turn.content }}"</p>
+              <div class="prose prose-sm max-w-none text-gray-900 mb-2" v-html="renderMarkdown(turn.content)" />
 
               <div v-if="turn.complianceScore" class="flex items-center gap-2">
+                <!-- Compliance Badge - Clickable if reasoning is available -->
                 <UBadge
-                  :color="turn.complianceScore >= 0.95 ? 'success' : 'warning'"
+                  :data-testid="turn.compliance_reasoning ? 'compliance-badge' : undefined"
+                  :color="getComplianceColor(turn.complianceScore)"
                   variant="soft"
+                  :class="turn.compliance_reasoning ? 'cursor-pointer' : ''"
+                  @click="turn.compliance_reasoning ? toggleReasoning(index) : null"
                 >
                   {{ (turn.complianceScore * 100).toFixed(0) }}%
+                  <UIcon
+                    v-if="turn.compliance_reasoning"
+                    :name="expandedReasoning[index] ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+                    class="ml-1"
+                  />
                 </UBadge>
               </div>
+
+              <!-- Expandable Reasoning Section (NEW) -->
+              <UCard
+                v-if="turn.isAdvisor && turn.compliance_reasoning && expandedReasoning[index]"
+                class="mt-3 bg-gray-50"
+              >
+                <div class="space-y-3">
+                  <!-- Pass/Fail Status -->
+                  <div class="flex items-center gap-2">
+                    <UBadge
+                      v-if="turn.compliance_passed !== undefined"
+                      :color="turn.compliance_passed ? 'green' : 'red'"
+                      variant="solid"
+                    >
+                      {{ turn.compliance_passed ? 'PASSED' : 'FAILED' }}
+                    </UBadge>
+                    <UBadge
+                      v-if="turn.requires_human_review"
+                      color="orange"
+                      variant="solid"
+                    >
+                      Requires Review
+                    </UBadge>
+                  </div>
+
+                  <!-- Compliance Issues -->
+                  <div v-if="turn.compliance_issues && turn.compliance_issues.length > 0">
+                    <h4 class="font-semibold text-sm mb-2">Issues Found:</h4>
+                    <ul class="space-y-2">
+                      <li
+                        v-for="(issue, issueIndex) in turn.compliance_issues"
+                        :key="issueIndex"
+                        class="flex items-start gap-2"
+                      >
+                        <UBadge
+                          :color="getSeverityColor(issue.severity)"
+                          size="xs"
+                          variant="solid"
+                        >
+                          {{ issue.severity }}
+                        </UBadge>
+                        <span class="text-sm text-gray-700">{{ issue.description }}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Detailed Reasoning -->
+                  <div>
+                    <h4 class="font-semibold text-sm mb-2">Detailed Analysis:</h4>
+                    <pre class="text-xs whitespace-pre-wrap bg-white p-3 rounded border border-gray-200 text-gray-800 overflow-x-auto">{{ turn.compliance_reasoning }}</pre>
+                  </div>
+                </div>
+              </UCard>
             </div>
           </div>
         </UCard>
@@ -141,6 +205,8 @@
 </template>
 
 <script setup lang="ts">
+import { marked } from 'marked'
+
 definePageMeta({
   layout: 'admin'
 })
@@ -154,6 +220,31 @@ const { data: apiData, pending, error } = await useFetch(`/api/admin/consultatio
     'Authorization': 'Bearer admin-token'
   }
 })
+
+// Reactive state for expandable reasoning sections
+const expandedReasoning = ref<Record<number, boolean>>({})
+
+// Helper function to toggle reasoning section
+const toggleReasoning = (index: number) => {
+  expandedReasoning.value[index] = !expandedReasoning.value[index]
+}
+
+// Helper function to get compliance score color
+const getComplianceColor = (score: number) => {
+  if (score >= 0.85) return 'green'
+  if (score >= 0.7) return 'yellow'
+  return 'red'
+}
+
+// Helper function to get severity color
+const getSeverityColor = (severity: string) => {
+  switch (severity?.toLowerCase()) {
+    case 'critical': return 'red'
+    case 'major': return 'orange'
+    case 'minor': return 'yellow'
+    default: return 'gray'
+  }
+}
 
 // Transform API data to match the expected UI structure
 const consultation = computed(() => {
@@ -171,7 +262,12 @@ const consultation = computed(() => {
         minute: '2-digit',
         hour12: true
       }),
-      complianceScore: turn.compliance_score
+      complianceScore: turn.compliance_score,
+      // Add new reasoning-related fields
+      compliance_reasoning: turn.compliance_reasoning,
+      compliance_issues: turn.compliance_issues,
+      compliance_passed: turn.compliance_passed,
+      requires_human_review: turn.requires_human_review
     }))
 
   // Extract insights from metadata or use defaults
@@ -192,4 +288,6 @@ const consultation = computed(() => {
     insights
   }
 })
+
+const renderMarkdown = (text: string) => marked.parse(text)
 </script>

@@ -127,6 +127,10 @@ async def get_consultation(
             timestamp=datetime.fromisoformat(turn.get("timestamp", datetime.now(timezone.utc).isoformat())),
             compliance_score=turn.get("compliance_score"),
             compliance_confidence=turn.get("compliance_confidence"),
+            compliance_reasoning=turn.get("compliance_reasoning"),
+            compliance_issues=turn.get("compliance_issues"),
+            compliance_passed=turn.get("compliance_passed"),
+            requires_human_review=turn.get("requires_human_review"),
         )
         for turn in consultation.conversation
     ]
@@ -309,6 +313,17 @@ async def stream_guidance(
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "compliance_score": validation.confidence,
                 "compliance_confidence": validation.confidence,
+                "compliance_reasoning": validation.reasoning,
+                "compliance_issues": [
+                    {
+                        "category": issue.issue_type.value,
+                        "severity": issue.severity.value,
+                        "description": issue.description,
+                    }
+                    for issue in validation.issues
+                ],
+                "compliance_passed": validation.passed,
+                "requires_human_review": validation.requires_human_review,
             }
 
             consultation.conversation.append(advisor_message)
@@ -395,6 +410,10 @@ async def end_consultation(
             timestamp=datetime.fromisoformat(turn.get("timestamp", datetime.now(timezone.utc).isoformat())),
             compliance_score=turn.get("compliance_score"),
             compliance_confidence=turn.get("compliance_confidence"),
+            compliance_reasoning=turn.get("compliance_reasoning"),
+            compliance_issues=turn.get("compliance_issues"),
+            compliance_passed=turn.get("compliance_passed"),
+            requires_human_review=turn.get("requires_human_review"),
         )
         for turn in consultation.conversation
     ]
