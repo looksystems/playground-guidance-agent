@@ -366,6 +366,19 @@ async def get_all_metrics(
 
     avg_satisfaction = sum(satisfaction_scores) / len(satisfaction_scores) if satisfaction_scores else 0.0
 
+    # Calculate compliance rate (percentage of consultations that are compliant)
+    compliant_count = 0
+    all_compliance_scores = []
+    for c in consultations:
+        scores = c.meta.get("compliance_scores", [])
+        all_compliance_scores.extend(scores)
+        # Check if consultation is compliant (using outcome flag if available)
+        if c.outcome and c.outcome.get("fca_compliant"):
+            compliant_count += 1
+
+    avg_compliance_score = sum(all_compliance_scores) / len(all_compliance_scores) if all_compliance_scores else 0.0
+    compliance_rate = (compliant_count / total_consultations * 100) if total_consultations > 0 else 0.0
+
     return {
         "performance_metrics": {
             "avg_response_time": round(avg_response_time, 1),
@@ -376,6 +389,11 @@ async def get_all_metrics(
         "compliance_breakdown": compliance_breakdown,
         "top_topics": top_topics,
         "peak_hours": peak_hours,
+        "consultations": {
+            "total": total_consultations,
+            "avg_satisfaction": round(avg_satisfaction, 1),
+            "compliance_rate": round(compliance_rate, 1)
+        },
         "summary": {
             "total_consultations": total_consultations,
             "completed_consultations": completed_consultations,
@@ -1249,6 +1267,32 @@ async def list_memories(
     # Get paginated results
     memories = query.offset(skip).limit(page_size).all()
 
+    # Calculate type counts (across all memories, not just current page)
+    type_counts_query = (
+        db.query(Memory.memory_type, func.count(Memory.id))
+        .group_by(Memory.memory_type)
+    )
+
+    # Apply same filters for type counts
+    if memory_type:
+        type_counts_query = type_counts_query.filter(Memory.memory_type == memory_type)
+    if min_importance is not None:
+        type_counts_query = type_counts_query.filter(Memory.importance >= min_importance)
+    if max_importance is not None:
+        type_counts_query = type_counts_query.filter(Memory.importance <= max_importance)
+    if from_date:
+        from_datetime = datetime.combine(from_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        type_counts_query = type_counts_query.filter(Memory.timestamp >= from_datetime)
+    if to_date:
+        to_datetime = datetime.combine(to_date, datetime.max.time()).replace(tzinfo=timezone.utc)
+        type_counts_query = type_counts_query.filter(Memory.timestamp <= to_datetime)
+
+    type_counts_result = type_counts_query.all()
+    type_counts = {
+        str(mem_type.value if hasattr(mem_type, "value") else mem_type): count
+        for mem_type, count in type_counts_result
+    }
+
     # Convert to response models
     items = [
         schemas.MemoryResponse(
@@ -1271,6 +1315,7 @@ async def list_memories(
         page=page,
         page_size=page_size,
         pages=pages,
+        type_counts=type_counts,
     )
 
 
@@ -1359,6 +1404,33 @@ async def list_cases(
     # Get paginated results
     cases = query.offset(skip).limit(page_size).all()
 
+    # Calculate statistics (across all cases matching the filters, not just current page)
+    # Count distinct task types
+    task_types_count_query = db.query(func.count(distinct(Case.task_type)))
+    if task_type:
+        task_types_count_query = task_types_count_query.filter(Case.task_type == task_type)
+    if from_date:
+        from_datetime = datetime.combine(from_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        task_types_count_query = task_types_count_query.filter(Case.created_at >= from_datetime)
+    if to_date:
+        to_datetime = datetime.combine(to_date, datetime.max.time()).replace(tzinfo=timezone.utc)
+        task_types_count_query = task_types_count_query.filter(Case.created_at <= to_datetime)
+
+    task_types_count = task_types_count_query.scalar() or 0
+
+    # Count cases with outcomes
+    with_outcomes_query = db.query(func.count(Case.id)).filter(Case.outcome.isnot(None))
+    if task_type:
+        with_outcomes_query = with_outcomes_query.filter(Case.task_type == task_type)
+    if from_date:
+        from_datetime = datetime.combine(from_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        with_outcomes_query = with_outcomes_query.filter(Case.created_at >= from_datetime)
+    if to_date:
+        to_datetime = datetime.combine(to_date, datetime.max.time()).replace(tzinfo=timezone.utc)
+        with_outcomes_query = with_outcomes_query.filter(Case.created_at <= to_datetime)
+
+    with_outcomes_count = with_outcomes_query.scalar() or 0
+
     # Convert to response models
     items = [
         schemas.CaseResponse(
@@ -1380,6 +1452,8 @@ async def list_cases(
         page=page,
         page_size=page_size,
         pages=pages,
+        task_types_count=task_types_count,
+        with_outcomes_count=with_outcomes_count,
     )
 
 
@@ -1490,6 +1564,41 @@ async def list_rules(
     # Get paginated results
     rules = query.offset(skip).limit(page_size).all()
 
+    # Calculate statistics (across all rules matching the filters, not just current page)
+    # Count distinct domains
+    domains_count_query = db.query(func.count(distinct(Rule.domain)))
+    if domain:
+        domains_count_query = domains_count_query.filter(Rule.domain == domain)
+    if min_confidence is not None:
+        domains_count_query = domains_count_query.filter(Rule.confidence >= min_confidence)
+    if max_confidence is not None:
+        domains_count_query = domains_count_query.filter(Rule.confidence <= max_confidence)
+    if from_date:
+        from_datetime = datetime.combine(from_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        domains_count_query = domains_count_query.filter(Rule.created_at >= from_datetime)
+    if to_date:
+        to_datetime = datetime.combine(to_date, datetime.max.time()).replace(tzinfo=timezone.utc)
+        domains_count_query = domains_count_query.filter(Rule.created_at <= to_datetime)
+
+    domains_count = domains_count_query.scalar() or 0
+
+    # Count rules with high confidence (>= 0.8)
+    high_confidence_query = db.query(func.count(Rule.id)).filter(Rule.confidence >= 0.8)
+    if domain:
+        high_confidence_query = high_confidence_query.filter(Rule.domain == domain)
+    if min_confidence is not None:
+        high_confidence_query = high_confidence_query.filter(Rule.confidence >= min_confidence)
+    if max_confidence is not None:
+        high_confidence_query = high_confidence_query.filter(Rule.confidence <= max_confidence)
+    if from_date:
+        from_datetime = datetime.combine(from_date, datetime.min.time()).replace(tzinfo=timezone.utc)
+        high_confidence_query = high_confidence_query.filter(Rule.created_at >= from_datetime)
+    if to_date:
+        to_datetime = datetime.combine(to_date, datetime.max.time()).replace(tzinfo=timezone.utc)
+        high_confidence_query = high_confidence_query.filter(Rule.created_at <= to_datetime)
+
+    high_confidence_count = high_confidence_query.scalar() or 0
+
     # Convert to response models
     items = [
         schemas.RuleResponse(
@@ -1513,6 +1622,8 @@ async def list_rules(
         page=page,
         page_size=page_size,
         pages=pages,
+        domains_count=domains_count,
+        high_confidence_count=high_confidence_count,
     )
 
 

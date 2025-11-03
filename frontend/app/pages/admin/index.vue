@@ -17,10 +17,10 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Total Consultations</p>
-            <p class="mt-2 text-4xl font-bold">1,247</p>
+            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.total?.toLocaleString() || '0' }}</p>
             <div class="mt-2 flex items-center gap-1">
               <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-              <span class="text-sm font-medium text-green-600">+12%</span>
+              <span class="text-sm font-medium text-green-600">Last {{ metricsData?.summary?.period_days || 30 }} days</span>
             </div>
           </div>
           <div class="p-3 bg-primary-50 rounded-lg">
@@ -33,10 +33,10 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">FCA Compliance</p>
-            <p class="mt-2 text-4xl font-bold">96.4%</p>
+            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.compliance_rate?.toFixed(1) || '0' }}%</p>
             <div class="mt-2 flex items-center gap-1">
-              <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-              <span class="text-sm font-medium text-green-600">+1.2%</span>
+              <UIcon name="i-heroicons-shield-check-solid" class="w-4 h-4 text-green-600" />
+              <span class="text-sm font-medium text-green-600">Compliant rate</span>
             </div>
           </div>
           <div class="p-3 bg-green-50 rounded-lg">
@@ -49,7 +49,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-medium text-gray-600">Satisfaction</p>
-            <p class="mt-2 text-4xl font-bold">4.2/5.0</p>
+            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.avg_satisfaction?.toFixed(1) || '0' }}/10</p>
             <p class="mt-2 text-sm text-gray-600">Average rating</p>
           </div>
           <div class="p-3 bg-yellow-50 rounded-lg">
@@ -172,7 +172,24 @@ const apiData = ref<any>(null)
 const pending = ref(true)
 const error = ref<any>(null)
 
-// Fetch data on client-side mount
+// Reactive state for metrics
+const metricsData = ref<any>(null)
+
+// Fetch metrics data on client-side mount
+onMounted(async () => {
+  try {
+    const metricsResponse = await $fetch('/api/admin/metrics', {
+      headers: {
+        'Authorization': 'Bearer admin-token'
+      }
+    })
+    metricsData.value = metricsResponse
+  } catch (e) {
+    console.error('Failed to fetch metrics:', e)
+  }
+})
+
+// Fetch consultations data on client-side mount
 onMounted(async () => {
   try {
     pending.value = true

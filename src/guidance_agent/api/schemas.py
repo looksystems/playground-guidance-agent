@@ -389,6 +389,7 @@ class PaginatedMemories(BaseModel):
     page: int
     page_size: int
     pages: int
+    type_counts: dict = Field(default_factory=dict, description="Count of each memory type")
 
 
 class CaseResponse(BaseModel):
@@ -415,6 +416,8 @@ class PaginatedCases(BaseModel):
     page: int
     page_size: int
     pages: int
+    task_types_count: int = Field(default=0, description="Count of distinct task types")
+    with_outcomes_count: int = Field(default=0, description="Count of cases with outcomes")
 
 
 class RuleResponse(BaseModel):
@@ -443,6 +446,8 @@ class PaginatedRules(BaseModel):
     page: int
     page_size: int
     pages: int
+    domains_count: int = Field(default=0, description="Count of distinct domains")
+    high_confidence_count: int = Field(default=0, description="Count of rules with confidence >= 0.8")
 
 
 # --- Health Check ---

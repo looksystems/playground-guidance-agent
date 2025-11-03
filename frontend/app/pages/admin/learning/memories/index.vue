@@ -262,7 +262,7 @@
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {{ formatDate(item.last_accessed_at) }}
+                  {{ formatDate(item.last_accessed) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <UBadge

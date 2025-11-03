@@ -190,7 +190,7 @@
                   <div class="line-clamp-2">{{ item.guidance_provided }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                  {{ formatDate(item.timestamp) }}
+                  {{ formatDate(item.created_at) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <UBadge
