@@ -1,0 +1,94 @@
+version: '3.8'
+
+# Docker Compose configuration for E2E testing
+# This provides an isolated test environment with separate database
+
+services:
+  # PostgreSQL test database with pgvector
+  postgres-test:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_DB: guidance_agent_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Backend FastAPI service for testing
+  backend-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres:test_password@postgres-test:5432/guidance_agent_test
+
+      # Testing mode
+      TESTING: "true"
+      ENVIRONMENT: "test"
+
+      # LLM Configuration (use faster/cheaper models for testing)
+      LITELLM_MODEL_ADVISOR: ${LITELLM_MODEL_ADVISOR:-gpt-3.5-turbo}
+      LITELLM_MODEL_CUSTOMER: ${LITELLM_MODEL_CUSTOMER:-gpt-3.5-turbo}
+      LITELLM_MODEL_EMBEDDINGS: ${LITELLM_MODEL_EMBEDDINGS:-text-embedding-3-small}
+      EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-1536}
+
+      # API Keys
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+
+      # Disable Phoenix for tests to speed up
+      PHOENIX_COLLECTOR_ENDPOINT: ""
+
+      # Application Settings
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8001:8000"  # Different port for testing
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - test-network
+    restart: "no"  # Don't restart for tests
+
+  # Frontend for E2E testing (optional - can run locally)
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+      args:
+        - VITE_API_BASE_URL=http://backend-test:8000
+    environment:
+      VITE_API_BASE_URL: http://localhost:8001
+      VITE_APP_TITLE: "Pension Guidance Chat - Test"
+      VITE_ENVIRONMENT: test
+    ports:
+      - "5174:80"  # Different port for testing
+    depends_on:
+      backend-test:
+        condition: service_healthy
+    networks:
+      - test-network
+    restart: "no"
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  postgres_test_data:

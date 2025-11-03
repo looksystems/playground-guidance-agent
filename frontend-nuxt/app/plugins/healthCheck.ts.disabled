@@ -1,0 +1,136 @@
+import { defineNuxtPlugin } from '#app'
+import { useHealthCheck } from '#imports'
+
+export default defineNuxtPlugin(async (nuxtApp) => {
+  // Get configuration
+  const config = nuxtApp.$config?.public || {}
+  const healthCheckInterval = config.healthCheckInterval || 30000 // 30 seconds default
+  const healthCheckEnabled = config.healthCheckEnabled !== false // Enabled by default
+  const healthCheckRetryEnabled = config.healthCheckRetryEnabled || false
+  const healthCheckRetryMax = config.healthCheckRetryMax || 3
+  const isDev = config.dev || false
+
+  // Create health check instance
+  const healthCheck = useHealthCheck()
+
+  // Provide health check to the app
+  nuxtApp.provide('healthCheck', healthCheck)
+  nuxtApp.provide('backendHealth', healthCheck)
+
+  // Store in payload state for SSR
+  if (nuxtApp.payload?.state) {
+    nuxtApp.payload.state.healthCheck = healthCheck
+  }
+
+  let intervalId: ReturnType<typeof setInterval> | null = null
+  let retryCount = 0
+  let retryTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+  // Retry with exponential backoff
+  const scheduleRetry = async () => {
+    if (!healthCheckRetryEnabled || retryCount >= healthCheckRetryMax) {
+      return
+    }
+
+    const backoffDelay = Math.pow(2, retryCount) * 1000 // 2^n seconds
+    retryCount++
+
+    retryTimeoutId = setTimeout(async () => {
+      try {
+        await healthCheck.checkHealth()
+
+        if (healthCheck.isHealthy.value) {
+          // Success - reset retry count and start normal polling
+          retryCount = 0
+          if (healthCheckEnabled && !intervalId) {
+            startPeriodicChecks()
+          }
+        } else {
+          // Still unhealthy - retry again
+          await scheduleRetry()
+        }
+      } catch (err) {
+        // Error - retry again
+        await scheduleRetry()
+      }
+    }, backoffDelay)
+  }
+
+  // Start periodic health checks
+  const startPeriodicChecks = () => {
+    if (!healthCheckEnabled || intervalId) {
+      return
+    }
+
+    intervalId = setInterval(async () => {
+      try {
+        await healthCheck.checkHealth()
+
+        // If health check fails and retry is enabled, start retry logic
+        if (!healthCheck.isHealthy.value && healthCheckRetryEnabled) {
+          // Stop periodic checks and switch to retry mode
+          if (intervalId) {
+            clearInterval(intervalId)
+            intervalId = null
+          }
+          retryCount = 0
+          await scheduleRetry()
+        }
+      } catch (err) {
+        // Silently handle errors in periodic checks
+        if (isDev) {
+          console.error('Health check error:', err)
+        }
+      }
+    }, healthCheckInterval)
+  }
+
+  // Cleanup function
+  const cleanup = () => {
+    if (intervalId) {
+      clearInterval(intervalId)
+      intervalId = null
+    }
+    if (retryTimeoutId) {
+      clearTimeout(retryTimeoutId)
+      retryTimeoutId = null
+    }
+  }
+
+  // Register cleanup hook
+  nuxtApp.hook('app:unmounted', cleanup)
+
+  // Perform initial health check
+  try {
+    await healthCheck.checkHealth()
+
+    if (isDev) {
+      console.log('[Health Check] Initial check completed', {
+        isHealthy: healthCheck.isHealthy.value,
+        status: healthCheck.healthStatus.value
+      })
+    }
+
+    // Start periodic checks if enabled
+    if (healthCheckEnabled) {
+      startPeriodicChecks()
+    }
+
+    // If initial check failed and retry is enabled, start retry logic
+    if (!healthCheck.isHealthy.value && healthCheckRetryEnabled) {
+      retryCount = 0
+      await scheduleRetry()
+    }
+  } catch (err) {
+    // Don't throw - let app continue even if health check fails
+    if (isDev) {
+      console.error('[Health Check] Initial check failed:', err)
+    }
+
+    // Start retry logic if enabled
+    if (healthCheckRetryEnabled) {
+      retryCount = 0
+      await scheduleRetry()
+    }
+  }
+})
