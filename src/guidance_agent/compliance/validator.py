@@ -77,10 +77,13 @@ class ComplianceValidator:
         """Initialize compliance validator.
 
         Args:
-            model: LLM model to use for validation. Defaults to LITELLM_MODEL_ADVISOR.
+            model: LLM model to use for validation. Defaults to LITELLM_MODEL_COMPLIANCE.
             enable_prompt_caching: Whether to enable prompt caching for cost reduction.
         """
-        self.model = model or os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
+        self.model = model or os.getenv(
+            "LITELLM_MODEL_COMPLIANCE",
+            os.getenv("LITELLM_MODEL_ADVISOR", "gpt-4-turbo-preview")
+        )
         self.enable_prompt_caching = enable_prompt_caching
 
         # Detect provider and capabilities
