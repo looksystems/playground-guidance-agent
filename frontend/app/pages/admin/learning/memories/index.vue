@@ -7,7 +7,7 @@
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Memory Bank</h1>
-        <p class="text-gray-600 mt-2">Agent observations, reflections, and plans</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Agent observations, reflections, and plans</p>
       </div>
 
       <!-- Stats Cards -->
@@ -15,11 +15,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Total Memories</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Memories</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.total }}</p>
             </div>
-            <div class="p-3 bg-purple-50 rounded-lg">
-              <UIcon name="i-heroicons-light-bulb-solid" class="w-6 h-6 text-purple-600" />
+            <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <UIcon name="i-heroicons-light-bulb-solid" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </UCard>
@@ -27,11 +27,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Observations</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Observations</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.observations }}</p>
             </div>
-            <div class="p-3 bg-blue-50 rounded-lg">
-              <UIcon name="i-heroicons-eye-solid" class="w-6 h-6 text-blue-600" />
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <UIcon name="i-heroicons-eye-solid" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </UCard>
@@ -39,11 +39,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Reflections</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Reflections</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.reflections }}</p>
             </div>
-            <div class="p-3 bg-green-50 rounded-lg">
-              <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6 text-green-600" />
+            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </UCard>
@@ -51,11 +51,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Plans</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Plans</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.plans }}</p>
             </div>
-            <div class="p-3 bg-orange-50 rounded-lg">
-              <UIcon name="i-heroicons-map-solid" class="w-6 h-6 text-orange-600" />
+            <div class="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+              <UIcon name="i-heroicons-map-solid" class="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
         </UCard>
@@ -66,7 +66,7 @@
         <div class="flex flex-wrap gap-4">
           <!-- Memory Type Filter -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Memory Type</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Memory Type</label>
             <USelectMenu
               v-model="filters.memoryType"
               :options="memoryTypeOptions"
@@ -77,7 +77,7 @@
 
           <!-- Importance Range -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Min Importance: {{ filters.minImportance.toFixed(1) }}
             </label>
             <input
@@ -86,13 +86,13 @@
               min="0"
               max="1"
               step="0.1"
-              class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
               @change="applyFilters"
             />
           </div>
 
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Importance: {{ filters.maxImportance.toFixed(1) }}
             </label>
             <input
@@ -101,14 +101,14 @@
               min="0"
               max="1"
               step="0.1"
-              class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+              class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
               @change="applyFilters"
             />
           </div>
 
           <!-- Date Range -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
             <UInput
               v-model="filters.fromDate"
               type="date"
@@ -117,7 +117,7 @@
           </div>
 
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
             <UInput
               v-model="filters.toDate"
               type="date"
@@ -142,7 +142,7 @@
       <UCard>
         <div class="flex flex-wrap gap-4 items-center">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
             <USelectMenu
               v-model="sortBy"
               :options="sortOptions"
@@ -150,7 +150,7 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Order</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Order</label>
             <USelectMenu
               v-model="sortOrder"
               :options="['asc', 'desc']"
@@ -174,16 +174,16 @@
       <div v-if="pending" class="flex items-center justify-center py-12">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-          <p class="mt-4 text-gray-600">Loading memories...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading memories...</p>
         </div>
       </div>
 
       <!-- Empty State -->
       <UCard v-else-if="!items || items.length === 0">
         <div class="text-center py-12">
-          <UIcon name="i-heroicons-light-bulb" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Memories Found</h3>
-          <p class="text-gray-600">
+          <UIcon name="i-heroicons-light-bulb" class="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Memories Found</h3>
+          <p class="text-gray-600 dark:text-gray-400">
             {{ filters.memoryType || filters.minImportance > 0 ? 'Try adjusting your filters' : 'No memories have been recorded yet.' }}
           </p>
         </div>
@@ -194,45 +194,45 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Memories</h2>
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
               Showing {{ items.length }} of {{ pagination.total }} items
             </span>
           </div>
         </template>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   ID
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Description
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Type
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Importance
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Last Accessed
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Vector
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
                   {{ item.id.substring(0, 8) }}...
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
+                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-md">
                   <div class="line-clamp-2">{{ item.description }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -245,7 +245,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <div class="flex items-center gap-2">
-                    <div class="flex-1 w-20 bg-gray-200 rounded-full h-2">
+                    <div class="flex-1 w-20 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
                         class="h-2 rounded-full transition-all"
                         :class="getImportanceBarColor(item.importance)"
@@ -261,7 +261,7 @@
                     </UBadge>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(item.last_accessed) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -288,7 +288,7 @@
 
       <!-- Pagination -->
       <div v-if="items && items.length > 0" class="flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Page {{ pagination.page }} of {{ pagination.pages }}
         </div>
         <div class="flex gap-2">
@@ -314,8 +314,8 @@
     <template #fallback>
       <div class="flex items-center justify-center min-h-screen">
         <div class="text-center">
-          <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
-          <p class="text-gray-500">Loading memories...</p>
+          <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 animate-spin text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+          <p class="text-gray-500 dark:text-gray-400">Loading memories...</p>
         </div>
       </div>
     </template>

@@ -91,7 +91,10 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
             <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ item.description }}</p>
+              <div
+                class="prose prose-sm max-w-none dark:prose-invert text-gray-900 dark:text-gray-100"
+                v-html="renderMarkdown(item.description)"
+              />
             </div>
           </div>
 
@@ -229,6 +232,8 @@
 </template>
 
 <script setup lang="ts">
+import { marked } from 'marked'
+
 definePageMeta({
   layout: 'admin'
 })
@@ -244,6 +249,12 @@ const { data: apiData, pending, error, refresh } = await useFetch(`/api/admin/me
 })
 
 const item = computed(() => apiData.value)
+
+// Markdown rendering
+const renderMarkdown = (text: string) => {
+  if (!text) return ''
+  return marked.parse(text)
+}
 
 // Methods
 const getMemoryTypeColor = (type: string) => {
