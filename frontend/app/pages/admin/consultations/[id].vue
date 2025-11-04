@@ -11,23 +11,23 @@
     <div v-if="pending" class="flex items-center justify-center py-12">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
-        <p class="mt-4 text-gray-600">Loading consultation data...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading consultation data...</p>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-red-800 mb-2">Error Loading Consultation</h2>
-      <p class="text-red-600">{{ error.message || 'Failed to load consultation data. Please try again.' }}</p>
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">Error Loading Consultation</h2>
+      <p class="text-red-600 dark:text-red-400">{{ error.message || 'Failed to load consultation data. Please try again.' }}</p>
       <UButton class="mt-4" @click="refreshNuxtData()">
         Retry
       </UButton>
     </div>
 
     <!-- No Data State -->
-    <div v-else-if="!consultation" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-yellow-800 mb-2">No Data Available</h2>
-      <p class="text-yellow-600">This consultation does not have any data yet.</p>
+    <div v-else-if="!consultation" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-yellow-800 dark:text-yellow-400 mb-2">No Data Available</h2>
+      <p class="text-yellow-600 dark:text-yellow-400">This consultation does not have any data yet.</p>
     </div>
 
     <!-- Main Content -->
@@ -41,21 +41,21 @@
 
           <div class="space-y-4">
             <div>
-              <div class="text-sm font-medium text-gray-600">Customer</div>
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Customer</div>
               <div>{{ consultation?.customer }}</div>
             </div>
 
             <div>
-              <div class="text-sm font-medium text-gray-600">Age</div>
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Age</div>
               <div>{{ consultation?.age }}</div>
             </div>
 
             <div>
-              <div class="text-sm font-medium text-gray-600 mb-2">Compliance</div>
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Compliance</div>
               <div class="w-full bg-gray-200 rounded-full h-2">
                 <div
                   class="h-2 rounded-full transition-all"
-                  :class="(consultation?.compliance || 0) >= 0.8 ? 'bg-green-500' : (consultation?.compliance || 0) >= 0.6 ? 'bg-yellow-500' : 'bg-red-500'"
+                  :class="(consultation?.compliance || 0) >= 0.8 ? 'bg-green-50 dark:bg-green-900/200' : (consultation?.compliance || 0) >= 0.6 ? 'bg-yellow-50 dark:bg-yellow-900/200' : 'bg-red-50 dark:bg-red-900/200'"
                   :style="{ width: `${((consultation?.compliance || 0) * 100)}%` }"
                 ></div>
               </div>
@@ -92,10 +92,10 @@
                 <span class="text-sm font-semibold">
                   {{ turn.isAdvisor ? 'Advisor' : 'Customer' }} - Turn {{ turn.turn }}
                 </span>
-                <span class="text-xs text-gray-600">{{ turn.timestamp }}</span>
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{ turn.timestamp }}</span>
               </div>
 
-              <div class="prose prose-sm max-w-none text-gray-900 mb-2" v-html="renderMarkdown(turn.content)" />
+              <div class="prose prose-sm max-w-none text-gray-900 dark:text-gray-100 mb-2" v-html="renderMarkdown(turn.content)" />
 
               <div v-if="turn.complianceScore" class="flex items-center gap-2">
                 <!-- Compliance Badge - Clickable if reasoning is available -->
@@ -118,7 +118,7 @@
               <!-- Expandable Reasoning Section (NEW) -->
               <UCard
                 v-if="turn.isAdvisor && turn.compliance_reasoning && expandedReasoning[index]"
-                class="mt-3 bg-gray-50"
+                class="mt-3 bg-gray-50 dark:bg-gray-800"
               >
                 <div class="space-y-3">
                   <!-- Pass/Fail Status -->
@@ -155,7 +155,7 @@
                         >
                           {{ issue.severity }}
                         </UBadge>
-                        <span class="text-sm text-gray-700">{{ issue.description }}</span>
+                        <span class="text-sm text-gray-700 dark:text-gray-300">{{ issue.description }}</span>
                       </li>
                     </ul>
                   </div>
@@ -163,7 +163,7 @@
                   <!-- Detailed Reasoning -->
                   <div>
                     <h4 class="font-semibold text-sm mb-2">Detailed Analysis:</h4>
-                    <pre class="text-xs whitespace-pre-wrap bg-white p-3 rounded border border-gray-200 text-gray-800 overflow-x-auto">{{ turn.compliance_reasoning }}</pre>
+                    <pre class="text-xs whitespace-pre-wrap bg-white dark:bg-gray-900 p-3 rounded border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 overflow-x-auto">{{ turn.compliance_reasoning }}</pre>
                   </div>
                 </div>
               </UCard>
@@ -181,12 +181,12 @@
 
           <div class="space-y-4">
             <div>
-              <div class="text-sm font-medium text-gray-600 mb-2">Retrieved Cases</div>
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Retrieved Cases</div>
               <div class="text-sm">{{ consultation?.insights?.cases }} relevant past consultations</div>
             </div>
 
             <div>
-              <div class="text-sm font-medium text-gray-600 mb-2">Applied Rules</div>
+              <div class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Applied Rules</div>
               <ul class="space-y-1">
                 <li
                   v-for="rule in consultation?.insights?.rules"

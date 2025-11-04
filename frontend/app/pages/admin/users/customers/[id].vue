@@ -14,7 +14,7 @@
         <span class="text-gray-400">/</span>
         <UButton to="/admin/users/customers" variant="ghost" size="xs">Customers</UButton>
         <span class="text-gray-400">/</span>
-        <span class="text-sm text-gray-600">{{ truncateId(id) }}</span>
+        <span class="text-sm text-gray-600 dark:text-gray-400">{{ truncateId(id) }}</span>
       </div>
       <h1 class="text-3xl font-bold mt-4">Customer Profile</h1>
     </div>
@@ -23,14 +23,14 @@
     <div v-if="pending" class="flex items-center justify-center py-12">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p class="mt-4 text-gray-600">Loading customer data...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading customer data...</p>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-red-800 mb-2">Error Loading Customer</h2>
-      <p class="text-red-600">
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">Error Loading Customer</h2>
+      <p class="text-red-600 dark:text-red-400">
         {{ error.statusCode === 404 ? 'Customer not found.' : (error.message || 'Failed to load customer data. Please try again.') }}
       </p>
       <UButton class="mt-4" @click="refresh">
@@ -39,9 +39,9 @@
     </div>
 
     <!-- No Data State -->
-    <div v-else-if="!customer" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-yellow-800 mb-2">No Data Available</h2>
-      <p class="text-yellow-600">This customer does not have any data.</p>
+    <div v-else-if="!customer" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-yellow-800 dark:text-yellow-400 mb-2">No Data Available</h2>
+      <p class="text-yellow-600 dark:text-yellow-400">This customer does not have any data.</p>
     </div>
 
     <!-- Main Content -->
@@ -60,9 +60,9 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <!-- Customer ID with Copy -->
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Customer ID</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer ID</label>
             <div class="flex items-center gap-2">
-              <code class="flex-1 px-3 py-2 bg-gray-50 rounded font-mono text-sm">
+              <code class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded font-mono text-sm">
                 {{ customer.customer_id }}
               </code>
               <UButton
@@ -78,16 +78,16 @@
 
           <!-- Total Consultations -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Total Consultations</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Total Consultations</label>
             <div class="flex items-center gap-2">
               <UIcon name="i-heroicons-chat-bubble-left-right" class="w-5 h-5 text-blue-500" />
-              <span class="text-2xl font-bold text-gray-900">{{ customer.total_consultations }}</span>
+              <span class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ customer.total_consultations }}</span>
             </div>
           </div>
 
           <!-- Average Compliance Score -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Average Compliance Score</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Average Compliance Score</label>
             <div class="space-y-2">
               <div class="flex items-center gap-3">
                 <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
@@ -112,8 +112,8 @@
 
           <!-- First Consultation -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">First Consultation</label>
-            <div class="flex items-center gap-2 text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Consultation</label>
+            <div class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <UIcon name="i-heroicons-calendar" class="w-5 h-5 text-gray-400" />
               {{ formatDate(customer.first_consultation) }}
             </div>
@@ -121,8 +121,8 @@
 
           <!-- Last Consultation -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Last Consultation</label>
-            <div class="flex items-center gap-2 text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Consultation</label>
+            <div class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <UIcon name="i-heroicons-calendar" class="w-5 h-5 text-gray-400" />
               {{ formatDate(customer.last_consultation) }}
             </div>
@@ -130,7 +130,7 @@
 
           <!-- Average Satisfaction -->
           <div v-if="customer.avg_satisfaction !== null && customer.avg_satisfaction !== undefined" class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Average Satisfaction</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Average Satisfaction</label>
             <div class="space-y-2">
               <div class="flex items-center gap-3">
                 <div class="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden max-w-md">
@@ -139,7 +139,7 @@
                     :style="{ width: `${(customer.avg_satisfaction / 5) * 100}%` }"
                   ></div>
                 </div>
-                <span class="text-lg font-semibold text-gray-900">
+                <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {{ customer.avg_satisfaction.toFixed(1) }}/5
                 </span>
               </div>
@@ -156,12 +156,12 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div v-for="(value, key) in customer.customer_profile" :key="key">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {{ formatProfileKey(key) }}
             </label>
-            <div class="text-gray-900">
+            <div class="text-gray-900 dark:text-gray-100">
               <template v-if="typeof value === 'object' && value !== null">
-                <pre class="text-sm bg-gray-50 p-3 rounded overflow-x-auto">{{ JSON.stringify(value, null, 2) }}</pre>
+                <pre class="text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded overflow-x-auto">{{ JSON.stringify(value, null, 2) }}</pre>
               </template>
               <template v-else>
                 {{ value || '-' }}
@@ -195,7 +195,7 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Recent Consultations</h2>
-            <span class="text-sm text-gray-600">Last 5 consultations</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">Last 5 consultations</span>
           </div>
         </template>
 
@@ -203,13 +203,13 @@
           <div
             v-for="consultation in customer.recent_consultations"
             :key="consultation.consultation_id"
-            class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
+            class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-300 transition-colors"
           >
             <div class="flex items-start justify-between">
               <div class="flex-1 space-y-2">
                 <!-- Consultation Header -->
                 <div class="flex items-center gap-3">
-                  <code class="text-sm font-mono text-gray-600">
+                  <code class="text-sm font-mono text-gray-600 dark:text-gray-400">
                     {{ truncateId(consultation.consultation_id) }}
                   </code>
                   <UBadge
@@ -224,19 +224,19 @@
                 <!-- Topic -->
                 <div v-if="consultation.topic" class="flex items-center gap-2">
                   <UIcon name="i-heroicons-tag" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700">{{ consultation.topic }}</span>
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ consultation.topic }}</span>
                 </div>
 
                 <!-- Date -->
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-600">{{ formatDateTime(consultation.created_at) }}</span>
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(consultation.created_at) }}</span>
                 </div>
 
                 <!-- Compliance Score -->
                 <div v-if="consultation.compliance_score !== null && consultation.compliance_score !== undefined">
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-gray-700">Compliance:</span>
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Compliance:</span>
                     <div class="flex-1 max-w-[150px] h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
                         class="h-full rounded-full"
@@ -273,8 +273,8 @@
       <UCard v-else-if="customer.total_consultations === 0">
         <div class="text-center py-12">
           <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Consultations Yet</h3>
-          <p class="text-gray-600">This customer hasn't started any consultations.</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Consultations Yet</h3>
+          <p class="text-gray-600 dark:text-gray-400">This customer hasn't started any consultations.</p>
         </div>
       </UCard>
 
@@ -297,10 +297,10 @@
                 :class="getComplianceColorClass(consultation.compliance_score || 0)"
                 :style="{ height: `${(consultation.compliance_score || 0) * 100}%` }"
               ></div>
-              <span class="text-xs text-gray-600">{{ formatShortDate(consultation.created_at) }}</span>
+              <span class="text-xs text-gray-600 dark:text-gray-400">{{ formatShortDate(consultation.created_at) }}</span>
             </div>
           </div>
-          <div class="text-sm text-gray-600 text-center">
+          <div class="text-sm text-gray-600 dark:text-gray-400 text-center">
             Compliance scores over time (most recent consultations)
           </div>
         </div>
@@ -314,27 +314,27 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Customer Since</label>
-            <div class="text-2xl font-bold text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Customer Since</label>
+            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {{ getDaysSince(customer.first_consultation) }} days
             </div>
-            <p class="text-sm text-gray-600 mt-1">{{ formatDate(customer.first_consultation) }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ formatDate(customer.first_consultation) }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Days Since Last Visit</label>
-            <div class="text-2xl font-bold text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Days Since Last Visit</label>
+            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {{ getDaysSince(customer.last_consultation) }} days
             </div>
-            <p class="text-sm text-gray-600 mt-1">{{ formatDate(customer.last_consultation) }}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ formatDate(customer.last_consultation) }}</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Topic Diversity</label>
-            <div class="text-2xl font-bold text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Topic Diversity</label>
+            <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {{ customer.topics?.length || 0 }}
             </div>
-            <p class="text-sm text-gray-600 mt-1">Different topics discussed</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Different topics discussed</p>
           </div>
         </div>
       </UCard>

@@ -3,15 +3,15 @@
     <!-- Collapsible Header -->
     <div
       v-if="collapsible"
-      class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-t-lg cursor-pointer hover:bg-gray-100 transition-colors"
+      class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-t-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
       @click="toggleExpanded"
     >
       <div class="flex items-center gap-2">
         <UIcon
           :name="isExpanded ? 'i-heroicons-chevron-down' : 'i-heroicons-chevron-right'"
-          class="w-5 h-5 text-gray-600"
+          class="w-5 h-5 text-gray-600 dark:text-gray-400"
         />
-        <h4 class="text-sm font-semibold text-gray-900">
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
           {{ title }}
         </h4>
         <UBadge
@@ -44,7 +44,7 @@
       <!-- Empty State -->
       <div
         v-if="isEmpty"
-        class="flex items-center justify-center p-8 text-gray-500 text-sm bg-gray-50 border border-gray-200"
+        class="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
         :class="{ 'rounded-lg': !collapsible, 'rounded-b-lg': collapsible }"
       >
         <UIcon name="i-heroicons-document-text" class="w-5 h-5 mr-2" />
@@ -57,7 +57,7 @@
         class="relative"
       >
         <pre
-          class="bg-gray-900 text-gray-100 p-4 overflow-x-auto text-sm leading-relaxed border border-gray-700"
+          class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 overflow-x-auto text-sm leading-relaxed border border-gray-200 dark:border-gray-700"
           :class="{ 'rounded-lg': !collapsible, 'rounded-b-lg': collapsible }"
         ><code v-html="highlightedJSON"></code></pre>
 
@@ -152,8 +152,10 @@ const formattedJSON = computed(() => {
 
 /**
  * Syntax highlighted JSON
- * Simple syntax highlighting using regex replacements
+ * Simple syntax highlighting using regex replacements with dark mode support
  */
+const colorMode = useColorMode()
+
 const highlightedJSON = computed(() => {
   if (isEmpty.value) return ''
 
@@ -164,18 +166,30 @@ const highlightedJSON = computed(() => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-  // Highlight different JSON elements
+  const isDark = colorMode.value === 'dark'
+
+  // Highlight different JSON elements with adaptive colors
   json = json
     // String values (but not keys)
-    .replace(/: ("(?:[^"\\]|\\.)*")/g, ': <span class="text-green-400">$1</span>')
+    .replace(/: ("(?:[^"\\]|\\.)*")/g, isDark
+      ? ': <span class="text-green-400">$1</span>'
+      : ': <span class="text-green-700">$1</span>')
     // Keys
-    .replace(/("(?:[^"\\]|\\.)*"):/g, '<span class="text-blue-400">$1</span>:')
+    .replace(/("(?:[^"\\]|\\.)*"):/g, isDark
+      ? '<span class="text-blue-400">$1</span>:'
+      : '<span class="text-blue-700">$1</span>:')
     // Numbers
-    .replace(/: (-?\d+\.?\d*)/g, ': <span class="text-yellow-400">$1</span>')
+    .replace(/: (-?\d+\.?\d*)/g, isDark
+      ? ': <span class="text-yellow-400">$1</span>'
+      : ': <span class="text-orange-600">$1</span>')
     // Booleans
-    .replace(/: (true|false)/g, ': <span class="text-purple-400">$1</span>')
+    .replace(/: (true|false)/g, isDark
+      ? ': <span class="text-purple-400">$1</span>'
+      : ': <span class="text-purple-700">$1</span>')
     // Null
-    .replace(/: (null)/g, ': <span class="text-red-400">$1</span>')
+    .replace(/: (null)/g, isDark
+      ? ': <span class="text-red-400">$1</span>'
+      : ': <span class="text-red-700">$1</span>')
 
   return json
 })
@@ -238,17 +252,17 @@ watch(() => props.data, () => {
 }
 
 .metadata-content pre::-webkit-scrollbar-track {
-  background: #1f2937;
+  @apply bg-gray-200 dark:bg-gray-800;
   border-radius: 4px;
 }
 
 .metadata-content pre::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  @apply bg-gray-400 dark:bg-gray-600;
   border-radius: 4px;
 }
 
 .metadata-content pre::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  @apply bg-gray-500 dark:bg-gray-500;
 }
 
 /* Responsive font sizing */

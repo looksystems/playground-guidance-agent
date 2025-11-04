@@ -8,23 +8,23 @@
     <!-- Empty State -->
     <div
       v-else-if="!data || data.length === 0"
-      class="flex flex-col items-center justify-center p-12 text-center border border-gray-200 rounded-lg"
+      class="flex flex-col items-center justify-center p-12 text-center border border-gray-200 dark:border-gray-700 rounded-lg"
     >
-      <UIcon name="i-heroicons-inbox" class="w-16 h-16 text-gray-400 mb-4" />
-      <p class="text-gray-600">{{ emptyMessage || 'No data available' }}</p>
+      <UIcon name="i-heroicons-inbox" class="w-16 h-16 text-gray-400 dark:text-gray-500 mb-4" />
+      <p class="text-gray-600 dark:text-gray-400">{{ emptyMessage || 'No data available' }}</p>
     </div>
 
     <!-- Data Table -->
-    <div v-else class="overflow-x-auto border border-gray-200 rounded-lg">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+    <div v-else class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th
               v-for="column in columns"
               :key="column.key"
               scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              :class="{ 'cursor-pointer hover:bg-gray-100 select-none': column.sortable }"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+              :class="{ 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 select-none': column.sortable }"
               @click="column.sortable ? toggleSort(column.key) : null"
             >
               <div class="flex items-center gap-2">
@@ -33,22 +33,22 @@
                   v-if="column.sortable"
                   :name="getSortIcon(column.key)"
                   class="w-4 h-4"
-                  :class="sortKey === column.key ? 'text-primary-600' : 'text-gray-400'"
+                  :class="sortKey === column.key ? 'text-primary-600 dark:text-primary-400' : 'text-gray-400 dark:text-gray-500'"
                 />
               </div>
             </th>
           </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
           <tr
             v-for="(row, index) in sortedData"
             :key="index"
-            class="hover:bg-gray-50 transition-colors duration-150"
+            class="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150"
           >
             <td
               v-for="column in columns"
               :key="column.key"
-              class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+              class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100"
             >
               <span v-if="column.formatter">
                 {{ column.formatter(row[column.key]) }}
@@ -67,7 +67,7 @@
       v-if="!loading && data && data.length > 0 && pagination"
       class="flex items-center justify-between mt-4"
     >
-      <div class="text-sm text-gray-700">
+      <div class="text-sm text-gray-700 dark:text-gray-300">
         Showing
         <span class="font-medium">{{ startIndex + 1 }}</span>
         to
@@ -86,7 +86,7 @@
           @click="previousPage"
           aria-label="Previous page"
         />
-        <span class="text-sm text-gray-700">
+        <span class="text-sm text-gray-700 dark:text-gray-300">
           Page {{ currentPage }} of {{ totalPages }}
         </span>
         <UButton

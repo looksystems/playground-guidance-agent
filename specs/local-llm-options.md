@@ -498,11 +498,11 @@ Start with 32B, evaluate quality vs your needs, then adjust up (72B) or down (14
 **Models Selected:**
 
 1. **Advisor Agent (Customer-facing guidance)**
-   - Model: `mlx-community/Qwen2.5-32B-Instruct-4bit`
+   - Model: `mlx-community/Qwen3-30B-A3B-4bit` (MoE)
    - Memory: ~20GB
-   - Performance: 15-18 tokens/sec (MLX optimized)
+   - Performance: 87-190 tokens/sec (MLX optimized, 5-10x faster than Qwen 2.5)
    - Purpose: High-quality FCA-compliant pension guidance
-   - Rationale: Best balance of quality/speed/memory for complex reasoning
+   - Rationale: MoE architecture provides dramatic speed improvement with equal/better quality than dense 32B models
 
 2. **Customer Agent (Training simulation)**
    - Model: `mlx-community/Llama-3.2-3B-Instruct-4bit`
@@ -512,37 +512,43 @@ Start with 32B, evaluate quality vs your needs, then adjust up (72B) or down (14
    - Rationale: Fast, lightweight, more than sufficient for simple conversational task
 
 3. **Embeddings (Retrieval system)**
-   - Model: `nomicai-modernbert-embed-base-8bit`
-   - Memory: ~89MB
+   - Model: `nomic-ai/nomic-embed-text-v1.5-GGUF` (Q8_0 quantization)
+   - Memory: ~275MB
    - Dimensions: 768
    - Purpose: Generate embeddings for case retrieval and similarity search
-   - Rationale: Latest ModernBERT architecture, better than original nomic-embed
+   - Rationale: Most popular open-source embedder (35M+ downloads), outperforms OpenAI on MTEB benchmark, proven reliability for English retrieval tasks
+   - Note: Q8_0 quantization chosen for maximum embedding precision (critical for retrieval accuracy), minimal memory footprint makes higher quantization practical
 
 4. **Compliance Validator**
-   - Model: `mlx-community/Qwen2.5-32B-Instruct-4bit` (same as Advisor)
+   - Model: `mlx-community/Qwen3-30B-A3B-4bit` (same as Advisor)
    - Memory: Shared with Advisor (~20GB)
+   - Performance: 87-190 tokens/sec (MoE optimized)
    - Purpose: FCA compliance validation with LLM-as-judge
-   - Rationale: Set to local for development/testing; **for production, strongly recommend cloud model** (gpt-4o or claude-sonnet-4.5) due to regulatory liability
+   - Rationale: Set to local Qwen 3 MoE for development/testing; **for production, STRONGLY RECOMMEND cloud model** (gpt-4o or claude-sonnet-4.5) due to regulatory liability and MoE consistency concerns
    - Note: Separate `LITELLM_MODEL_COMPLIANCE` env var allows easy switching to cloud model
 
 **Total Local Memory Usage:** ~23GB (leaves 41GB free for OS, browser, IDE, PostgreSQL, Phoenix)
+- Note: Embeddings model is ~275MB, slightly larger than initially planned but negligible impact
 
 **Configuration Details:**
 ```bash
 # LM Studio Settings
-LITELLM_MODEL_ADVISOR=openai/qwen2.5-32b-instruct
+# Note: Use "openai/" prefix for LM Studio's OpenAI-compatible API
+# Model names must match exactly what LM Studio reports (including any prefix)
+LITELLM_MODEL_ADVISOR=openai/qwen/qwen3-30b-a3b
 LITELLM_MODEL_CUSTOMER=openai/llama-3.2-3b-instruct
-LITELLM_MODEL_COMPLIANCE=openai/qwen2.5-32b-instruct  # For production: use gpt-4o or claude-sonnet-4.5
-LITELLM_MODEL_EMBEDDINGS=openai/modernbert-embed
+LITELLM_MODEL_COMPLIANCE=openai/qwen/qwen3-30b-a3b  # For production: use gpt-4o or claude-sonnet-4.5
+LITELLM_MODEL_EMBEDDINGS=openai/text-embedding-nomic-embed-text-v1.5@q8_0
 OPENAI_API_BASE=http://localhost:1234/v1
 EMBEDDING_DIMENSION=768
+LITELLM_DROP_PARAMS=true
 ```
 
 **Why Multi-Model vs Single Model:**
-- Advisor needs high quality (32B) for complex FCA compliance reasoning
+- Advisor needs high quality (30B MoE) for complex FCA compliance reasoning
 - Customer agent is simple task - 3B model is faster and sufficient
 - Running both simultaneously uses only 23GB (excellent headroom)
-- Combined setup is faster than using single 32B for both tasks
+- Qwen 3 MoE provides 5-10x speed boost over previous Qwen 2.5 32B dense model
 
 **Cost Savings:**
 - Local models: ~$0 (electricity only)
@@ -556,10 +562,13 @@ EMBEDDING_DIMENSION=768
 - Models load successfully with room for concurrent operations
 
 **Production Considerations:**
-- **Compliance Validator**: Currently using local Qwen 2.5 32B for development
-  - For production deployment, **strongly recommend** switching to cloud model:
+- **Compliance Validator**: Currently using local Qwen 3 30B-A3B for development
+  - For production deployment, **STRONGLY RECOMMEND** switching to cloud model:
     - `LITELLM_MODEL_COMPLIANCE=gpt-4o` (OpenAI)
     - `LITELLM_MODEL_COMPLIANCE=claude-sonnet-4.5` (Anthropic)
-  - Rationale: FCA regulatory liability requires extensively validated models
+  - Rationale:
+    - FCA regulatory liability requires extensively validated models
+    - MoE architecture may have consistency concerns for compliance decisions
+    - Cloud models have established audit trails and regulatory acceptance
   - Cost impact: Minimal (~$0.45 per 1,000 validations with caching)
   - Separate env var allows easy switching without affecting other agents

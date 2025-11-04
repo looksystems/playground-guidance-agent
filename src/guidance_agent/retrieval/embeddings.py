@@ -44,8 +44,16 @@ def embed(
     is_single = isinstance(text, str)
     texts = [text] if is_single else text
 
+    # Check if we should drop unsupported parameters
+    drop_params = os.getenv("LITELLM_DROP_PARAMS", "false").lower() == "true"
+
     # Generate embeddings
-    response = embedding(model=model, input=texts, dimensions=dimensions)
+    if drop_params:
+        # Don't pass dimensions parameter when drop_params is enabled
+        response = embedding(model=model, input=texts)
+    else:
+        # Pass dimensions parameter for models that support it
+        response = embedding(model=model, input=texts, dimensions=dimensions)
 
     # Extract embeddings from response
     embeddings = [data["embedding"] for data in response.data]

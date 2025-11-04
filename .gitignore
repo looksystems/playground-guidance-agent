@@ -72,3 +72,7 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+# Logs
+backend.log
+frontend.log

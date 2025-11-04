@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-50 py-8">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
     <div class="max-w-7xl mx-auto px-4">
       <div class="mb-8">
-        <NuxtLink to="/" class="flex items-center gap-2 text-primary-700 hover:text-primary-900 mb-4">
+        <NuxtLink to="/" class="flex items-center gap-2 text-primary-700 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300 mb-4">
           <UIcon name="i-heroicons-arrow-left" />
           <span>Back to Home</span>
         </NuxtLink>
-        <h1 class="text-3xl font-bold">My Consultations</h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">My Consultations</h1>
       </div>
 
       <!-- Filter Tabs -->
@@ -26,13 +26,13 @@
         <UCard
           v-for="consultation in filteredConsultations"
           :key="consultation.id"
-          class="hover:shadow-lg transition-shadow cursor-pointer"
+          class="hover:shadow-lg dark:hover:shadow-gray-950/50 transition-shadow cursor-pointer"
           @click="navigateTo(`/consultation/${consultation.id}`)"
         >
           <div class="flex items-start justify-between">
             <div class="flex-1">
-              <h3 class="text-xl font-semibold mb-2">{{ consultation.title }}</h3>
-              <div class="text-sm text-gray-600 space-x-2 mb-2">
+              <h3 class="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">{{ consultation.title }}</h3>
+              <div class="text-sm text-gray-600 dark:text-gray-400 space-x-2 mb-2">
                 <span>Advisor: {{ consultation.advisor }}</span>
                 <span>•</span>
                 <span>{{ consultation.date }}</span>
@@ -41,8 +41,8 @@
                   {{ consultation.status }}
                 </UBadge>
               </div>
-              <p class="text-gray-700 mb-3">"{{ consultation.preview }}"</p>
-              <div class="flex items-center gap-4 text-sm">
+              <p class="text-gray-700 dark:text-gray-300 mb-3">"{{ consultation.preview }}"</p>
+              <div class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                 <span>{{ consultation.messages }} messages</span>
                 <UBadge :color="consultation.compliance >= 95 ? 'success' : 'warning'">
                   {{ consultation.compliance }}% compliance
@@ -61,9 +61,9 @@
 
       <!-- Empty State -->
       <div v-else class="text-center py-12">
-        <UIcon name="i-heroicons-inbox" class="w-16 h-16 mx-auto text-gray-400 mb-4" />
-        <h3 class="text-xl font-semibold text-gray-900 mb-2">No consultations found</h3>
-        <p class="text-gray-600 mb-6">{{ search ? 'Try adjusting your search' : 'Start your first consultation' }}</p>
+        <UIcon name="i-heroicons-inbox" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No consultations found</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">{{ search ? 'Try adjusting your search' : 'Start your first consultation' }}</p>
         <UButton to="/" size="lg">
           Start New Consultation
         </UButton>

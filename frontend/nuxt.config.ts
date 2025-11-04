@@ -12,13 +12,19 @@ export default defineNuxtConfig({
 
   // Add components directory for auto-import
   components: [
-    { path: '~/app/components' }
+    { path: '~/app/components', pathPrefix: false }
   ],
 
   modules: [
     '@nuxt/ui',
     '@pinia/nuxt'
   ],
+
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+    classSuffix: ''
+  },
 
   icon: {
     clientBundle: {

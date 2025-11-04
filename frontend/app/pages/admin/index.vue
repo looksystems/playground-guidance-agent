@@ -16,15 +16,15 @@
       <UCard data-testid="metric-card">
         <div class="flex items-start justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">Total Consultations</p>
-            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.total?.toLocaleString() || '0' }}</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Consultations</p>
+            <p class="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{{ metricsData?.consultations?.total?.toLocaleString() || '0' }}</p>
             <div class="mt-2 flex items-center gap-1">
-              <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600" />
-              <span class="text-sm font-medium text-green-600">Last {{ metricsData?.summary?.period_days || 30 }} days</span>
+              <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span class="text-sm font-medium text-green-600 dark:text-green-400">Last {{ metricsData?.summary?.period_days || 30 }} days</span>
             </div>
           </div>
-          <div class="p-3 bg-primary-50 rounded-lg">
-            <UIcon name="i-heroicons-chart-bar-solid" class="w-6 h-6 text-primary-600" />
+          <div class="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
+            <UIcon name="i-heroicons-chart-bar-solid" class="w-6 h-6 text-primary-600 dark:text-primary-400" />
           </div>
         </div>
       </UCard>
@@ -32,15 +32,15 @@
       <UCard data-testid="metric-card">
         <div class="flex items-start justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">FCA Compliance</p>
-            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.compliance_rate?.toFixed(1) || '0' }}%</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">FCA Compliance</p>
+            <p class="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{{ metricsData?.consultations?.compliance_rate?.toFixed(1) || '0' }}%</p>
             <div class="mt-2 flex items-center gap-1">
-              <UIcon name="i-heroicons-shield-check-solid" class="w-4 h-4 text-green-600" />
-              <span class="text-sm font-medium text-green-600">Compliant rate</span>
+              <UIcon name="i-heroicons-shield-check-solid" class="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span class="text-sm font-medium text-green-600 dark:text-green-400">Compliant rate</span>
             </div>
           </div>
-          <div class="p-3 bg-green-50 rounded-lg">
-            <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-green-600" />
+          <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
         </div>
       </UCard>
@@ -48,12 +48,12 @@
       <UCard data-testid="metric-card">
         <div class="flex items-start justify-between">
           <div>
-            <p class="text-sm font-medium text-gray-600">Satisfaction</p>
-            <p class="mt-2 text-4xl font-bold">{{ metricsData?.consultations?.avg_satisfaction?.toFixed(1) || '0' }}/10</p>
-            <p class="mt-2 text-sm text-gray-600">Average rating</p>
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Satisfaction</p>
+            <p class="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{{ metricsData?.consultations?.avg_satisfaction?.toFixed(1) || '0' }}/10</p>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Average rating</p>
           </div>
-          <div class="p-3 bg-yellow-50 rounded-lg">
-            <UIcon name="i-heroicons-star-solid" class="w-6 h-6 text-yellow-600" />
+          <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <UIcon name="i-heroicons-star-solid" class="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
           </div>
         </div>
       </UCard>
@@ -62,10 +62,10 @@
     <!-- Chart -->
     <UCard>
       <template #header>
-        <h2 class="text-xl font-semibold">Compliance Over Time</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Compliance Over Time</h2>
       </template>
       <ClientOnly>
-        <AdminLineChart :data="complianceData" :height="300" />
+        <LineChart :data="complianceData" :height="300" />
       </ClientOnly>
     </UCard>
 
@@ -73,7 +73,7 @@
     <UCard>
       <template #header>
         <div class="flex items-center justify-between">
-          <h2 class="text-xl font-semibold">Recent Consultations</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Recent Consultations</h2>
           <div class="flex gap-2">
             <UButton icon="i-heroicons-funnel" variant="outline">Filters</UButton>
             <UButton icon="i-heroicons-arrow-down-tray" variant="outline">Export</UButton>
@@ -83,35 +83,35 @@
 
       <div v-if="!apiData || tableRows.length === 0" class="flex items-center justify-center py-12">
         <UIcon name="i-heroicons-arrow-path" class="w-6 h-6 animate-spin text-gray-400" />
-        <span class="ml-2 text-gray-500">Loading consultations...</span>
+        <span class="ml-2 text-gray-500 dark:text-gray-400">Loading consultations...</span>
       </div>
       <div v-else class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Topic</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Messages</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compliance</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Satisfaction</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Topic</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Messages</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Compliance</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Satisfaction</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="row in tableRows" :key="row.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.id.substring(0, 8) }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.customer }}</td>
-              <td class="px-6 py-4 text-sm text-gray-900">{{ row.topic }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.date }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ row.messages }}</td>
+          <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr v-for="row in tableRows" :key="row.id" class="hover:bg-gray-50 dark:hover:bg-gray-800">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ row.id.substring(0, 8) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ row.customer }}</td>
+              <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{{ row.topic }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ row.date }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ row.messages }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
                 <UBadge :color="getComplianceColor(row.compliance)" variant="subtle">
                   {{ row.compliance }}%
                 </UBadge>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                 <div class="flex items-center gap-2">
                   <span>{{ row.satisfactionEmoji }}</span>
                   <span>{{ row.satisfactionText }}</span>
@@ -132,7 +132,7 @@
     <div class="flex items-center justify-center min-h-screen">
       <div class="text-center">
         <UIcon name="i-heroicons-arrow-path" class="w-12 h-12 animate-spin text-gray-400 mx-auto mb-4" />
-        <p class="text-gray-500">Loading dashboard...</p>
+        <p class="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
       </div>
     </div>
   </template>

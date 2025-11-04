@@ -1,12 +1,12 @@
 <template>
   <div class="error-state flex flex-col items-center justify-center p-12 text-center">
-    <UIcon name="i-heroicons-exclamation-circle" class="w-16 h-16 text-red-600 mb-4" />
+    <UIcon name="i-heroicons-exclamation-circle" class="w-16 h-16 text-red-600 dark:text-red-500 mb-4" />
 
-    <h3 class="text-xl font-semibold text-gray-900 mb-2">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
       {{ title || 'Something went wrong' }}
     </h3>
 
-    <p class="text-gray-600 mb-6 max-w-md">
+    <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
       {{ message || 'An error occurred while loading this page. Please try again.' }}
     </p>
 

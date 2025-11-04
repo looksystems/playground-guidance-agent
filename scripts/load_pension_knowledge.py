@@ -63,10 +63,29 @@ def load_pension_knowledge_to_db():
     print("\nProcessing typical scenarios...")
     for scenario_name, info in PENSION_KNOWLEDGE["typical_scenarios"].items():
         content = f"Typical scenario for {scenario_name}: "
-        content += f"Age {info['age_range']}, "
-        content += f"typically {info['pension_count_range'][0]}-{info['pension_count_range'][1]} pensions, "
-        content += f"total value £{info['total_value_range'][0]:,}-£{info['total_value_range'][1]:,}. "
-        content += f"Common goals: {', '.join(info['common_goals'])}"
+
+        # Handle different age field names
+        if 'age_range' in info:
+            age_min, age_max = info['age_range']
+            content += f"Age {age_min}-{age_max}, "
+        elif 'typical_age_range' in info:
+            age_min, age_max = info['typical_age_range']
+            content += f"Typical age {age_min}-{age_max}, "
+        elif 'typical_age' in info:
+            age_min, age_max = info['typical_age']
+            content += f"Typical age {age_min}-{age_max}, "
+
+        # Add pension count if available
+        if 'pension_count_range' in info:
+            content += f"typically {info['pension_count_range'][0]}-{info['pension_count_range'][1]} pensions, "
+
+        # Add total value if available
+        if 'total_value_range' in info:
+            content += f"total value £{info['total_value_range'][0]:,}-£{info['total_value_range'][1]:,}. "
+
+        # Add common goals if available
+        if 'common_goals' in info:
+            content += f"Common goals: {', '.join(info['common_goals'])}"
 
         entry = PensionKnowledge(
             id=uuid4(),

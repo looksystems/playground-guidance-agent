@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Mobile Menu Button -->
     <div class="lg:hidden fixed top-4 left-4 z-50">
       <UButton
@@ -11,12 +11,12 @@
 
     <!-- Sidebar -->
     <aside
-      class="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40 transform transition-transform duration-300"
+      class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-transform duration-300"
       :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     >
       <div class="p-6">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold">🔐 Admin</h2>
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🔐 Admin</h2>
           <UButton
             icon="i-heroicons-x-mark"
             variant="ghost"
@@ -30,7 +30,7 @@
       <nav class="px-4 pb-4 space-y-6 overflow-y-auto" style="max-height: calc(100vh - 120px);">
         <!-- Dashboard Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             Dashboard
           </div>
           <UButton
@@ -49,7 +49,7 @@
 
         <!-- Analytics Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             Analytics
           </div>
           <UButton
@@ -67,7 +67,7 @@
 
         <!-- Knowledge Base Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             Knowledge Base
           </div>
           <UButton
@@ -96,7 +96,7 @@
 
         <!-- Learning System Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             Learning System
           </div>
           <UButton
@@ -136,7 +136,7 @@
 
         <!-- User Management Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             User Management
           </div>
           <UButton
@@ -165,7 +165,7 @@
 
         <!-- Settings Section -->
         <div class="space-y-1">
-          <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-left">
+          <div class="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-left">
             Settings
           </div>
           <UButton
@@ -193,12 +193,15 @@
 
     <!-- Main Content -->
     <div class="lg:pl-64">
-      <header class="bg-white border-b border-gray-200 p-4">
+      <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold ml-12 lg:ml-0">Admin Dashboard</h1>
-          <UButton variant="ghost" icon="i-heroicons-arrow-left-on-rectangle" to="/">
-            Exit Admin
-          </UButton>
+          <h1 class="text-2xl font-bold ml-12 lg:ml-0 text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
+          <div class="flex gap-2 items-center">
+            <ColorModeToggle />
+            <UButton variant="ghost" icon="i-heroicons-arrow-left-on-rectangle" to="/">
+              Exit Admin
+            </UButton>
+          </div>
         </div>
       </header>
 

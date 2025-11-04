@@ -14,7 +14,7 @@
         <span class="text-gray-400">/</span>
         <UButton to="/admin/knowledge/pension" variant="ghost" size="xs">Pension Knowledge</UButton>
         <span class="text-gray-400">/</span>
-        <span class="text-sm text-gray-600">{{ id.substring(0, 8) }}...</span>
+        <span class="text-sm text-gray-600 dark:text-gray-400">{{ id.substring(0, 8) }}...</span>
       </div>
       <h1 class="text-3xl font-bold mt-4">Pension Knowledge Detail</h1>
     </div>
@@ -23,14 +23,14 @@
     <div v-if="pending" class="flex items-center justify-center py-12">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-        <p class="mt-4 text-gray-600">Loading knowledge item...</p>
+        <p class="mt-4 text-gray-600 dark:text-gray-400">Loading knowledge item...</p>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-red-800 mb-2">Error Loading Knowledge Item</h2>
-      <p class="text-red-600">
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">Error Loading Knowledge Item</h2>
+      <p class="text-red-600 dark:text-red-400">
         {{ error.statusCode === 404 ? 'Knowledge item not found.' : (error.message || 'Failed to load knowledge item. Please try again.') }}
       </p>
       <UButton class="mt-4" @click="refresh">
@@ -39,9 +39,9 @@
     </div>
 
     <!-- No Data State -->
-    <div v-else-if="!item" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-      <h2 class="text-lg font-semibold text-yellow-800 mb-2">No Data Available</h2>
-      <p class="text-yellow-600">This knowledge item does not have any data.</p>
+    <div v-else-if="!item" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+      <h2 class="text-lg font-semibold text-yellow-800 dark:text-yellow-400 mb-2">No Data Available</h2>
+      <p class="text-yellow-600 dark:text-yellow-400">This knowledge item does not have any data.</p>
     </div>
 
     <!-- Main Content -->
@@ -63,9 +63,9 @@
         <div class="space-y-6">
           <!-- ID with Copy -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">ID</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ID</label>
             <div class="flex items-center gap-2">
-              <code class="flex-1 px-3 py-2 bg-gray-50 rounded font-mono text-sm">
+              <code class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded font-mono text-sm">
                 {{ item.id }}
               </code>
               <UButton
@@ -81,23 +81,23 @@
 
           <!-- Content -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-            <div class="px-4 py-3 bg-gray-50 rounded-lg">
-              <p class="text-gray-900 whitespace-pre-wrap">{{ item.content }}</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+            <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p class="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">{{ item.content }}</p>
             </div>
           </div>
 
           <!-- Category and Subcategory -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
               <UBadge color="purple" variant="subtle" size="lg">
                 {{ item.category || 'Uncategorized' }}
               </UBadge>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
               <UBadge v-if="item.subcategory" color="indigo" variant="subtle" size="lg">
                 {{ item.subcategory }}
               </UBadge>
@@ -107,14 +107,14 @@
 
           <!-- Vector Embedding Status -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Vector Embedding</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Vector Embedding</label>
             <div class="flex items-center gap-3">
               <UIcon
                 :name="item.has_embedding ? 'i-heroicons-check-circle' : 'i-heroicons-x-circle'"
-                :class="item.has_embedding ? 'text-green-600' : 'text-gray-400'"
+                :class="item.has_embedding ? 'text-green-600 dark:text-green-400' : 'text-gray-400'"
                 class="w-6 h-6"
               />
-              <span :class="item.has_embedding ? 'text-green-700' : 'text-gray-600'">
+              <span :class="item.has_embedding ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'">
                 {{ item.has_embedding ? 'Vector embedding present (1536 dimensions)' : 'No vector embedding available' }}
               </span>
             </div>
@@ -122,8 +122,8 @@
 
           <!-- Created Date -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Created</label>
-            <div class="flex items-center gap-2 text-gray-900">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Created</label>
+            <div class="flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <UIcon name="i-heroicons-calendar" class="w-5 h-5 text-gray-400" />
               {{ formatDate(item.created_at) }}
             </div>
@@ -137,8 +137,8 @@
           <h2 class="text-xl font-semibold">Metadata</h2>
         </template>
 
-        <div class="bg-gray-50 rounded-lg p-4">
-          <pre class="text-sm text-gray-900 overflow-x-auto">{{ JSON.stringify(item.meta, null, 2) }}</pre>
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <pre class="text-sm text-gray-900 dark:text-gray-100 overflow-x-auto">{{ JSON.stringify(item.meta, null, 2) }}</pre>
         </div>
       </UCard>
 
@@ -150,22 +150,22 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Content Length</label>
-            <p class="text-gray-900">{{ item.content.length }} characters</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content Length</label>
+            <p class="text-gray-900 dark:text-gray-100">{{ item.content.length }} characters</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Tokens</label>
-            <p class="text-gray-900">~{{ Math.ceil(item.content.length / 4) }} tokens</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estimated Tokens</label>
+            <p class="text-gray-900 dark:text-gray-100">~{{ Math.ceil(item.content.length / 4) }} tokens</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Word Count</label>
-            <p class="text-gray-900">{{ item.content.split(/\s+/).length }} words</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Word Count</label>
+            <p class="text-gray-900 dark:text-gray-100">{{ item.content.split(/\s+/).length }} words</p>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status</label>
             <UBadge
               :color="item.has_embedding ? 'green' : 'yellow'"
               variant="subtle"
@@ -185,7 +185,7 @@
         <div class="space-y-3">
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-tag" class="w-5 h-5 text-gray-400" />
-            <span class="text-gray-700">Category:</span>
+            <span class="text-gray-700 dark:text-gray-300">Category:</span>
             <UButton
               :to="`/admin/knowledge/pension?category=${encodeURIComponent(item.category)}`"
               size="xs"
@@ -197,7 +197,7 @@
 
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-tag" class="w-5 h-5 text-gray-400" />
-            <span class="text-gray-700">Subcategory:</span>
+            <span class="text-gray-700 dark:text-gray-300">Subcategory:</span>
             <UButton
               :to="`/admin/knowledge/pension?category=${encodeURIComponent(item.category)}&subcategory=${encodeURIComponent(item.subcategory)}`"
               size="xs"

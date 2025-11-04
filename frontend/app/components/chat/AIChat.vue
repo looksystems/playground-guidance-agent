@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
     <!-- Messages -->
     <div ref="messagesRef" class="flex-1 overflow-y-auto p-6 space-y-4">
       <!-- Loading History -->
       <div v-if="isLoadingHistory" class="flex justify-center items-center h-full">
         <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <p class="mt-2 text-gray-600">Loading conversation...</p>
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">Loading conversation...</p>
         </div>
       </div>
 
@@ -20,16 +20,16 @@
           :class="[
             'max-w-[70%] rounded-2xl px-4 py-3 shadow-sm',
             message.role === 'user'
-              ? 'bg-primary-600 text-white'
-              : 'bg-white border border-gray-200'
+              ? 'bg-primary-600 dark:bg-primary-700 text-white'
+              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100'
           ]"
         >
-          <div class="prose prose-sm max-w-none" v-html="renderMarkdown(message.content)" />
+          <div class="prose prose-sm dark:prose-invert max-w-none" v-html="renderMarkdown(message.content)" />
 
           <!-- Compliance Badge -->
           <div
             v-if="message.role === 'assistant' && message.compliance_score"
-            class="mt-2 flex items-center gap-1 text-xs opacity-75"
+            class="mt-2 flex items-center gap-1 text-xs opacity-75 text-gray-600 dark:text-gray-400"
           >
             <UIcon name="i-heroicons-shield-check-solid" class="w-3 h-3" />
             <span>{{ (message.compliance_score * 100).toFixed(0) }}% compliant</span>
@@ -39,18 +39,18 @@
 
       <!-- Loading Indicator -->
       <div v-if="isLoading" class="flex justify-start">
-        <div class="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3">
           <div class="flex gap-1">
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms" />
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms" />
-            <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms" />
+            <div class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0ms" />
+            <div class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style="animation-delay: 150ms" />
+            <div class="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style="animation-delay: 300ms" />
           </div>
         </div>
       </div>
     </div>
 
     <!-- Input -->
-    <div class="border-t border-gray-200 bg-white p-4">
+    <div class="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
       <form @submit.prevent="handleSubmit" class="flex gap-3 items-end">
         <UTextarea
           v-model="input"

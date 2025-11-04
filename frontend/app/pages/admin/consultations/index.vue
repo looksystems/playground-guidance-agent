@@ -4,8 +4,8 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900">Consultations</h1>
-          <p class="mt-2 text-gray-600">View and manage all customer consultations</p>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Consultations</h1>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">View and manage all customer consultations</p>
         </div>
         <UButton
           to="/admin"
@@ -21,11 +21,11 @@
         <UCard>
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-blue-100 rounded-lg p-3">
-              <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-blue-600" />
+              <UIcon name="i-heroicons-chat-bubble-left-right" class="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Total Consultations</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Consultations</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.total }}</p>
             </div>
           </div>
         </UCard>
@@ -33,11 +33,11 @@
         <UCard>
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-green-100 rounded-lg p-3">
-              <UIcon name="i-heroicons-check-circle" class="w-8 h-8 text-green-600" />
+              <UIcon name="i-heroicons-check-circle" class="w-8 h-8 text-green-600 dark:text-green-400" />
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Completed</p>
-              <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ stats.total }}</p>
             </div>
           </div>
         </UCard>
@@ -45,11 +45,11 @@
         <UCard>
           <div class="flex items-center">
             <div class="flex-shrink-0 bg-purple-100 rounded-lg p-3">
-              <UIcon name="i-heroicons-clock" class="w-8 h-8 text-purple-600" />
+              <UIcon name="i-heroicons-clock" class="w-8 h-8 text-purple-600 dark:text-purple-400" />
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-600">Avg Duration</p>
-              <p class="text-2xl font-bold text-gray-900">{{ avgDuration }}m</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Duration</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ avgDuration }}m</p>
             </div>
           </div>
         </UCard>
@@ -60,7 +60,7 @@
         <div class="flex flex-wrap gap-4">
           <!-- Date Range -->
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
             <UInput
               v-model="filters.fromDate"
               type="date"
@@ -69,7 +69,7 @@
           </div>
 
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
             <UInput
               v-model="filters.toDate"
               type="date"
@@ -79,7 +79,7 @@
 
           <!-- Search -->
           <div class="flex-1 min-w-[300px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
             <UInput
               v-model="filters.search"
               placeholder="Search by customer or topic..."
@@ -115,7 +115,7 @@
       <div v-if="pending" class="flex items-center justify-center py-12">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p class="mt-4 text-gray-600">Loading consultations...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading consultations...</p>
         </div>
       </div>
 
@@ -123,8 +123,8 @@
       <UCard v-else-if="!transformedItems || transformedItems.length === 0">
         <div class="text-center py-12">
           <UIcon name="i-heroicons-chat-bubble-left-right" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Consultations Found</h3>
-          <p class="text-gray-600">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Consultations Found</h3>
+          <p class="text-gray-600 dark:text-gray-400">
             {{ filters.search || filters.fromDate ? 'Try adjusting your filters' : 'No consultations available yet.' }}
           </p>
         </div>
@@ -135,13 +135,13 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Consultations</h2>
-            <span class="text-sm text-gray-600">{{ pagination.total }} total</span>
+            <span class="text-sm text-gray-600 dark:text-gray-400">{{ pagination.total }} total</span>
           </div>
         </template>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer
@@ -163,22 +163,22 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="consultation in transformedItems" :key="consultation.id" class="hover:bg-gray-50">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="consultation in transformedItems" :key="consultation.id" class="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800">
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ consultation.customer }}</div>
+                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ consultation.customer }}</div>
                   <div class="text-sm text-gray-500">Age: {{ consultation.age }}</div>
                 </td>
                 <td class="px-6 py-4">
-                  <div class="text-sm text-gray-900 max-w-xs truncate">{{ consultation.initial_topic }}</div>
+                  <div class="text-sm text-gray-900 dark:text-gray-100 max-w-xs truncate">{{ consultation.initial_topic }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">
+                  <div class="text-sm text-gray-900 dark:text-gray-100">
                     {{ formatDate(consultation.start_time) }}
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-900">
+                  <div class="text-sm text-gray-900 dark:text-gray-100">
                     {{ calculateDuration(consultation.start_time, consultation.end_time) }}m
                   </div>
                 </td>
@@ -191,7 +191,7 @@
                         :style="{ width: consultation.compliance_score + '%' }"
                       ></div>
                     </div>
-                    <span class="text-sm text-gray-900">{{ Math.round(consultation.compliance_score) }}%</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">{{ Math.round(consultation.compliance_score) }}%</span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -210,7 +210,7 @@
 
         <template #footer>
           <div class="flex items-center justify-between">
-            <div class="text-sm text-gray-600">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
               Page {{ pagination.page }} of {{ pagination.pages }}
             </div>
             <div class="flex gap-2">

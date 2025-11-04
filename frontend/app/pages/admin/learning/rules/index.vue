@@ -7,7 +7,7 @@
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Rule Repository</h1>
-        <p class="text-gray-600 mt-2">Learned principles and domain knowledge</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Learned principles and domain knowledge</p>
       </div>
 
       <!-- Stats Cards -->
@@ -15,11 +15,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Total Rules</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Rules</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.total }}</p>
             </div>
-            <div class="p-3 bg-teal-50 rounded-lg">
-              <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-teal-600" />
+            <div class="p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg">
+              <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-teal-600 dark:text-teal-400" />
             </div>
           </div>
         </UCard>
@@ -27,11 +27,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Domains</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Domains</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.domains }}</p>
             </div>
-            <div class="p-3 bg-blue-50 rounded-lg">
-              <UIcon name="i-heroicons-squares-2x2-solid" class="w-6 h-6 text-blue-600" />
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <UIcon name="i-heroicons-squares-2x2-solid" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </UCard>
@@ -39,11 +39,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">High Confidence</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">High Confidence</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.highConfidence }}</p>
             </div>
-            <div class="p-3 bg-green-50 rounded-lg">
-              <UIcon name="i-heroicons-star-solid" class="w-6 h-6 text-green-600" />
+            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <UIcon name="i-heroicons-star-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </UCard>
@@ -54,7 +54,7 @@
         <div class="flex flex-wrap gap-4">
           <!-- Domain Filter -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Domain</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Domain</label>
             <USelectMenu
               v-model="filters.domain"
               :options="domainOptions"
@@ -65,7 +65,7 @@
 
           <!-- Confidence Range -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Min Confidence: {{ filters.minConfidence.toFixed(1) }}
             </label>
             <input
@@ -80,7 +80,7 @@
           </div>
 
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Max Confidence: {{ filters.maxConfidence.toFixed(1) }}
             </label>
             <input
@@ -96,7 +96,7 @@
 
           <!-- Date Range -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
             <UInput
               v-model="filters.fromDate"
               type="date"
@@ -105,7 +105,7 @@
           </div>
 
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
             <UInput
               v-model="filters.toDate"
               type="date"
@@ -130,7 +130,7 @@
       <UCard>
         <div class="flex flex-wrap gap-4 items-center">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
             <USelectMenu
               v-model="sortBy"
               :options="sortOptions"
@@ -138,7 +138,7 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Order</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Order</label>
             <USelectMenu
               v-model="sortOrder"
               :options="['asc', 'desc']"
@@ -162,7 +162,7 @@
       <div v-if="pending" class="flex items-center justify-center py-12">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500"></div>
-          <p class="mt-4 text-gray-600">Loading rules...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading rules...</p>
         </div>
       </div>
 
@@ -170,8 +170,8 @@
       <UCard v-else-if="!items || items.length === 0">
         <div class="text-center py-12">
           <UIcon name="i-heroicons-shield-check" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Rules Found</h3>
-          <p class="text-gray-600">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Rules Found</h3>
+          <p class="text-gray-600 dark:text-gray-400">
             {{ filters.domain || filters.minConfidence > 0 ? 'Try adjusting your filters' : 'No rules have been learned yet.' }}
           </p>
         </div>
@@ -182,15 +182,15 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Rules</h2>
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
               Showing {{ items.length }} of {{ pagination.total }} items
             </span>
           </div>
         </template>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ID
@@ -215,12 +215,12 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
                   {{ item.id.substring(0, 8) }}...
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
+                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-md">
                   <div class="line-clamp-2">{{ item.principle }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -251,7 +251,7 @@
                     {{ getEvidenceCount(item.supporting_evidence) }}
                   </UBadge>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(item.updated_at) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -270,7 +270,7 @@
 
       <!-- Pagination -->
       <div v-if="items && items.length > 0" class="flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Page {{ pagination.page }} of {{ pagination.pages }}
         </div>
         <div class="flex gap-2">

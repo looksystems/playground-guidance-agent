@@ -1,15 +1,15 @@
 <template>
   <div class="space-y-8">
     <div>
-      <h1 class="text-3xl font-bold text-gray-900">Settings</h1>
-      <p class="mt-2 text-gray-600">Configure system settings and preferences</p>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-400">Configure system settings and preferences</p>
     </div>
 
     <!-- Loading State -->
     <div v-if="initialLoading" class="flex items-center justify-center py-12">
       <div class="text-center">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-        <p class="mt-2 text-sm text-gray-500">Loading settings...</p>
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading settings...</p>
       </div>
     </div>
 
@@ -18,19 +18,19 @@
       <!-- General Settings -->
       <UCard>
         <template #header>
-          <h2 class="text-xl font-semibold">General Settings</h2>
+          <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">General Settings</h2>
         </template>
       <div class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">System Name</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">System Name</label>
           <UInput v-model="settings.systemName" placeholder="Enter system name" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Support Email</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Support Email</label>
           <UInput v-model="settings.supportEmail" type="email" placeholder="support@example.com" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Session Timeout (minutes)</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Session Timeout (minutes)</label>
           <UInput v-model="settings.sessionTimeout" type="number" placeholder="30" />
         </div>
       </div>
@@ -39,27 +39,27 @@
     <!-- Compliance Settings -->
     <UCard>
       <template #header>
-        <h2 class="text-xl font-semibold">Compliance Settings</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Compliance Settings</h2>
       </template>
       <div class="space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Enable FCA Compliance Checks</label>
-            <p class="text-sm text-gray-500">Automatically validate consultations against FCA guidelines</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Enable FCA Compliance Checks</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Automatically validate consultations against FCA guidelines</p>
           </div>
           <UCheckbox v-model="settings.fcaComplianceEnabled" />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Require Risk Assessment</label>
-            <p class="text-sm text-gray-500">Mandate risk assessment for all consultations</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Require Risk Assessment</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Mandate risk assessment for all consultations</p>
           </div>
           <UCheckbox v-model="settings.riskAssessmentRequired" />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Auto-Archive Consultations</label>
-            <p class="text-sm text-gray-500">Automatically archive consultations after 90 days</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Auto-Archive Consultations</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Automatically archive consultations after 90 days</p>
           </div>
           <UCheckbox v-model="settings.autoArchive" />
         </div>
@@ -69,27 +69,27 @@
     <!-- Notification Settings -->
     <UCard>
       <template #header>
-        <h2 class="text-xl font-semibold">Notification Settings</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Notification Settings</h2>
       </template>
       <div class="space-y-6">
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Email Notifications</label>
-            <p class="text-sm text-gray-500">Receive email alerts for important events</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Notifications</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Receive email alerts for important events</p>
           </div>
           <UCheckbox v-model="settings.emailNotifications" />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Compliance Alerts</label>
-            <p class="text-sm text-gray-500">Get notified when compliance scores drop below threshold</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Compliance Alerts</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Get notified when compliance scores drop below threshold</p>
           </div>
           <UCheckbox v-model="settings.complianceAlerts" />
         </div>
         <div class="flex items-center justify-between">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Daily Digest</label>
-            <p class="text-sm text-gray-500">Receive daily summary of consultations and metrics</p>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Daily Digest</label>
+            <p class="text-sm text-gray-500 dark:text-gray-500">Receive daily summary of consultations and metrics</p>
           </div>
           <UCheckbox v-model="settings.dailyDigest" />
         </div>
@@ -99,20 +99,20 @@
     <!-- AI Configuration -->
     <UCard>
       <template #header>
-        <h2 class="text-xl font-semibold">AI Configuration</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">AI Configuration</h2>
       </template>
       <div class="space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">AI Model</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AI Model</label>
           <USelect v-model="settings.aiModel" :options="aiModels" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Temperature</label>
           <UInput v-model="settings.temperature" type="number" step="0.1" min="0" max="2" />
-          <p class="mt-1 text-xs text-gray-500">Controls randomness in responses (0.0 - 2.0)</p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-500">Controls randomness in responses (0.0 - 2.0)</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Max Tokens</label>
           <UInput v-model="settings.maxTokens" type="number" />
         </div>
       </div>

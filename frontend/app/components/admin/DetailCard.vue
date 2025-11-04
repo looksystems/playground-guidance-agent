@@ -2,7 +2,7 @@
   <UCard>
     <!-- Card Header -->
     <template #header>
-      <h3 class="text-lg font-semibold text-gray-900">
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
         {{ title }}
       </h3>
     </template>
@@ -13,16 +13,16 @@
         v-for="(field, index) in fields"
         :key="index"
         class="detail-field"
-        :class="{ 'border-t border-gray-100 pt-4': index > 0 }"
+        :class="{ 'border-t border-gray-100 dark:border-gray-700 pt-4': index > 0 }"
       >
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <!-- Field Label -->
-          <dt class="text-sm font-medium text-gray-500">
+          <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
             {{ field.label }}
           </dt>
 
           <!-- Field Value -->
-          <dd class="md:col-span-2 text-sm text-gray-900">
+          <dd class="md:col-span-2 text-sm text-gray-900 dark:text-gray-100">
             <!-- Text Type (Default) -->
             <div v-if="!field.type || field.type === 'text'" class="flex items-center gap-2">
               <span>{{ field.value }}</span>
@@ -58,7 +58,7 @@
               <div class="flex items-center justify-between text-xs">
                 <span>{{ field.value }}%</span>
               </div>
-              <div class="w-full bg-gray-200 rounded-full h-2">
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                   class="h-2 rounded-full transition-all duration-300"
                   :class="getMeterColor(field.value)"
@@ -94,7 +94,7 @@
                   Hide JSON
                 </UButton>
                 <div class="relative">
-                  <pre class="bg-gray-50 border border-gray-200 rounded-lg p-3 overflow-x-auto text-xs">{{
+                  <pre class="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 overflow-x-auto text-xs text-gray-900 dark:text-gray-100">{{
                     formatJSON(field.value)
                   }}</pre>
                   <UButton

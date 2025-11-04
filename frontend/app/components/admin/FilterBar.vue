@@ -1,5 +1,5 @@
 <template>
-  <div class="filter-bar bg-white border border-gray-200 rounded-lg p-4">
+  <div class="filter-bar bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
     <div class="flex flex-wrap items-end gap-4">
       <!-- Filter Controls -->
       <div
@@ -11,7 +11,7 @@
         <div v-if="filter.type === 'text'">
           <label
             :for="`filter-${filter.key}`"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             {{ filter.label }}
           </label>
@@ -28,7 +28,7 @@
         <div v-if="filter.type === 'select'">
           <label
             :for="`filter-${filter.key}`"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             {{ filter.label }}
           </label>
@@ -45,7 +45,7 @@
 
         <!-- Date Range Filter -->
         <div v-if="filter.type === 'date-range'">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             {{ filter.label }}
           </label>
           <div class="flex gap-2">
@@ -68,7 +68,7 @@
         <div v-if="filter.type === 'slider'">
           <label
             :for="`filter-${filter.key}`"
-            class="block text-sm font-medium text-gray-700 mb-1"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             {{ filter.label }}: {{ filterValues[filter.key] ?? filter.min ?? 0 }}
           </label>
@@ -79,10 +79,10 @@
             :min="filter.min ?? 0"
             :max="filter.max ?? 100"
             :step="filter.step ?? 1"
-            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+            class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-600"
             @input="handleFilterChange(filter.key, filterValues[filter.key])"
           />
-          <div class="flex justify-between text-xs text-gray-500 mt-1">
+          <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
             <span>{{ filter.min ?? 0 }}</span>
             <span>{{ filter.max ?? 100 }}</span>
           </div>

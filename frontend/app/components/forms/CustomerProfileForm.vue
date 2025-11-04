@@ -3,8 +3,8 @@
     <template #header>
       <div class="text-center space-y-4 py-4">
         <div class="text-6xl">💬</div>
-        <h2 class="text-3xl font-bold text-gray-900">Start Your Pension Guidance Consultation</h2>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100">Start Your Pension Guidance Consultation</h2>
+        <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           Get personalized guidance on your pension options in a safe, confidential environment.
         </p>
       </div>
@@ -60,10 +60,10 @@
             class="radio-option-wrapper"
           >
             <label
-              class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-primary-500 hover:bg-primary-50"
+              class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-primary-500 dark:hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
               :class="{
-                'border-primary-500 bg-primary-50': form.topic === option.value,
-                'border-gray-300 bg-white': form.topic !== option.value
+                'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-900/20': form.topic === option.value,
+                'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': form.topic !== option.value
               }"
               :data-testid="`topic-${option.value}`"
             >
@@ -76,12 +76,12 @@
                 :aria-label="option.label"
               />
               <span class="flex items-center justify-center w-5 h-5 mr-3 border-2 rounded-full" :class="{
-                'border-primary-500': form.topic === option.value,
-                'border-gray-400': form.topic !== option.value
+                'border-primary-500 dark:border-primary-400': form.topic === option.value,
+                'border-gray-400 dark:border-gray-500': form.topic !== option.value
               }">
-                <span v-if="form.topic === option.value" class="w-3 h-3 bg-primary-500 rounded-full"></span>
+                <span v-if="form.topic === option.value" class="w-3 h-3 bg-primary-500 dark:bg-primary-400 rounded-full"></span>
               </span>
-              <span class="text-base font-medium text-gray-900">{{ option.label }}</span>
+              <span class="text-base font-medium text-gray-900 dark:text-gray-100">{{ option.label }}</span>
             </label>
           </div>
         </div>

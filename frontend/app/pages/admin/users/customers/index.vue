@@ -7,7 +7,7 @@
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Customer Management</h1>
-        <p class="text-gray-600 mt-2">View and analyze customer consultation patterns</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">View and analyze customer consultation patterns</p>
       </div>
 
       <!-- Stats Cards -->
@@ -15,11 +15,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Total Customers</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Customers</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.total_customers }}</p>
             </div>
-            <div class="p-3 bg-blue-50 rounded-lg">
-              <UIcon name="i-heroicons-users-solid" class="w-6 h-6 text-blue-600" />
+            <div class="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <UIcon name="i-heroicons-users-solid" class="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </UCard>
@@ -27,12 +27,12 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Active Customers</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Customers</p>
               <p class="text-xs text-gray-500 mt-1">Last 30 days</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.active_customers_30d }}</p>
             </div>
-            <div class="p-3 bg-green-50 rounded-lg">
-              <UIcon name="i-heroicons-user-group-solid" class="w-6 h-6 text-green-600" />
+            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <UIcon name="i-heroicons-user-group-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </UCard>
@@ -40,12 +40,12 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Avg Consultations</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Consultations</p>
               <p class="text-xs text-gray-500 mt-1">Per customer</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.avg_consultations_per_customer?.toFixed(1) || '0.0' }}</p>
             </div>
-            <div class="p-3 bg-purple-50 rounded-lg">
-              <UIcon name="i-heroicons-chart-bar-solid" class="w-6 h-6 text-purple-600" />
+            <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <UIcon name="i-heroicons-chart-bar-solid" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </UCard>
@@ -56,7 +56,7 @@
         <div class="flex flex-wrap gap-4">
           <!-- Date Range -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
             <UInput
               v-model="filters.fromDate"
               type="date"
@@ -65,7 +65,7 @@
           </div>
 
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
             <UInput
               v-model="filters.toDate"
               type="date"
@@ -75,7 +75,7 @@
 
           <!-- Search by Customer ID -->
           <div class="flex-1 min-w-[300px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search Customer</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search Customer</label>
             <UInput
               v-model="filters.search"
               placeholder="Search by customer ID..."
@@ -86,7 +86,7 @@
 
           <!-- Sort Controls -->
           <div class="flex-1 min-w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
             <USelectMenu
               v-model="filters.sortBy"
               :options="sortOptions"
@@ -95,7 +95,7 @@
           </div>
 
           <div class="flex-1 min-w-[150px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Order</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Order</label>
             <USelectMenu
               v-model="filters.sortOrder"
               :options="['desc', 'asc']"
@@ -130,7 +130,7 @@
       <div v-if="pending" class="flex items-center justify-center py-12">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          <p class="mt-4 text-gray-600">Loading customers...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading customers...</p>
         </div>
       </div>
 
@@ -138,8 +138,8 @@
       <UCard v-else-if="!items || items.length === 0">
         <div class="text-center py-12">
           <UIcon name="i-heroicons-users" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Customers Found</h3>
-          <p class="text-gray-600">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Customers Found</h3>
+          <p class="text-gray-600 dark:text-gray-400">
             {{ filters.search || filters.fromDate || filters.toDate ? 'Try adjusting your filters' : 'No customers available yet.' }}
           </p>
         </div>
@@ -150,15 +150,15 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Customers</h2>
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
               Showing {{ items.length }} of {{ pagination.total }} customers
             </span>
           </div>
         </template>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Customer ID
@@ -183,11 +183,11 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="customer in items" :key="customer.customer_id" class="hover:bg-gray-50">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="customer in items" :key="customer.customer_id" class="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center gap-2">
-                    <code class="text-sm font-mono text-gray-900">
+                    <code class="text-sm font-mono text-gray-900 dark:text-gray-100">
                       {{ truncateId(customer.customer_id) }}
                     </code>
                     <UButton
@@ -198,15 +198,15 @@
                     />
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                   <UBadge color="blue" variant="subtle">
                     {{ customer.total_consultations }}
                   </UBadge>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(customer.first_consultation) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(customer.last_consultation) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -229,7 +229,7 @@
                     </UBadge>
                   </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   <span v-if="customer.avg_satisfaction !== null && customer.avg_satisfaction !== undefined">
                     {{ customer.avg_satisfaction.toFixed(1) }}/5
                   </span>
@@ -251,7 +251,7 @@
 
       <!-- Pagination -->
       <div v-if="items && items.length > 0" class="flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Page {{ pagination.page }} of {{ pagination.pages }}
         </div>
         <div class="flex gap-2">

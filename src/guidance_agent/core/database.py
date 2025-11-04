@@ -15,6 +15,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Read embedding dimension from environment variable
+# This allows different deployments to use different embedding models
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+
 # Database URL
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/guidance_agent")
 
@@ -48,7 +52,7 @@ class Memory(Base):
     last_accessed = Column(TIMESTAMP(timezone=True), nullable=False)
     importance = Column(Float, nullable=False)
     memory_type = Column(SQLEnum(MemoryTypeEnum, name="memory_type_enum"), nullable=False)
-    embedding = Column(Vector(1536))  # pgvector column
+    embedding = Column(Vector(EMBEDDING_DIM))  # pgvector column
     meta = Column(JSONB, default={}, name="metadata")  # 'metadata' is reserved, use 'meta' as attribute
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -67,7 +71,7 @@ class Case(Base):
     customer_situation = Column(String, nullable=False)
     guidance_provided = Column(String, nullable=False)
     outcome = Column(JSONB, nullable=False)
-    embedding = Column(Vector(1536))  # pgvector column
+    embedding = Column(Vector(EMBEDDING_DIM))  # pgvector column
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -82,7 +86,7 @@ class Rule(Base):
     domain = Column(String(100), nullable=False)
     confidence = Column(Float, nullable=False)
     supporting_evidence = Column(JSONB, default=[])
-    embedding = Column(Vector(1536))  # pgvector column
+    embedding = Column(Vector(EMBEDDING_DIM))  # pgvector column
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -118,7 +122,7 @@ class FCAKnowledge(Base):
     content = Column(String, nullable=False)
     source = Column(String(255))
     category = Column(String(100), nullable=False, index=True)
-    embedding = Column(Vector(1536))
+    embedding = Column(Vector(EMBEDDING_DIM))
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
@@ -132,7 +136,7 @@ class PensionKnowledge(Base):
     content = Column(String, nullable=False)
     category = Column(String(100), nullable=False, index=True)
     subcategory = Column(String(100))
-    embedding = Column(Vector(1536))
+    embedding = Column(Vector(EMBEDDING_DIM))
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 

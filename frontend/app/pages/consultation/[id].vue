@@ -1,14 +1,14 @@
 <template>
   <div class="h-full flex flex-col">
     <!-- Consultation Header -->
-    <header class="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+    <header class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
       <div class="flex items-center justify-between max-w-7xl mx-auto">
-        <NuxtLink to="/" class="flex items-center gap-2 text-primary-700 hover:text-primary-900">
+        <NuxtLink to="/" class="flex items-center gap-2 text-primary-700 dark:text-primary-400 hover:text-primary-900 dark:hover:text-primary-300">
           <UIcon name="i-heroicons-arrow-left" />
           <span>Back to Home</span>
         </NuxtLink>
 
-        <h1 class="text-lg font-semibold">Consultation with Sarah</h1>
+        <h1 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Consultation with Sarah</h1>
 
         <UDropdownMenu :items="menuItems">
           <UButton icon="i-heroicons-ellipsis-vertical" variant="ghost" />
@@ -17,12 +17,12 @@
     </header>
 
     <!-- Advisor Header -->
-    <div class="bg-white border-b border-gray-200 p-4 flex-shrink-0">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex-shrink-0">
       <div class="flex items-center gap-3 max-w-7xl mx-auto">
         <UAvatar size="md" alt="Sarah" />
         <div>
-          <div class="font-semibold">Sarah</div>
-          <div class="text-sm text-gray-600">Pension Guidance Specialist</div>
+          <div class="font-semibold text-gray-900 dark:text-gray-100">Sarah</div>
+          <div class="text-sm text-gray-600 dark:text-gray-400">Pension Guidance Specialist</div>
         </div>
         <UBadge color="success" variant="soft">Active</UBadge>
       </div>
@@ -30,7 +30,7 @@
 
     <!-- Chat Component -->
     <div class="flex-1 overflow-hidden" data-testid="chat-container">
-      <ChatAIChat :consultation-id="id" />
+      <AIChat :consultation-id="id" />
     </div>
   </div>
 </template>

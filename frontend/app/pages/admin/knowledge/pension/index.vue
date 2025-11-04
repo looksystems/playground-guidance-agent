@@ -7,7 +7,7 @@
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Pension Knowledge Base</h1>
-        <p class="text-gray-600 mt-2">Browse and search pension domain knowledge</p>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Browse and search pension domain knowledge</p>
       </div>
 
       <!-- Stats Cards -->
@@ -15,11 +15,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Total Items</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Items</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.total }}</p>
             </div>
-            <div class="p-3 bg-purple-50 rounded-lg">
-              <UIcon name="i-heroicons-book-open-solid" class="w-6 h-6 text-purple-600" />
+            <div class="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <UIcon name="i-heroicons-book-open-solid" class="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
         </UCard>
@@ -27,11 +27,11 @@
         <UCard>
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-600">Categories</p>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Categories</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.categories }}</p>
             </div>
-            <div class="p-3 bg-green-50 rounded-lg">
-              <UIcon name="i-heroicons-folder-open-solid" class="w-6 h-6 text-green-600" />
+            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+              <UIcon name="i-heroicons-folder-open-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
           </div>
         </UCard>
@@ -42,7 +42,7 @@
         <div class="flex flex-wrap gap-4">
           <!-- Category Filter -->
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
             <USelectMenu
               v-model="filters.category"
               :items="categoryOptions"
@@ -53,7 +53,7 @@
 
           <!-- Subcategory Filter -->
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Subcategory</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory</label>
             <USelectMenu
               v-model="filters.subcategory"
               :items="subcategoryOptions"
@@ -65,7 +65,7 @@
 
           <!-- Date Range -->
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From Date</label>
             <UInput
               v-model="filters.fromDate"
               type="date"
@@ -74,7 +74,7 @@
           </div>
 
           <div class="flex-1 min-w-[180px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To Date</label>
             <UInput
               v-model="filters.toDate"
               type="date"
@@ -84,7 +84,7 @@
 
           <!-- Search -->
           <div class="flex-1 min-w-[300px]">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search</label>
             <UInput
               v-model="filters.search"
               placeholder="Search content..."
@@ -120,7 +120,7 @@
       <div v-if="pending" class="flex items-center justify-center py-12">
         <div class="text-center">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
-          <p class="mt-4 text-gray-600">Loading pension knowledge...</p>
+          <p class="mt-4 text-gray-600 dark:text-gray-400">Loading pension knowledge...</p>
         </div>
       </div>
 
@@ -128,8 +128,8 @@
       <UCard v-else-if="!items || items.length === 0">
         <div class="text-center py-12">
           <UIcon name="i-heroicons-document-text" class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">No Knowledge Items Found</h3>
-          <p class="text-gray-600">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">No Knowledge Items Found</h3>
+          <p class="text-gray-600 dark:text-gray-400">
             {{ filters.search || filters.category ? 'Try adjusting your filters' : 'No pension knowledge items available yet.' }}
           </p>
         </div>
@@ -140,15 +140,15 @@
         <template #header>
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold">Knowledge Items</h2>
-            <span class="text-sm text-gray-600">
+            <span class="text-sm text-gray-600 dark:text-gray-400">
               Showing {{ items.length }} of {{ pagination.total }} items
             </span>
           </div>
         </template>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   ID
@@ -173,12 +173,12 @@
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+            <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="item in items" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-800">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
                   {{ item.id.substring(0, 8) }}...
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-md">
+                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-md">
                   <div class="line-clamp-2">{{ item.content }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -192,7 +192,7 @@
                   </UBadge>
                   <span v-else class="text-gray-400">-</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
                   {{ formatDate(item.created_at) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -219,7 +219,7 @@
 
       <!-- Pagination -->
       <div v-if="items && items.length > 0" class="flex items-center justify-between">
-        <div class="text-sm text-gray-600">
+        <div class="text-sm text-gray-600 dark:text-gray-400">
           Page {{ pagination.page }} of {{ pagination.pages }}
         </div>
         <div class="flex gap-2">
