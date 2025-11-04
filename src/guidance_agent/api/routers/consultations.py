@@ -9,6 +9,7 @@ Handles:
 """
 
 import json
+import logging
 from uuid import uuid4
 from datetime import datetime, timezone
 from typing import List, AsyncIterator
@@ -29,7 +30,11 @@ from guidance_agent.api.dependencies import (
 )
 from guidance_agent.advisor.agent import AdvisorAgent
 from guidance_agent.core.database import Consultation
-from guidance_agent.core.types import CustomerProfile, CustomerDemographics
+from guidance_agent.core.types import CustomerProfile, CustomerDemographics, MemoryType
+from guidance_agent.core.memory import MemoryNode, rate_importance
+from guidance_agent.retrieval.embeddings import embed
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/consultations", tags=["consultations"])
 
@@ -193,6 +198,7 @@ async def send_message(
     consultation_id: str,
     request: schemas.SendMessageRequest,
     db: Session = Depends(get_db),
+    advisor: AdvisorAgent = Depends(get_advisor_agent),
 ):
     """Send a customer message (returns acknowledgment).
 
@@ -202,6 +208,7 @@ async def send_message(
         consultation_id: UUID of consultation
         request: Message content
         db: Database session
+        advisor: Advisor agent instance
 
     Returns:
         Message acknowledgment
@@ -221,6 +228,27 @@ async def send_message(
     consultation.conversation.append(customer_message)
     flag_modified(consultation, "conversation")
     db.commit()
+
+    # Extract and record customer observation as memory
+    if advisor.memory_stream.session:
+        try:
+            # Rate the importance of this customer statement
+            importance = rate_importance(request.content)
+
+            # Only create memory if importance is above threshold
+            if importance > 0.3:
+                memory = MemoryNode(
+                    description=f"Customer inquiry: {request.content}",
+                    importance=importance,
+                    memory_type=MemoryType.OBSERVATION,
+                    embedding=embed(request.content),
+                    timestamp=datetime.fromisoformat(customer_message["timestamp"]),
+                )
+                advisor.memory_stream.add(memory)
+                logger.info(f"Created customer observation memory (importance: {importance:.2f})")
+        except Exception as e:
+            logger.error(f"Failed to create customer memory: {e}")
+            # Don't fail the request if memory creation fails
 
     return schemas.MessageResponse(
         message_id=message_id,
@@ -336,6 +364,32 @@ async def stream_guidance(
             flag_modified(consultation, "meta")
 
             db.commit()
+
+            # Extract and record key insights from advisor response
+            if advisor.memory_stream.session and full_guidance:
+                try:
+                    # Rate importance of the advisor's response
+                    importance = rate_importance(full_guidance)
+
+                    # Higher threshold for advisor insights
+                    if importance > 0.5:
+                        # Truncate long responses for description
+                        description = full_guidance[:200]
+                        if len(full_guidance) > 200:
+                            description += "..."
+
+                        memory = MemoryNode(
+                            description=f"Advisor insight: {description}",
+                            importance=importance,
+                            memory_type=MemoryType.REFLECTION,
+                            embedding=embed(full_guidance),
+                            timestamp=datetime.fromisoformat(advisor_message["timestamp"]),
+                        )
+                        advisor.memory_stream.add(memory)
+                        logger.info(f"Created advisor insight memory (importance: {importance:.2f})")
+                except Exception as e:
+                    logger.error(f"Failed to create advisor memory: {e}")
+                    # Don't fail the request if memory creation fails
 
             # Yield completion event
             yield {
@@ -472,3 +526,46 @@ async def get_consultation_metrics(
         comprehension=comprehension,
         duration_minutes=duration_minutes,
     )
+
+
+@router.get("/{consultation_id}/memories")
+async def get_consultation_memories(
+    consultation_id: str,
+    db: Session = Depends(get_db),
+):
+    """Get all memories associated with a consultation.
+
+    Debug endpoint to verify memories are being recorded and persisted.
+    Returns recent memories from the system to help with troubleshooting.
+
+    Args:
+        consultation_id: UUID of consultation
+        db: Database session
+
+    Returns:
+        List of memory dictionaries with id, description, importance,
+        memory_type, timestamp, and access_count
+
+    Raises:
+        HTTPException: If consultation not found (404)
+    """
+    from guidance_agent.core.database import Memory
+
+    # Verify consultation exists
+    consultation = get_consultation_or_404(consultation_id, db)
+
+    # Get all memories (for now; later could filter by consultation)
+    # Order by most recent first, limit to 50 for debugging
+    memories = db.query(Memory).order_by(Memory.timestamp.desc()).limit(50).all()
+
+    return [
+        {
+            "id": str(m.id),
+            "description": m.description,
+            "importance": m.importance,
+            "memory_type": m.memory_type.value,
+            "timestamp": m.timestamp.isoformat(),
+            "access_count": 0,  # Access count tracking not yet implemented
+        }
+        for m in memories
+    ]

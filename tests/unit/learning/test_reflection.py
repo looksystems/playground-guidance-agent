@@ -1,9 +1,17 @@
 """Unit tests for reflection and learning from failures."""
 
+import os
 import pytest
 from unittest.mock import patch, MagicMock
 from uuid import uuid4
 from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.learning.reflection import (
     reflect_on_failure,
@@ -22,6 +30,9 @@ from guidance_agent.core.types import (
 )
 from guidance_agent.retrieval.retriever import RulesBase
 from guidance_agent.core.database import Rule, get_session
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 @pytest.fixture
@@ -388,7 +399,7 @@ class TestLearnFromFailure:
         mock_validate.return_value = {"valid": True, "confidence": 0.85, "reason": "Good"}
         mock_refine.return_value = "When explaining pension risks to customers with low financial literacy, use simple language and concrete examples."
         mock_judge.return_value = True
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         initial_count = db_session.query(Rule).count()
 
@@ -510,7 +521,7 @@ class TestLearnFromFailure:
         mock_validate.return_value = {"valid": True, "confidence": 0.78, "reason": "Good"}
         mock_refine.return_value = "Always ask customer if explanation makes sense"
         mock_judge.return_value = True
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         learn_from_failure(
             rules_base=rules_base,

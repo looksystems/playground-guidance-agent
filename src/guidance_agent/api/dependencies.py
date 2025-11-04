@@ -120,21 +120,24 @@ def get_advisor_profile() -> AdvisorProfile:
 
 def get_advisor_agent(
     profile: AdvisorProfile = Depends(get_advisor_profile),
+    db: Session = Depends(get_db),
 ) -> AdvisorAgent:
     """Get advisor agent instance.
 
     Args:
-        profile: Advisor profile to use
+        profile: Advisor profile configuration
+        db: Database session for memory persistence
 
     Returns:
-        Configured AdvisorAgent instance
+        Configured advisor agent instance with database-backed memory
 
     Note:
-        Creates a new agent instance per request.
-        In production, consider connection pooling or caching.
+        Creates a new agent instance per request. Memory persistence
+        is now enabled via the database session.
     """
     return AdvisorAgent(
         profile=profile,
+        session=db,
         use_chain_of_thought=True,
         enable_prompt_caching=True,
     )

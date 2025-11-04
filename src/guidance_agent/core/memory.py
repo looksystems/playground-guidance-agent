@@ -1,5 +1,6 @@
 """Memory stream implementation for the guidance agent."""
 
+import logging
 import os
 import re
 from dataclasses import dataclass, field
@@ -11,6 +12,8 @@ from litellm import completion
 
 from guidance_agent.core.types import MemoryType
 from guidance_agent.core.template_engine import render_template
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -322,21 +325,31 @@ class MemoryStream:
         Args:
             memory: Memory node to persist
         """
-        from guidance_agent.core.database import Memory, MemoryTypeEnum
+        try:
+            from guidance_agent.core.database import Memory, MemoryTypeEnum
 
-        db_memory = Memory(
-            id=memory.memory_id,
-            description=memory.description,
-            timestamp=memory.timestamp,
-            last_accessed=memory.last_accessed,
-            importance=memory.importance,
-            memory_type=MemoryTypeEnum(memory.memory_type.value),
-            embedding=memory.embedding,
-            meta=memory.metadata,
-        )
+            db_memory = Memory(
+                id=memory.memory_id,
+                description=memory.description,
+                timestamp=memory.timestamp,
+                last_accessed=memory.last_accessed,
+                importance=memory.importance,
+                memory_type=MemoryTypeEnum(memory.memory_type.value),
+                embedding=memory.embedding,
+                meta=memory.metadata,
+            )
 
-        self.session.add(db_memory)
-        self.session.commit()
+            self.session.add(db_memory)
+            self.session.commit()
+
+            # Log successful persistence with truncated description
+            truncated_desc = memory.description[:50] + "..." if len(memory.description) > 50 else memory.description
+            logger.info(f"Persisted memory {memory.memory_id}: {truncated_desc}")
+
+        except Exception as e:
+            self.session.rollback()
+            logger.error(f"Failed to persist memory: {e}", exc_info=True)
+            raise
 
     def _update_last_accessed(self, memory: MemoryNode) -> None:
         """Update last_accessed timestamp in database.

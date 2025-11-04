@@ -1,11 +1,22 @@
 """Unit tests for vector store."""
 
+import os
 import pytest
 from uuid import uuid4
 from sqlalchemy.orm import Session
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.retrieval.vector_store import PgVectorStore
 from guidance_agent.core.database import Memory, Case, Rule, MemoryTypeEnum, get_session
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 @pytest.fixture
@@ -36,8 +47,8 @@ def memory_vector_store(db_session):
 
 @pytest.fixture
 def sample_embedding():
-    """Create a sample 1536-dimensional embedding."""
-    return [0.1] * 1536
+    """Create a sample embedding with configured dimensions."""
+    return [0.1] * EMBEDDING_DIM
 
 
 class TestPgVectorStore:
@@ -71,7 +82,7 @@ class TestPgVectorStore:
         assert memory.description == "Test memory"
         assert memory.importance == 0.8
         assert memory.memory_type == MemoryTypeEnum.observation
-        assert len(memory.embedding) == 1536
+        assert len(memory.embedding) == EMBEDDING_DIM
 
     def test_add_updates_existing_vector(self, memory_vector_store, sample_embedding, db_session):
         """Test that adding with same ID updates existing record."""
@@ -95,7 +106,7 @@ class TestPgVectorStore:
             "importance": 0.9,
             "memory_type": "reflection",
         }
-        new_embedding = [0.2] * 1536
+        new_embedding = [0.2] * EMBEDDING_DIM
         memory_vector_store.add(memory_id, new_embedding, metadata_v2)
 
         # Should only have one record
@@ -112,9 +123,9 @@ class TestPgVectorStore:
         """Test searching for similar vectors."""
         # Add multiple memories with different embeddings
         memories_data = [
-            (uuid4(), [1.0] + [0.0] * 1535, "Memory about pensions", 0.7),
-            (uuid4(), [0.0] * 1535 + [1.0], "Memory about retirement", 0.6),
-            (uuid4(), [0.9] + [0.0] * 1535, "Memory about pension transfer", 0.8),
+            (uuid4(), [1.0] + [0.0] * (EMBEDDING_DIM - 1), "Memory about pensions", 0.7),
+            (uuid4(), [0.0] * (EMBEDDING_DIM - 1) + [1.0], "Memory about retirement", 0.6),
+            (uuid4(), [0.9] + [0.0] * (EMBEDDING_DIM - 1), "Memory about pension transfer", 0.8),
         ]
 
         for mem_id, embedding, description, importance in memories_data:
@@ -128,7 +139,7 @@ class TestPgVectorStore:
             memory_vector_store.add(mem_id, embedding, metadata)
 
         # Search with query similar to first and third memories
-        query_embedding = [0.95] + [0.0] * 1535
+        query_embedding = [0.95] + [0.0] * (EMBEDDING_DIM - 1)
         results = memory_vector_store.search(query_embedding, top_k=2)
 
         # Should return 2 results
@@ -141,7 +152,7 @@ class TestPgVectorStore:
 
     def test_search_with_empty_store(self, memory_vector_store):
         """Test searching in an empty store returns empty list."""
-        query_embedding = [0.1] * 1536
+        query_embedding = [0.1] * EMBEDDING_DIM
         results = memory_vector_store.search(query_embedding, top_k=5)
 
         assert results == []
@@ -158,11 +169,11 @@ class TestPgVectorStore:
                 "importance": 0.5 + (i * 0.1),
                 "memory_type": "observation" if i < 2 else "reflection",
             }
-            embedding = [float(i)] * 1536
+            embedding = [float(i)] * EMBEDDING_DIM
             memory_vector_store.add(mem_id, embedding, metadata)
 
         # Search only for observations
-        query_embedding = [0.0] * 1536
+        query_embedding = [0.0] * EMBEDDING_DIM
         results = memory_vector_store.search(
             query_embedding,
             top_k=10,
@@ -186,10 +197,10 @@ class TestPgVectorStore:
                 "importance": 0.5,
                 "memory_type": "observation",
             }
-            embedding = [float(i) * 0.1] * 1536  # Scale to avoid numerical issues
+            embedding = [float(i) * 0.1] * EMBEDDING_DIM  # Scale to avoid numerical issues
             memory_vector_store.add(mem_id, embedding, metadata)
 
-        query_embedding = [0.5] * 1536
+        query_embedding = [0.5] * EMBEDDING_DIM
 
         # Request only 3 results
         results = memory_vector_store.search(query_embedding, top_k=3)
@@ -235,7 +246,7 @@ class TestPgVectorStore:
         case_store = PgVectorStore(db_session, Case)
 
         case_id = uuid4()
-        embedding = [0.5] * 1536
+        embedding = [0.5] * EMBEDDING_DIM
         metadata = {
             "task_type": "pension_transfer",
             "customer_situation": "Customer wants to transfer DB pension",
@@ -255,7 +266,7 @@ class TestPgVectorStore:
         rule_store = PgVectorStore(db_session, Rule)
 
         rule_id = uuid4()
-        embedding = [0.3] * 1536
+        embedding = [0.3] * EMBEDDING_DIM
         metadata = {
             "principle": "Always warn about DB pension transfer risks",
             "domain": "pension_transfers",
@@ -275,9 +286,9 @@ class TestPgVectorStore:
         """Test that search results are sorted by similarity score."""
         # Add memories with embeddings at different distances (avoid zero vectors)
         memories_data = [
-            (uuid4(), [1.0] + [0.1] * 1535, "Exact match"),
-            (uuid4(), [0.5] + [0.1] * 1535, "Partial match"),
-            (uuid4(), [0.1] * 1536, "Distant match"),
+            (uuid4(), [1.0] + [0.1] * (EMBEDDING_DIM - 1), "Exact match"),
+            (uuid4(), [0.5] + [0.1] * (EMBEDDING_DIM - 1), "Partial match"),
+            (uuid4(), [0.1] * EMBEDDING_DIM, "Distant match"),
         ]
 
         for mem_id, embedding, description in memories_data:
@@ -291,7 +302,7 @@ class TestPgVectorStore:
             memory_vector_store.add(mem_id, embedding, metadata)
 
         # Search with query matching first embedding
-        query_embedding = [1.0] + [0.1] * 1535
+        query_embedding = [1.0] + [0.1] * (EMBEDDING_DIM - 1)
         results = memory_vector_store.search(query_embedding, top_k=3)
 
         # Results should be ordered by similarity

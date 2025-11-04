@@ -1,11 +1,22 @@
 """Unit tests for memory module."""
 
+import os
 import pytest
 from datetime import datetime, timedelta
 from uuid import UUID
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.core.memory import MemoryNode, MemoryStream
 from guidance_agent.core.types import MemoryType
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 class TestMemoryNode:
@@ -111,7 +122,7 @@ class TestMemoryStream:
 
     def test_retrieve_from_empty_stream(self, memory_stream):
         """Test retrieving from an empty stream returns empty list."""
-        query_embedding = [0.1] * 1536
+        query_embedding = [0.1] * EMBEDDING_DIM
         results = memory_stream.retrieve(query_embedding, top_k=5)
 
         assert results == []
@@ -119,7 +130,7 @@ class TestMemoryStream:
     def test_retrieve_memories_by_relevance(self, populated_memory_stream):
         """Test retrieving memories with relevance scoring."""
         # Query embedding similar to memory at index 3
-        query_embedding = [3.0] * 1536
+        query_embedding = [3.0] * EMBEDDING_DIM
 
         results = populated_memory_stream.retrieve(
             query_embedding, top_k=3, recency_weight=0.0, importance_weight=0.0, relevance_weight=1.0
@@ -130,7 +141,7 @@ class TestMemoryStream:
 
     def test_retrieve_memories_by_importance(self, populated_memory_stream):
         """Test retrieving memories prioritizing importance."""
-        query_embedding = [0.0] * 1536
+        query_embedding = [0.0] * EMBEDDING_DIM
 
         results = populated_memory_stream.retrieve(
             query_embedding,

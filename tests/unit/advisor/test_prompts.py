@@ -1,7 +1,15 @@
 """Tests for advisor prompt templates."""
 
+import os
 import pytest
 from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.core.types import (
     Case,
@@ -25,6 +33,9 @@ from guidance_agent.advisor.prompts import (
     build_reasoning_prompt,
     build_guidance_prompt_with_reasoning,
 )
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 class TestFormatCustomerProfile:
@@ -387,7 +398,7 @@ class TestFormatMemories:
                 timestamp=datetime.now(),
                 importance=0.7,
                 memory_type=MemoryType.OBSERVATION,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             )
         ]
 
@@ -404,14 +415,14 @@ class TestFormatMemories:
                 timestamp=datetime.now(),
                 importance=0.6,
                 memory_type=MemoryType.OBSERVATION,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             ),
             MemoryNode(
                 description="Reflection test",
                 timestamp=datetime.now(),
                 importance=0.8,
                 memory_type=MemoryType.REFLECTION,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             ),
         ]
 

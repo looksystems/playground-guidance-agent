@@ -101,7 +101,7 @@ def generate_financial_situation(demographics: CustomerDemographics) -> Financia
 
     prompt = render_template(
         "customer/generation/financial.jinja",
-        customer=demographics
+        demographics=demographics
     )
 
     try:
@@ -174,7 +174,7 @@ def generate_pension_pots(
 
         prompt = render_template(
             "customer/generation/pension_pots.jinja",
-            customer=demographics,
+            demographics=demographics,
             pot_number=i+1,
             total_pots=num_pots,
             pot_type=pot_type

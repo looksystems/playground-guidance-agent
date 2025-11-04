@@ -3,7 +3,18 @@
 import os
 import pytest
 from unittest.mock import patch, MagicMock
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+
 from guidance_agent.retrieval.embeddings import embed, embed_batch
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 class TestEmbeddings:
@@ -55,20 +66,20 @@ class TestEmbeddings:
         """Test that dimensions parameter IS passed when LITELLM_DROP_PARAMS is false or not set."""
         # Arrange
         mock_response = MagicMock()
-        mock_response.data = [{"embedding": [0.1] * 1536}]
+        mock_response.data = [{"embedding": [0.1] * EMBEDDING_DIM}]
         mock_embedding.return_value = mock_response
 
         # Set environment variable to disable drop_params
-        with patch.dict(os.environ, {"LITELLM_DROP_PARAMS": "false", "EMBEDDING_DIMENSION": "1536"}):
+        with patch.dict(os.environ, {"LITELLM_DROP_PARAMS": "false", "EMBEDDING_DIMENSION": str(EMBEDDING_DIM)}):
             # Act
             result = embed("test text")
 
             # Assert
-            assert len(result) == 1536
+            assert len(result) == EMBEDDING_DIM
             # Verify that embedding was called WITH dimensions parameter
             call_kwargs = mock_embedding.call_args[1]
             assert "dimensions" in call_kwargs, "dimensions parameter should be passed when LITELLM_DROP_PARAMS is false"
-            assert call_kwargs["dimensions"] == 1536
+            assert call_kwargs["dimensions"] == EMBEDDING_DIM
 
     @patch("guidance_agent.retrieval.embeddings.embedding")
     def test_embed_multiple_texts(self, mock_embedding):

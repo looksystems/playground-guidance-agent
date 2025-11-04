@@ -156,9 +156,12 @@ class TestCustomerAdvisorLoop:
         simple_customer_profile,
     ):
         """Test a multi-turn consultation."""
-        # Mock multiple turns
+        # Mock multiple turns - each provide_guidance call makes multiple completion calls:
+        # 1. Initial guidance generation
+        # 2. Compliance validation
+        # 3. Refinement (if needed)
         mock_advisor_completion.side_effect = [
-            # First advisor response
+            # Turn 1 - Initial guidance
             Mock(
                 choices=[
                     Mock(
@@ -168,7 +171,47 @@ class TestCustomerAdvisorLoop:
                     )
                 ]
             ),
-            # Second advisor response
+            # Turn 1 - Validation result
+            Mock(
+                choices=[
+                    Mock(
+                        message=Mock(
+                            content='{"passed": true, "score": 0.95, "issues": [], "reasoning": "Clear guidance"}'
+                        )
+                    )
+                ]
+            ),
+            # Turn 1 - Refinement (if borderline)
+            Mock(
+                choices=[
+                    Mock(
+                        message=Mock(
+                            content="Let me help you understand your pension options."
+                        )
+                    )
+                ]
+            ),
+            # Turn 2 - Initial guidance
+            Mock(
+                choices=[
+                    Mock(
+                        message=Mock(
+                            content="Yes, you're making good progress. Keep it up!"
+                        )
+                    )
+                ]
+            ),
+            # Turn 2 - Validation result
+            Mock(
+                choices=[
+                    Mock(
+                        message=Mock(
+                            content='{"passed": true, "score": 0.95, "issues": [], "reasoning": "Supportive response"}'
+                        )
+                    )
+                ]
+            ),
+            # Turn 2 - Refinement (if borderline)
             Mock(
                 choices=[
                     Mock(

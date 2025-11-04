@@ -1,13 +1,24 @@
 """Unit tests for multi-faceted retrieval system."""
 
+import os
 import pytest
 from uuid import uuid4
 from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.retrieval.retriever import retrieve_context, CaseBase, RulesBase
 from guidance_agent.core.memory import MemoryNode, MemoryStream
 from guidance_agent.core.types import MemoryType, RetrievedContext
 from guidance_agent.core.database import Memory, Case, Rule, get_session
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 @pytest.fixture
@@ -40,19 +51,19 @@ def populated_memory_stream(db_session):
             description="Customer has £150k pension pot",
             importance=0.7,
             memory_type=MemoryType.OBSERVATION,
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * EMBEDDING_DIM,
         ),
         MemoryNode(
             description="Customer is 55 years old",
             importance=0.6,
             memory_type=MemoryType.OBSERVATION,
-            embedding=[0.2] * 1536,
+            embedding=[0.2] * EMBEDDING_DIM,
         ),
         MemoryNode(
             description="Customer seems uncertain about risk",
             importance=0.8,
             memory_type=MemoryType.REFLECTION,
-            embedding=[0.3] * 1536,
+            embedding=[0.3] * EMBEDDING_DIM,
         ),
     ]
 
@@ -74,7 +85,7 @@ def populated_case_base(db_session):
             "customer_situation": "55 year old with £150k pension wants to withdraw 25% tax-free",
             "guidance_provided": "Explained tax-free lump sum options and drawdown alternatives",
             "outcome": {"successful": True, "customer_satisfied": 9},
-            "embedding": [0.4] * 1536,
+            "embedding": [0.4] * EMBEDDING_DIM,
         },
         {
             "id": uuid4(),
@@ -82,7 +93,7 @@ def populated_case_base(db_session):
             "customer_situation": "Customer considering DB pension transfer",
             "guidance_provided": "Warned about risks and recommended Pension Wise appointment",
             "outcome": {"successful": True, "referred_to_specialist": True},
-            "embedding": [0.5] * 1536,
+            "embedding": [0.5] * EMBEDDING_DIM,
         },
     ]
 
@@ -113,7 +124,7 @@ def populated_rules_base(db_session):
             "domain": "pension_transfers",
             "confidence": 0.95,
             "supporting_evidence": ["case-1", "case-2"],
-            "embedding": [0.6] * 1536,
+            "embedding": [0.6] * EMBEDDING_DIM,
         },
         {
             "id": uuid4(),
@@ -121,7 +132,7 @@ def populated_rules_base(db_session):
             "domain": "pension_withdrawal",
             "confidence": 0.90,
             "supporting_evidence": ["case-3", "case-4", "case-5"],
-            "embedding": [0.7] * 1536,
+            "embedding": [0.7] * EMBEDDING_DIM,
         },
     ]
 
@@ -155,7 +166,7 @@ class TestCaseBase:
         case_id = uuid4()
         case_base.add(
             id=case_id,
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * EMBEDDING_DIM,
             metadata={
                 "task_type": "general_inquiry",
                 "customer_situation": "Customer asked about pension options",
@@ -172,7 +183,7 @@ class TestCaseBase:
     def test_retrieve_similar_cases(self, populated_case_base):
         """Test retrieving similar cases by embedding similarity."""
         # Query for cases (should return most similar)
-        query_embedding = [0.4] * 1536
+        query_embedding = [0.4] * EMBEDDING_DIM
 
         results = populated_case_base.retrieve(query_embedding, top_k=2)
 
@@ -200,7 +211,7 @@ class TestRulesBase:
         rule_id = uuid4()
         rules_base.add(
             id=rule_id,
-            embedding=[0.1] * 1536,
+            embedding=[0.1] * EMBEDDING_DIM,
             metadata={
                 "principle": "Always verify customer identity before proceeding",
                 "domain": "compliance",
@@ -218,7 +229,7 @@ class TestRulesBase:
     def test_retrieve_similar_rules(self, populated_rules_base):
         """Test retrieving similar rules by embedding similarity."""
         # Query for pension transfer rules
-        query_embedding = [0.6] * 1536
+        query_embedding = [0.6] * EMBEDDING_DIM
 
         results = populated_rules_base.retrieve(query_embedding, top_k=1)
 
@@ -227,7 +238,7 @@ class TestRulesBase:
 
     def test_retrieve_rules_weighted_by_confidence(self, populated_rules_base):
         """Test that rules are weighted by confidence score."""
-        query_embedding = [0.65] * 1536
+        query_embedding = [0.65] * EMBEDDING_DIM
 
         results = populated_rules_base.retrieve(query_embedding, top_k=2)
 
@@ -243,7 +254,7 @@ class TestRetrieveContext:
     ):
         """Test basic retrieve_context functionality."""
         query = "Customer wants to know about pension withdrawal options"
-        query_embedding = [0.5] * 1536
+        query_embedding = [0.5] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,
@@ -263,7 +274,7 @@ class TestRetrieveContext:
     ):
         """Test that retrieve_context returns correct data structures."""
         query = "Tell me about pension transfers"
-        query_embedding = [0.4] * 1536
+        query_embedding = [0.4] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,
@@ -291,7 +302,7 @@ class TestRetrieveContext:
     ):
         """Test that retrieve_context respects top_k limits."""
         query = "Pension advice needed"
-        query_embedding = [0.3] * 1536
+        query_embedding = [0.3] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,
@@ -315,7 +326,7 @@ class TestRetrieveContext:
         empty_rules = RulesBase(session=db_session)
 
         query = "Test query"
-        query_embedding = [0.1] * 1536
+        query_embedding = [0.1] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,
@@ -335,7 +346,7 @@ class TestRetrieveContext:
     ):
         """Test that retrieve_context combines different retrieval signals."""
         query = "55 year old customer asking about pension withdrawal"
-        query_embedding = [0.35] * 1536
+        query_embedding = [0.35] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,
@@ -355,7 +366,7 @@ class TestRetrieveContext:
     ):
         """Test that retrieve_context can include FCA requirements."""
         query = "DB pension transfer"
-        query_embedding = [0.6] * 1536
+        query_embedding = [0.6] * EMBEDDING_DIM
 
         fca_requirements = "All DB transfers over £30k require FCA-regulated advice"
 
@@ -375,7 +386,7 @@ class TestRetrieveContext:
     ):
         """Test that retrieve_context includes reasoning about what was retrieved."""
         query = "Pension withdrawal query"
-        query_embedding = [0.4] * 1536
+        query_embedding = [0.4] * EMBEDDING_DIM
 
         context = retrieve_context(
             query=query,

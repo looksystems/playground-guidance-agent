@@ -57,8 +57,8 @@ async def test_create_consultation_invalid_age(client: AsyncClient):
         "/api/consultations",
         json={
             "name": "John Smith",
-            "age": 25,  # Too young for pension guidance
-            "initial_query": "Test query",
+            "age": 17,  # Too young - must be 18+
+            "initial_query": "Test query that is long enough to pass validation",
         },
     )
 
@@ -205,22 +205,24 @@ async def test_end_consultation(
     client: AsyncClient, sample_consultation_id, mock_db_session
 ):
     """Test ending an active consultation."""
+    from datetime import timezone
+
     # Mock active consultation
     mock_consultation = MagicMock()
     mock_consultation.id = sample_consultation_id
     mock_consultation.customer_id = str(uuid4())
     mock_consultation.end_time = None
-    mock_consultation.start_time = datetime.now()
+    mock_consultation.start_time = datetime.now(timezone.utc)
     mock_consultation.conversation = [
         {
             "role": "customer",
             "content": "Test",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
         {
             "role": "advisor",
             "content": "Response",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         },
     ]
     mock_consultation.meta = {

@@ -7,9 +7,20 @@ These tests verify that the entire learning system works end-to-end:
 - Rule performance tracking
 """
 
+import os
 import pytest
 from unittest.mock import patch
 from uuid import uuid4
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 from guidance_agent.learning import (
     learn_from_successful_consultation,
@@ -106,7 +117,7 @@ class TestCompleteLearningLoop:
     ):
         """Test complete cycle of learning from success."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         # Simulate successful consultation
         guidance = "You can take 25% tax-free lump sum, use drawdown, or buy an annuity."
@@ -157,7 +168,7 @@ class TestCompleteLearningLoop:
         mock_validate.return_value = {"valid": True, "confidence": 0.85, "reason": "Good"}
         mock_refine.return_value = "Always verify customer comprehension by asking them to explain back"
         mock_judge.return_value = True
-        mock_embed.return_value = [0.2] * 1536
+        mock_embed.return_value = [0.2] * EMBEDDING_DIM
 
         # Simulate failed consultation
         guidance = "Complex technical explanation without checking understanding"
@@ -205,8 +216,8 @@ class TestCompleteLearningLoop:
     ):
         """Test learning from both successful and failed consultations."""
         # Setup mocks
-        mock_embed_case.return_value = [0.1] * 1536
-        mock_embed_rule.return_value = [0.2] * 1536
+        mock_embed_case.return_value = [0.1] * EMBEDDING_DIM
+        mock_embed_rule.return_value = [0.2] * EMBEDDING_DIM
         mock_reflect.return_value = {"principle": "Test", "domain": "test"}
         mock_validate.return_value = {"valid": True, "confidence": 0.75, "reason": "OK"}
         mock_refine.return_value = "Refined test principle"
@@ -252,7 +263,7 @@ class TestCompleteLearningLoop:
         mock_validate.return_value = {"valid": True, "confidence": 0.70, "reason": "OK"}
         mock_refine.return_value = "Test principle"
         mock_judge.return_value = True
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         # Create a rule through learning
         outcome = OutcomeResult(successful=False, customer_satisfaction=3.0)
@@ -283,7 +294,7 @@ class TestCompleteLearningLoop:
     ):
         """Test that learned cases can be retrieved."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         # Learn from multiple successful consultations
         for i in range(3):
@@ -293,7 +304,7 @@ class TestCompleteLearningLoop:
             )
 
         # Retrieve similar cases
-        query_embedding = [0.1] * 1536
+        query_embedding = [0.1] * EMBEDDING_DIM
         retrieved_cases = case_base.retrieve(query_embedding, top_k=2)
 
         # Should retrieve cases

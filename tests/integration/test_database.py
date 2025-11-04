@@ -1,8 +1,16 @@
 """Integration tests for database operations using SQLAlchemy."""
 
+import os
 import pytest
 from uuid import uuid4
 from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.core.database import (
     get_session,
@@ -12,6 +20,9 @@ from guidance_agent.core.database import (
     Consultation,
     MemoryTypeEnum,
 )
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 @pytest.mark.integration
@@ -31,7 +42,7 @@ class TestDatabaseOperations:
                 last_accessed=datetime.now(),
                 importance=0.8,
                 memory_type=MemoryTypeEnum.observation,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
                 meta={"test": "data"},
             )
 
@@ -48,7 +59,7 @@ class TestDatabaseOperations:
             assert retrieved.importance == 0.8
             assert retrieved.memory_type == MemoryTypeEnum.observation
             assert retrieved.meta == {"test": "data"}
-            assert len(retrieved.embedding) == 1536
+            assert len(retrieved.embedding) == EMBEDDING_DIM
 
             # Clean up
             session.delete(retrieved)
@@ -68,7 +79,7 @@ class TestDatabaseOperations:
                 customer_situation="Customer asking about pension options",
                 guidance_provided="Explained withdrawal options",
                 outcome={"successful": True, "satisfaction": 8.5},
-                embedding=[0.2] * 1536,
+                embedding=[0.2] * EMBEDDING_DIM,
                 meta={"advisor_id": str(uuid4())},
             )
 
@@ -103,7 +114,7 @@ class TestDatabaseOperations:
                 domain="general",
                 confidence=0.9,
                 supporting_evidence=["case-1", "case-2"],
-                embedding=[0.3] * 1536,
+                embedding=[0.3] * EMBEDDING_DIM,
             )
 
             session.add(rule)
@@ -182,7 +193,7 @@ class TestDatabaseOperations:
                 last_accessed=datetime.now(),
                 importance=0.5,
                 memory_type=MemoryTypeEnum.observation,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             )
 
             obs2 = Memory(
@@ -192,7 +203,7 @@ class TestDatabaseOperations:
                 last_accessed=datetime.now(),
                 importance=0.6,
                 memory_type=MemoryTypeEnum.observation,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             )
 
             reflection = Memory(
@@ -202,7 +213,7 @@ class TestDatabaseOperations:
                 last_accessed=datetime.now(),
                 importance=0.8,
                 memory_type=MemoryTypeEnum.reflection,
-                embedding=[0.1] * 1536,
+                embedding=[0.1] * EMBEDDING_DIM,
             )
 
             session.add_all([obs1, obs2, reflection])

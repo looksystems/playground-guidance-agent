@@ -49,14 +49,16 @@ class AdvisorAgent:
     def __init__(
         self,
         profile: AdvisorProfile,
+        session: Optional["Session"] = None,
         model: Optional[str] = None,
         use_chain_of_thought: bool = True,
         enable_prompt_caching: bool = True,
     ):
-        """Initialize advisor agent.
+        """Initialize advisor agent with profile and optional database session.
 
         Args:
             profile: Advisor profile configuration
+            session: SQLAlchemy database session for memory persistence
             model: LLM model to use (defaults to LITELLM_MODEL_ADVISOR env var)
             use_chain_of_thought: Whether to use chain-of-thought reasoning
             enable_prompt_caching: Whether to enable prompt caching for cost reduction
@@ -71,7 +73,7 @@ class AdvisorAgent:
         self.provider_info = get_provider_info(self.model)
 
         # Initialize components
-        self.memory_stream = MemoryStream()
+        self.memory_stream = MemoryStream(session=session, load_existing=True)
         self.compliance_validator = ComplianceValidator(model=self.model)
 
     def provide_guidance(

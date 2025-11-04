@@ -1,8 +1,17 @@
 """Shared pytest fixtures for tests."""
 
+import os
 import pytest
 from datetime import datetime
 from uuid import uuid4
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env file from project root to get EMBEDDING_DIMENSION
+# This ensures tests use the same configuration as the application
+env_path = Path(__file__).parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.core import (
     AgentConfig,
@@ -15,6 +24,10 @@ from guidance_agent.core import (
     PensionPot,
 )
 
+# Get embedding dimension from environment (loaded from .env)
+# Default to 1536 only if not set in .env
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+
 
 @pytest.fixture
 def sample_memory_node():
@@ -25,7 +38,7 @@ def sample_memory_node():
         timestamp=datetime.now(),
         importance=0.7,
         memory_type=MemoryType.OBSERVATION,
-        embedding=[0.1] * 1536,  # Mock embedding
+        embedding=[0.1] * EMBEDDING_DIM,  # Mock embedding
     )
 
 
@@ -46,7 +59,7 @@ def populated_memory_stream(sample_memory_node):
             description=f"Test observation {i}",
             importance=0.5 + (i * 0.1),
             memory_type=MemoryType.OBSERVATION,
-            embedding=[float(i)] * 1536,
+            embedding=[float(i)] * EMBEDDING_DIM,
         )
         stream.add(memory)
 
@@ -55,7 +68,7 @@ def populated_memory_stream(sample_memory_node):
         description="Customer seems uncertain about risk tolerance",
         importance=0.8,
         memory_type=MemoryType.REFLECTION,
-        embedding=[0.5] * 1536,
+        embedding=[0.5] * EMBEDDING_DIM,
     )
     stream.add(reflection)
 
@@ -113,13 +126,13 @@ def sample_customer_profile():
 @pytest.fixture
 def mock_embedding():
     """Create a mock embedding vector."""
-    return [0.1] * 1536
+    return [0.1] * EMBEDDING_DIM
 
 
 @pytest.fixture
 def mock_embedding_batch():
     """Create a batch of mock embedding vectors."""
-    return [[float(i) * 0.1] * 1536 for i in range(5)]
+    return [[float(i) * 0.1] * EMBEDDING_DIM for i in range(5)]
 
 
 @pytest.fixture(autouse=True)

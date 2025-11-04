@@ -1,9 +1,17 @@
 """Unit tests for learning from successful consultations."""
 
+import os
 import pytest
 from unittest.mock import patch
 from uuid import uuid4
 from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env to get correct EMBEDDING_DIMENSION
+env_path = Path(__file__).parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 from guidance_agent.learning.case_learning import (
     learn_from_successful_consultation,
@@ -22,6 +30,9 @@ from guidance_agent.core.types import (
 )
 from guidance_agent.retrieval.retriever import CaseBase
 from guidance_agent.core.database import Case, get_session
+
+# Get embedding dimension from environment (loaded from .env)
+EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
 
 
 @pytest.fixture
@@ -230,7 +241,7 @@ class TestExtractCaseFromConsultation:
     ):
         """Test basic case extraction."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         case_data = extract_case_from_consultation(
             customer_profile=sample_customer_profile,
@@ -251,7 +262,7 @@ class TestExtractCaseFromConsultation:
     ):
         """Test that extracted case has valid task type."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         case_data = extract_case_from_consultation(
             customer_profile=sample_customer_profile,
@@ -268,7 +279,7 @@ class TestExtractCaseFromConsultation:
     ):
         """Test that extracted case has embedding."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         case_data = extract_case_from_consultation(
             customer_profile=sample_customer_profile,
@@ -278,7 +289,7 @@ class TestExtractCaseFromConsultation:
 
         embedding = case_data["embedding"]
         assert isinstance(embedding, list)
-        assert len(embedding) == 1536  # Standard embedding dimension
+        assert len(embedding) == EMBEDDING_DIM
         assert all(isinstance(x, float) for x in embedding)
 
     @patch("guidance_agent.learning.case_learning.embed")
@@ -287,7 +298,7 @@ class TestExtractCaseFromConsultation:
     ):
         """Test that extracted case preserves outcome details."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         case_data = extract_case_from_consultation(
             customer_profile=sample_customer_profile,
@@ -315,7 +326,7 @@ class TestLearnFromSuccessfulConsultation:
     ):
         """Test that successful consultation adds case to case base."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         initial_count = db_session.query(Case).count()
 
@@ -342,7 +353,7 @@ class TestLearnFromSuccessfulConsultation:
     ):
         """Test that stored case has correct data."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         learn_from_successful_consultation(
             case_base=case_base,
@@ -381,7 +392,7 @@ class TestLearnFromSuccessfulConsultation:
     ):
         """Test learning from multiple successful consultations."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         # Add three successful consultations
         for i in range(3):
@@ -402,7 +413,7 @@ class TestLearnFromSuccessfulConsultation:
     ):
         """Test learning from partially successful consultation."""
         # Mock embedding
-        mock_embed.return_value = [0.1] * 1536
+        mock_embed.return_value = [0.1] * EMBEDDING_DIM
 
         partial_success = OutcomeResult(
             status=OutcomeStatus.PARTIAL_SUCCESS,

@@ -52,6 +52,12 @@ def mock_advisor_agent():
 
     agent.provide_guidance_stream = mock_stream
 
+    # Mock memory_stream with session attribute
+    agent.memory_stream = MagicMock()
+    agent.memory_stream.session = MagicMock()  # Mock session so checks pass
+    agent.memory_stream.retrieve.return_value = []  # Return empty list for retrievals
+    agent.memory_stream.add = MagicMock()  # Mock add method
+
     # Mock _retrieve_context
     from guidance_agent.core.types import RetrievedContext
 
