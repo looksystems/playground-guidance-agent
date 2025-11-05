@@ -338,7 +338,7 @@ async def stream_guidance(
             validation = await advisor._validate_and_record_async(
                 guidance=full_guidance,
                 customer=customer,
-                context=advisor._retrieve_context(customer),
+                context=advisor._retrieve_context(customer, conversation_history),
             )
 
             # Store advisor message in conversation

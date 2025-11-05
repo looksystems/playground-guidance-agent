@@ -289,5 +289,18 @@ const consultation = computed(() => {
   }
 })
 
-const renderMarkdown = (text: string) => marked.parse(text)
+// Highlight <think> tags in admin view for visibility
+const highlightThinkTags = (text: string): string => {
+  // Replace <think>...</think> blocks with highlighted HTML
+  return text.replace(
+    /<think>([\s\S]*?)<\/think>/gi,
+    '<div class="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-500 pl-4 py-2 my-2 italic text-purple-700 dark:text-purple-300"><strong>[Internal Reasoning]</strong><br>$1</div>'
+  )
+}
+
+const renderMarkdown = (text: string) => {
+  // First highlight think tags, then render markdown
+  const highlighted = highlightThinkTags(text)
+  return marked.parse(highlighted)
+}
 </script>

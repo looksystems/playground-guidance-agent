@@ -56,11 +56,12 @@
           v-model="input"
           :disabled="isLoading"
           placeholder="Ask about your pension options..."
-          :rows="1"
+          :rows="2"
           autoresize
           :maxrows="4"
           class="flex-1"
           size="lg"
+          @keydown.enter="handleKeydown"
         />
         <UButton
           type="submit"
@@ -138,6 +139,15 @@ const loadConversationHistory = async () => {
   } finally {
     isLoadingHistory.value = false
   }
+}
+
+const handleKeydown = (event: KeyboardEvent) => {
+  // Enter without Shift sends the message
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault()
+    handleSubmit()
+  }
+  // Shift+Enter creates a new line (default behavior, so we don't prevent it)
 }
 
 const handleSubmit = async (event?: { preventDefault?: () => void }) => {
@@ -257,7 +267,17 @@ const handleSubmit = async (event?: { preventDefault?: () => void }) => {
   }
 }
 
-const renderMarkdown = (text: string) => marked.parse(text)
+// Filter out <think> tags for customer-facing display
+const filterThinkTags = (text: string): string => {
+  // Remove <think>...</think> blocks including the tags
+  return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+}
+
+const renderMarkdown = (text: string) => {
+  // Filter think tags before rendering markdown
+  const filtered = filterThinkTags(text)
+  return marked.parse(filtered)
+}
 
 // Expose for testing
 defineExpose({

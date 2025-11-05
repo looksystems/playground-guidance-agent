@@ -94,6 +94,21 @@ class ComplianceValidator:
         self.provider = detect_provider(self.model)
         self.provider_info = get_provider_info(self.model)
 
+    @staticmethod
+    def _filter_think_tags(text: str) -> str:
+        """Filter out <think> tags from model output.
+
+        Some reasoning models (like Qwen) include their chain-of-thought in <think> tags.
+        We need to filter these out before validation since customers don't see them.
+
+        Args:
+            text: Raw model output that may contain <think> tags
+
+        Returns:
+            Filtered text with <think> blocks removed
+        """
+        return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL | re.IGNORECASE).strip()
+
     def validate(
         self,
         guidance: str,
@@ -112,8 +127,11 @@ class ComplianceValidator:
         Returns:
             ValidationResult with pass/fail, confidence, and issues
         """
+        # Filter out <think> tags - validate what customer sees, not internal reasoning
+        filtered_guidance = self._filter_think_tags(guidance)
+
         # Build validation prompt
-        prompt = self._build_validation_prompt(guidance, customer, reasoning, customer_message)
+        prompt = self._build_validation_prompt(filtered_guidance, customer, reasoning, customer_message)
 
         # Get cache headers
         extra_headers = self._get_cache_headers()
@@ -155,8 +173,11 @@ class ComplianceValidator:
         Returns:
             ValidationResult with pass/fail, confidence, and issues
         """
+        # Filter out <think> tags - validate what customer sees, not internal reasoning
+        filtered_guidance = self._filter_think_tags(guidance)
+
         # Build validation prompt
-        prompt = self._build_validation_prompt(guidance, customer, reasoning, customer_message)
+        prompt = self._build_validation_prompt(filtered_guidance, customer, reasoning, customer_message)
 
         # Get cache headers
         extra_headers = self._get_cache_headers()
