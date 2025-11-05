@@ -13,12 +13,14 @@ from fastapi.responses import JSONResponse
 from datetime import datetime, timezone
 import os
 
+# CRITICAL: Initialize Phoenix tracing BEFORE importing anything that uses litellm
+# This must be the FIRST guidance_agent import to ensure instrumentation happens first
+from guidance_agent.core import llm_config  # noqa: F401
+
+# Now safe to import routers (which import advisor, which imports litellm)
 from guidance_agent.api.routers import consultations, customers, admin
 from guidance_agent.api import schemas
 from guidance_agent.core.database import get_session
-
-# Initialize Phoenix tracing before any LLM calls
-from guidance_agent.core import llm_config  # noqa: F401
 
 # Create FastAPI application
 app = FastAPI(

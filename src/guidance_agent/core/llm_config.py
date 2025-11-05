@@ -47,13 +47,28 @@ def setup_phoenix_tracing() -> bool:
     project_name = os.getenv("PHOENIX_PROJECT_NAME", "guidance-agent")
 
     try:
-        # Register Phoenix tracer provider with batch mode enabled
-        # batch=True uses BatchSpanProcessor for async compatibility
+        # Register Phoenix tracer provider (creates the base tracer)
         tracer_provider = register(
             project_name=project_name,
             endpoint=endpoint,
-            batch=True,  # Use BatchSpanProcessor for async compatibility
         )
+
+        # Create OTLP exporter with explicit settings
+        # insecure=True allows HTTP instead of HTTPS
+        exporter = OTLPSpanExporter(
+            endpoint=endpoint,
+            insecure=True  # Required for HTTP endpoints
+        )
+
+        # Add BatchSpanProcessor for async compatibility
+        # This batches spans before sending to reduce overhead
+        batch_processor = BatchSpanProcessor(
+            exporter,
+            max_queue_size=2048,
+            schedule_delay_millis=5000,  # Send every 5 seconds
+            max_export_batch_size=512,
+        )
+        tracer_provider.add_span_processor(batch_processor)
 
         # Instrument LiteLLM - this automatically traces ALL LiteLLM calls!
         instrumentor = LiteLLMInstrumentor()
@@ -63,6 +78,15 @@ def setup_phoenix_tracing() -> bool:
         logger.info(f"  Project: {project_name}")
         logger.info(f"  UI: http://localhost:6006")
         logger.info("  LiteLLM instrumentation: ACTIVE")
+
+        # Create a test span to verify tracing works
+        from opentelemetry import trace
+        tracer = trace.get_tracer(__name__)
+        with tracer.start_as_current_span("phoenix-test-span") as span:
+            span.set_attribute("test.type", "initialization")
+            span.set_attribute("test.success", True)
+            logger.info("  ✓ Test span created - should appear in Phoenix UI")
+
         return True
 
     except Exception as e:

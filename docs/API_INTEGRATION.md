@@ -92,6 +92,13 @@ async def stream_guidance(consultation_id: str, advisor: AdvisorAgent):
     # Retrieve consultation from database
     consultation = get_consultation_or_404(consultation_id, db)
 
+    # Extract the most recent customer message as presenting_question
+    latest_customer_message = ""
+    for turn in reversed(consultation.conversation):
+        if turn.get("role") == "customer":
+            latest_customer_message = turn.get("content", "")
+            break
+
     # Build CustomerProfile from consultation data
     customer = CustomerProfile(
         customer_id=consultation.customer_id,
@@ -99,7 +106,7 @@ async def stream_guidance(consultation_id: str, advisor: AdvisorAgent):
             age=consultation.meta.get("customer_age", 50),
             financial_literacy="medium",
         ),
-        presenting_question=consultation.meta.get("initial_query", ""),
+        presenting_question=latest_customer_message,  # ✅ FIXED: Uses latest customer message
     )
 
     # Get conversation history

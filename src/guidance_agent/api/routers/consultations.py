@@ -287,6 +287,13 @@ async def stream_guidance(
     async def event_generator() -> AsyncIterator[dict]:
         """Generate SSE events from advisor guidance stream."""
         try:
+            # Extract the most recent customer message as presenting_question
+            latest_customer_message = ""
+            for turn in reversed(consultation.conversation):
+                if turn.get("role") == "customer":
+                    latest_customer_message = turn.get("content", "")
+                    break
+
             # Build customer profile from consultation
             customer = CustomerProfile(
                 customer_id=consultation.customer_id,
@@ -297,7 +304,7 @@ async def stream_guidance(
                     employment_status="unknown",
                     financial_literacy="medium",
                 ),
-                presenting_question=consultation.meta.get("initial_query", ""),
+                presenting_question=latest_customer_message,
             )
 
             # Get conversation history (exclude system messages)

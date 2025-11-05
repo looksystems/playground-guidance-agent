@@ -29,6 +29,7 @@ class IssueType(str, Enum):
     UNDERSTANDING_CHECK = "understanding_check"  # No verification of comprehension
     SIGNPOSTING = "signposting"  # Missing signpost to regulated advisor
     DB_WARNING = "db_warning"  # Missing DB transfer warning
+    RELEVANCE = "relevance"  # Response doesn't address customer's question
 
 
 class IssueSeverity(str, Enum):
@@ -58,6 +59,9 @@ class ValidationResult:
     issues: list[ValidationIssue] = field(default_factory=list)
     requires_human_review: bool = False
     reasoning: str = ""
+    is_relevant: bool = True  # Whether response addresses customer's question
+    relevance_score: float = 1.0  # 0-1, how well the response addresses the question
+    relevance_reasoning: str = ""  # Explanation of relevance assessment
 
 
 class ComplianceValidator:
@@ -95,6 +99,7 @@ class ComplianceValidator:
         guidance: str,
         customer: CustomerProfile,
         reasoning: str = "",
+        customer_message: str = "",
     ) -> ValidationResult:
         """Validate guidance for FCA compliance.
 
@@ -102,12 +107,13 @@ class ComplianceValidator:
             guidance: The guidance text to validate
             customer: Customer profile for context
             reasoning: Chain-of-thought reasoning used to generate guidance
+            customer_message: The original customer question/message (for relevance checking)
 
         Returns:
             ValidationResult with pass/fail, confidence, and issues
         """
         # Build validation prompt
-        prompt = self._build_validation_prompt(guidance, customer, reasoning)
+        prompt = self._build_validation_prompt(guidance, customer, reasoning, customer_message)
 
         # Get cache headers
         extra_headers = self._get_cache_headers()
@@ -133,6 +139,7 @@ class ComplianceValidator:
         guidance: str,
         customer: CustomerProfile,
         reasoning: str = "",
+        customer_message: str = "",
     ) -> ValidationResult:
         """Validate guidance for FCA compliance asynchronously.
 
@@ -143,12 +150,13 @@ class ComplianceValidator:
             guidance: The guidance text to validate
             customer: Customer profile for context
             reasoning: Chain-of-thought reasoning used to generate guidance
+            customer_message: The original customer question/message (for relevance checking)
 
         Returns:
             ValidationResult with pass/fail, confidence, and issues
         """
         # Build validation prompt
-        prompt = self._build_validation_prompt(guidance, customer, reasoning)
+        prompt = self._build_validation_prompt(guidance, customer, reasoning, customer_message)
 
         # Get cache headers
         extra_headers = self._get_cache_headers()
@@ -188,6 +196,7 @@ class ComplianceValidator:
         guidance: str,
         customer: CustomerProfile,
         reasoning: str,
+        customer_message: str = "",
     ) -> str:
         """Build prompt for compliance validation.
 
@@ -195,6 +204,7 @@ class ComplianceValidator:
             guidance: The guidance text to validate
             customer: Customer profile
             reasoning: Reasoning behind the guidance
+            customer_message: The original customer question/message
 
         Returns:
             Formatted validation prompt
@@ -204,6 +214,7 @@ class ComplianceValidator:
             guidance=guidance,
             customer=customer,
             reasoning=reasoning,
+            customer_message=customer_message,
         )
 
     def _parse_validation_response(self, response: str) -> ValidationResult:
@@ -227,8 +238,29 @@ class ComplianceValidator:
         issues_match = re.search(r"ISSUES:\s*(.+)", response)
         issues_text = issues_match.group(1).strip() if issues_match else ""
 
+        # Extract relevance assessment
+        relevance_match = re.search(r"RELEVANCE:\s*(YES|NO|UNCERTAIN)", response)
+        is_relevant = relevance_match.group(1) == "YES" if relevance_match else True
+
+        relevance_score_match = re.search(r"RELEVANCE_SCORE:\s*([0-9.]+)", response)
+        relevance_score = float(relevance_score_match.group(1)) if relevance_score_match else 1.0
+
+        relevance_reasoning_match = re.search(r"RELEVANCE_REASONING:\s*(.+?)(?=\n\n|\nANALYSIS:|\nOVERALL:|\Z)", response, re.DOTALL)
+        relevance_reasoning = relevance_reasoning_match.group(1).strip() if relevance_reasoning_match else ""
+
         # Parse individual checks to identify issue types
         issues = []
+
+        # Check relevance first
+        if "Response relevance: FAIL" in response or not is_relevant:
+            issues.append(
+                ValidationIssue(
+                    issue_type=IssueType.RELEVANCE,
+                    severity=IssueSeverity.HIGH,
+                    description="Response does not adequately address the customer's question",
+                    suggestion="Ensure response directly answers what the customer asked and addresses their specific concerns.",
+                )
+            )
 
         # Check each compliance area
         if "Guidance vs Advice boundary: FAIL" in response:
@@ -315,14 +347,17 @@ class ComplianceValidator:
                 )
 
         # Determine pass/fail
-        passed = overall == "PASS"
+        passed = overall == "PASS" and is_relevant
 
         # Determine if human review is needed
         # Low confidence (<0.70) or UNCERTAIN always requires review
         # High-severity issues also require review
+        # Low relevance score (<0.70) also requires review
         requires_review = (
             confidence < 0.70
+            or relevance_score < 0.70
             or overall == "UNCERTAIN"
+            or not is_relevant
             or any(i.severity == IssueSeverity.HIGH for i in issues)
         )
 
@@ -332,4 +367,7 @@ class ComplianceValidator:
             issues=issues,
             requires_human_review=requires_review,
             reasoning=response,
+            is_relevant=is_relevant,
+            relevance_score=relevance_score,
+            relevance_reasoning=relevance_reasoning,
         )

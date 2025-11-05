@@ -9,8 +9,9 @@
   - guidance: String containing the guidance text to validate
   - customer: CustomerProfile object
   - reasoning: String containing advisor's reasoning (optional)
+  - customer_message: String containing the customer's original question (optional)
 
-  Returns: Structured text with ANALYSIS, OVERALL, CONFIDENCE, ISSUES
+  Returns: Structured text with RELEVANCE, RELEVANCE_SCORE, RELEVANCE_REASONING, ANALYSIS, OVERALL, CONFIDENCE, ISSUES
 #}
 You are a compliance expert reviewing pension guidance for FCA compliance.
 
@@ -25,11 +26,31 @@ DB transfers require FCA-regulated financial advice and come with
 significant warnings about giving up guaranteed income.
 {%- endif %}
 
+{%- if customer_message %}
+
+Customer's Question:
+"{{ customer_message }}"
+{%- endif %}
+
 Guidance to Review:
 "{{ guidance }}"
 
 Advisor's Reasoning:
 {{ reasoning if reasoning else "Not provided" }}
+
+Response Relevance Assessment:
+{%- if customer_message %}
+
+**Critical First Check**: Does the guidance directly address the customer's question?
+   - Does the response answer what the customer actually asked?
+   - Is the information provided relevant to the customer's stated needs/goals?
+   - Are there significant gaps where the customer's question wasn't addressed?
+   - Are there irrelevant tangents that don't relate to the customer's query?
+   - FAIL if the response doesn't adequately address the customer's question
+{%- else %}
+
+(Relevance check skipped - no customer message provided for comparison)
+{%- endif %}
 
 FCA Compliance Checklist:
 
@@ -63,8 +84,17 @@ FCA Compliance Checklist:
    - FAIL if signposting required but missing
 
 Provide your analysis in this exact format:
+{%- if customer_message %}
+
+RELEVANCE: [YES/NO/UNCERTAIN]
+RELEVANCE_SCORE: [0.00-1.00]
+RELEVANCE_REASONING: [Explain how well the response addresses the customer's question]
+{%- endif %}
 
 ANALYSIS:
+{%- if customer_message %}
+0. Response relevance: [PASS/FAIL/UNCERTAIN] - [Does it answer the customer's question?]
+{%- endif %}
 1. Guidance vs Advice boundary: [PASS/FAIL/UNCERTAIN] - [brief explanation]
 2. Risk disclosure: [PASS/FAIL/UNCERTAIN] - [brief explanation]
 3. Clear and not misleading: [PASS/FAIL/UNCERTAIN] - [brief explanation]

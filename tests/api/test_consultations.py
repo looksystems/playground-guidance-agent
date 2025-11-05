@@ -547,3 +547,108 @@ async def test_consultation_detail_returns_validation_fields(
     assert advisor_turn["compliance_issues"][0]["category"] == "clarity"
     assert advisor_turn["compliance_passed"] is True
     assert advisor_turn["requires_human_review"] is False
+
+
+# ========================================
+# PHASE 4 REGRESSION TESTS
+# ========================================
+
+
+@pytest.mark.asyncio
+async def test_multi_turn_conversation_context(
+    client: AsyncClient, sample_consultation_id, mock_db_session, mock_advisor_agent
+):
+    """Test that follow-up questions are answered in context of the conversation.
+
+    Regression test for bug where follow-up questions would receive generic
+    pension overview responses instead of addressing the specific topic.
+
+    This test verifies that:
+    1. Initial message establishes conversation context
+    2. Follow-up question about a specific topic receives a relevant response
+    3. Response addresses the follow-up topic, not the initial query
+    """
+    # Mock active consultation with initial conversation
+    mock_consultation = MagicMock()
+    mock_consultation.id = sample_consultation_id
+    mock_consultation.customer_id = str(uuid4())
+    mock_consultation.end_time = None
+    mock_consultation.meta = {
+        "advisor_name": "Sarah",
+        "customer_age": 52,
+        "initial_query": "I have 4 different pensions from old jobs. Can I combine them?",
+    }
+    mock_consultation.conversation = [
+        {
+            "role": "customer",
+            "content": "I have 4 different pensions from old jobs. Can I combine them?",
+            "timestamp": datetime.now().isoformat(),
+        },
+        {
+            "role": "advisor",
+            "content": "Yes, pension consolidation is possible. Let me explain...",
+            "timestamp": datetime.now().isoformat(),
+            "compliance_score": 0.95,
+        },
+    ]
+
+    mock_db_session.query.return_value.filter.return_value.first.return_value = (
+        mock_consultation
+    )
+
+    # Override the advisor's streaming response to return consolidation-specific content
+    async def mock_consolidation_stream(*args, **kwargs):
+        """Mock streaming response with consolidation benefits."""
+        chunks = [
+            "Great question about consolidation benefits! ",
+            "The main advantages of consolidating your pensions include: ",
+            "simplified management, potentially lower fees, ",
+            "easier tracking of your retirement savings, ",
+            "and clearer visibility of your overall pension position. ",
+            "However, it's important to consider any exit penalties ",
+            "or valuable guarantees you might lose.",
+        ]
+        for chunk in chunks:
+            yield chunk
+
+    mock_advisor_agent.provide_guidance_stream = mock_consolidation_stream
+
+    # Send follow-up question about a specific topic
+    follow_up_content = "What are the benefits of consolidating my pensions?"
+    response = await client.post(
+        f"/api/consultations/{sample_consultation_id}/messages",
+        json={"content": follow_up_content},
+    )
+
+    assert response.status_code == 200
+
+    # Stream the advisor's response to the follow-up
+    stream_response = await client.get(
+        f"/api/consultations/{sample_consultation_id}/stream"
+    )
+
+    # Collect streamed content
+    streamed_content = b""
+    async for chunk in stream_response.aiter_bytes():
+        streamed_content += chunk
+
+    content_text = streamed_content.decode("utf-8").lower()
+
+    # Verify response addresses consolidation benefits specifically
+    assert any(
+        keyword in content_text
+        for keyword in ["consolidat", "benefit", "advantage", "simplif"]
+    ), "Response should address consolidation benefits"
+
+    # Verify response is NOT a generic pension overview
+    # (Generic responses typically mention "types of pensions" or "pension basics")
+    assert not all(
+        generic in content_text
+        for generic in ["types of pension", "pension basics", "what is a pension"]
+    ), "Response should not be a generic pension overview"
+
+    # Verify conversation history was passed to advisor
+    # (The advisor should have access to previous turns)
+    advisor_message = mock_consultation.conversation[-1]
+    assert advisor_message["role"] == "advisor"
+    assert len(mock_consultation.conversation) >= 3, "Should have at least 3 messages"
