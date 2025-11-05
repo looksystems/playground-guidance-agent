@@ -10,6 +10,7 @@
   - customer: CustomerProfile object (or customer_profile for legacy support)
   - guidance: String containing the guidance that failed (or guidance_provided for legacy support)
   - outcome: Outcome object with scores and reasoning
+  - conversational_quality: (Optional) Float score 0-1 for conversational naturalness
 
   Returns: Structured text with Principle and Domain
 #}
@@ -31,9 +32,48 @@ What Went Wrong:
 - Issues: {{ ', '.join(outcome.issues) }}
 - Reasoning: {{ outcome.reasoning }}
 
+{% if conversational_quality is defined -%}
+## Conversational Effectiveness Analysis
+
+Overall Conversational Quality: {{ "%.2f"|format(conversational_quality) }} / 1.0
+
+### Language Naturalness
+Evaluate if the guidance used natural, conversational language or if it sounded robotic, repetitive, or overly formal. Consider:
+- Variety of sentence structures and phrasing
+- Avoidance of repetitive templates
+- Appropriate tone for the customer's literacy level
+
+### Dialogue Flow
+Assess how well the conversation flowed between topics and concepts:
+- Use of signposting phrases to guide the customer ("Let me explain...", "Here's what this means...")
+- Smooth transitions between topics
+- Logical progression of information
+
+### Engagement
+Analyze how engaging the advisor was in maintaining an active dialogue:
+- Use of open-ended questions to encourage customer participation
+- Checking for understanding throughout
+- Personalization (using customer's name, referencing their specific situation)
+
+### Successful Techniques
+Identify any conversational techniques that worked well:
+- Effective use of analogies or examples
+- Clear explanations of complex concepts
+- Building rapport through personalized language
+
+### Areas for Improvement
+Identify conversational weaknesses that may have contributed to the poor outcome:
+- Overuse of technical jargon
+- Lack of engagement questions
+- Repetitive phrasing
+- Insufficient personalization
+- Poor signposting/transitions
+
+{% endif -%}
+
 Task: Extract ONE specific, actionable principle that would prevent this type of failure.
 
 Format your response as:
 Principle: [specific principle]
 
-Domain: [domain this applies to, e.g., communication, risk_disclosure, compliance, etc.]
+Domain: [domain this applies to, e.g., communication, risk_disclosure, compliance, conversational_engagement, etc.]

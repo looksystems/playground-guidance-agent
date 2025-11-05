@@ -134,16 +134,23 @@ def extract_case_from_consultation(
     customer_profile: CustomerProfile,
     guidance_provided: str,
     outcome: OutcomeResult,
+    conversational_quality: float = None,
+    conversation_history: list = None,
 ) -> dict[str, Any]:
     """Extract a case from a successful consultation.
 
     Creates a case record that includes the customer situation, guidance provided,
     and outcome. The case is embedded for semantic similarity search.
 
+    For high-quality consultations (quality > 0.7), also captures successful
+    dialogue techniques used.
+
     Args:
         customer_profile: Customer profile from the consultation
         guidance_provided: Guidance that was provided to customer
         outcome: Result of the consultation
+        conversational_quality: Optional quality score (0-1)
+        conversation_history: Optional full conversation for technique analysis
 
     Returns:
         Dictionary containing case data ready for storage
@@ -173,7 +180,87 @@ def extract_case_from_consultation(
         "embedding": embedding,
     }
 
+    # Capture dialogue techniques for high-quality consultations (Phase 2)
+    if conversational_quality is not None and conversational_quality > 0.7 and conversation_history:
+        dialogue_techniques = _extract_dialogue_techniques(conversation_history, conversational_quality)
+        case_data["dialogue_techniques"] = dialogue_techniques
+
     return case_data
+
+
+def _extract_dialogue_techniques(conversation_history: list, quality_score: float) -> dict[str, Any]:
+    """Extract successful dialogue techniques from a high-quality consultation.
+
+    Args:
+        conversation_history: List of conversation turns
+        quality_score: Overall conversational quality score
+
+    Returns:
+        Dictionary of successful techniques used
+
+    Example:
+        >>> techniques = _extract_dialogue_techniques(history, 0.85)
+        >>> assert "signposting_examples" in techniques
+    """
+    # Extract advisor messages only
+    advisor_messages = [
+        msg["content"]
+        for msg in conversation_history
+        if msg.get("role") == "advisor"
+    ]
+
+    if not advisor_messages:
+        return {}
+
+    # Signposting phrases used
+    signpost_phrases = [
+        "let me break this down", "let me explain", "let me help",
+        "here's what this means", "here's what", "building on",
+        "before we", "first,", "let's explore", "let's look",
+        "here's how", "one option", "one approach",
+        "some people find", "it's worth", "it depends"
+    ]
+
+    signposting_examples = []
+    for msg in advisor_messages:
+        for phrase in signpost_phrases:
+            if phrase in msg.lower():
+                # Extract sentence containing the phrase
+                sentences = msg.split(". ")
+                for sentence in sentences:
+                    if phrase in sentence.lower():
+                        signposting_examples.append(sentence.strip())
+                        break
+
+    # Engagement questions (examples)
+    engagement_questions = []
+    for msg in advisor_messages:
+        sentences = msg.split(". ")
+        for sentence in sentences:
+            if "?" in sentence:
+                engagement_questions.append(sentence.strip())
+
+    # Personalization examples (name usage)
+    personalization_examples = []
+    for msg in advisor_messages:
+        # Look for patterns like "Hi [Name]" or addressing customer by name
+        if any(greeting in msg for greeting in ["Hi ", "Hello ", "Thank you "]):
+            sentences = msg.split(". ")
+            for sentence in sentences:
+                if any(greeting in sentence for greeting in ["Hi ", "Hello ", "Thank you "]):
+                    personalization_examples.append(sentence.strip())
+                    break
+
+    techniques = {
+        "quality_score": quality_score,
+        "signposting_examples": signposting_examples[:3],  # Top 3 examples
+        "engagement_questions": engagement_questions[:3],  # Top 3 examples
+        "personalization_examples": personalization_examples[:2],  # Top 2 examples
+        "total_advisor_messages": len(advisor_messages),
+        "avg_message_length": sum(len(msg) for msg in advisor_messages) // len(advisor_messages) if advisor_messages else 0,
+    }
+
+    return techniques
 
 
 def learn_from_successful_consultation(
@@ -181,6 +268,8 @@ def learn_from_successful_consultation(
     customer_profile: CustomerProfile,
     guidance_provided: str,
     outcome: OutcomeResult,
+    conversational_quality: float = None,
+    conversation_history: list = None,
 ) -> None:
     """Learn from a successful consultation by extracting and storing a case.
 
@@ -197,6 +286,8 @@ def learn_from_successful_consultation(
         customer_profile: Customer profile from the consultation
         guidance_provided: Guidance that was provided to customer
         outcome: Result of the consultation
+        conversational_quality: Optional quality score (0-1)
+        conversation_history: Optional full conversation for technique analysis
 
     Example:
         >>> learn_from_successful_consultation(
@@ -215,16 +306,24 @@ def learn_from_successful_consultation(
         customer_profile=customer_profile,
         guidance_provided=guidance_provided,
         outcome=outcome,
+        conversational_quality=conversational_quality,
+        conversation_history=conversation_history,
     )
 
     # Add to case base
+    metadata = {
+        "task_type": case_data["task_type"],
+        "customer_situation": case_data["customer_situation"],
+        "guidance_provided": case_data["guidance_provided"],
+        "outcome": case_data["outcome"],
+    }
+
+    # Include dialogue techniques if available
+    if "dialogue_techniques" in case_data:
+        metadata["dialogue_techniques"] = case_data["dialogue_techniques"]
+
     case_base.add(
         id=case_data["id"],
         embedding=case_data["embedding"],
-        metadata={
-            "task_type": case_data["task_type"],
-            "customer_situation": case_data["customer_situation"],
-            "guidance_provided": case_data["guidance_provided"],
-            "outcome": case_data["outcome"],
-        },
+        metadata=metadata,
     )

@@ -10,8 +10,11 @@ This module implements the main AdvisorAgent class that:
 
 import os
 import asyncio
-from typing import List, Tuple, Optional, AsyncIterator
+from typing import List, Tuple, Optional, AsyncIterator, TYPE_CHECKING
 from litellm import completion
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 from guidance_agent.core.types import (
     AdvisorProfile,
@@ -93,8 +96,8 @@ class AdvisorAgent:
         Raises:
             Exception: If guidance generation fails
         """
-        # 1. Retrieve relevant context
-        context = self._retrieve_context(customer)
+        # 1. Retrieve relevant context with conversational context
+        context = self._retrieve_context(customer, conversation_history)
 
         # 2. Generate guidance (with or without chain-of-thought)
         if self.use_chain_of_thought:
@@ -156,8 +159,8 @@ class AdvisorAgent:
         if use_reasoning is None:
             use_reasoning = self.use_chain_of_thought
 
-        # 1. Retrieve relevant context (non-streaming, fast)
-        context = self._retrieve_context(customer)
+        # 1. Retrieve relevant context with conversational context (non-streaming, fast)
+        context = self._retrieve_context(customer, conversation_history)
 
         # 2. Store guidance chunks for validation
         guidance_buffer = []
@@ -311,17 +314,41 @@ class AdvisorAgent:
 
         return self.provider_info["cache_headers"]
 
-    def _retrieve_context(self, customer: CustomerProfile) -> RetrievedContext:
-        """Retrieve relevant context for guidance generation.
+    def _retrieve_context(
+        self,
+        customer: CustomerProfile,
+        conversation_history: List[dict],
+    ) -> RetrievedContext:
+        """Retrieve relevant context for guidance generation with conversational awareness.
 
         Args:
             customer: Customer profile
+            conversation_history: Prior conversation messages
 
         Returns:
             Retrieved context with memories, cases, and rules
         """
-        # For Phase 3, we'll use simplified context
-        # In future phases, this will integrate with case_base and rules_base
+        # Build conversational context for enhanced case retrieval
+        conversational_context = None
+        if conversation_history:
+            # Get the most recent customer message for emotional assessment
+            customer_messages = [
+                msg["content"]
+                for msg in conversation_history
+                if msg.get("role") == "user"
+            ]
+            last_customer_message = customer_messages[-1] if customer_messages else ""
+
+            # Build conversational context dict
+            conversational_context = {
+                "phase": self._detect_conversation_phase(conversation_history),
+                "emotional_state": self._assess_emotional_state(last_customer_message),
+                "literacy_level": getattr(
+                    getattr(customer, "demographics", None),
+                    "financial_literacy",
+                    "medium"
+                ),
+            }
 
         # Retrieve from memory stream
         query = customer.presenting_question
@@ -338,9 +365,13 @@ class AdvisorAgent:
         6. Ensure risks are clearly explained
         """
 
+        # NOTE: In this simplified implementation, we're not using case_base and rules_base yet.
+        # When integrated, pass conversational_context to case retrieval like this:
+        # cases = case_base.retrieve(query_embedding, top_k=3, conversation_context=conversational_context)
+
         return RetrievedContext(
             memories=memories,
-            cases=[],  # Will be populated in later integration
+            cases=[],  # Will be populated in later integration with conversational_context
             rules=[],  # Will be populated in later integration
             fca_requirements=fca_requirements,
         )
@@ -514,3 +545,268 @@ class AdvisorAgent:
         )
 
         return response.choices[0].message.content
+
+    async def _calculate_conversational_quality(
+        self,
+        conversation_history: List[dict],
+        db: Optional["AsyncSession"] = None,
+    ) -> float:
+        """Calculate conversational quality score (0-1) based on naturalness and engagement.
+
+        This method evaluates the advisor's conversational effectiveness across 4 components:
+        - Language variety (30%): Avoids repetitive phrases
+        - Signposting usage (30%): Uses transition/guiding phrases
+        - Personalization (20%): Uses customer's name appropriately
+        - Engagement questions (20%): Asks questions to encourage dialogue
+
+        Args:
+            conversation_history: List of conversation messages with role/content
+            db: Database session (unused, for future extensibility)
+
+        Returns:
+            float: Quality score between 0.0 and 1.0
+
+        Example:
+            >>> quality = await advisor._calculate_conversational_quality([
+            ...     {"role": "user", "content": "Help me", "customer_name": "John"},
+            ...     {"role": "assistant", "content": "Hi John! Let me break this down..."}
+            ... ], db)
+            >>> assert 0.0 <= quality <= 1.0
+        """
+        # Extract advisor messages only
+        advisor_messages = [
+            msg["content"]
+            for msg in conversation_history
+            if msg.get("role") in ["assistant", "advisor"]
+        ]
+
+        # Handle edge cases
+        if not advisor_messages:
+            return 0.0
+
+        # Initialize score
+        score = 0.0
+
+        # Component 1: Language Variety (30%) - Avoid repetitive phrases
+        common_phrases = ["you could consider", "pros and cons", "based on"]
+        total_repetitions = sum(
+            sum(1 for msg in advisor_messages if phrase in msg.lower())
+            for phrase in common_phrases
+        )
+
+        # Calculate variety score (inverse of repetition rate)
+        # If no repetitions: 1.0, if 1 per message: 0.66, if 2 per message: 0.33, if 3+: 0.0
+        max_expected_repetitions = len(advisor_messages) * len(common_phrases)
+        variety_score = 1.0 - (total_repetitions / max_expected_repetitions) if max_expected_repetitions > 0 else 0.0
+        variety_score = max(0.0, min(1.0, variety_score))
+        score += variety_score * 0.3
+
+        # Component 2: Signposting/Transitions (30%) - Use guiding language
+        signpost_phrases = [
+            "let me break this down",
+            "let me explain",
+            "let me help",
+            "here's what this means",
+            "here's what",
+            "building on",
+            "before we",
+            "first,",
+            "let's explore",
+            "let's look",
+            "here's how",
+            "one option",
+            "one approach",
+            "some people find",
+            "it's worth",
+            "it depends",
+        ]
+
+        signpost_count = sum(
+            1 for msg in advisor_messages
+            if any(phrase in msg.lower() for phrase in signpost_phrases)
+        )
+
+        # Normalize: 1.0 if at least 1 signpost per message, scales linearly
+        signpost_score = min(signpost_count / len(advisor_messages), 1.0) if len(advisor_messages) > 0 else 0.0
+        score += signpost_score * 0.3
+
+        # Component 3: Personalization (20%) - Use customer's name
+        customer_name = ""
+        # Extract customer name from first message if available
+        for msg in conversation_history:
+            if msg.get("role") == "user" and msg.get("customer_name"):
+                customer_name = msg["customer_name"]
+                break
+
+        personalization_score = 0.0
+        if customer_name:
+            name_usage = sum(
+                1 for msg in advisor_messages
+                if customer_name.lower() in msg.lower()
+            )
+            # Normalize: aim for 1 usage per 2 messages (0.5 rate) = 1.0 score
+            expected_usage_rate = len(advisor_messages) / 2
+            personalization_score = min(name_usage / expected_usage_rate, 1.0) if expected_usage_rate > 0 else 0.0
+
+        score += personalization_score * 0.2
+
+        # Component 4: Engagement Questions (20%) - Ask questions
+        question_count = sum(msg.count("?") for msg in advisor_messages)
+
+        # Normalize: aim for 1 question per message = 1.0 score
+        engagement_score = min(question_count / len(advisor_messages), 1.0) if len(advisor_messages) > 0 else 0.0
+        score += engagement_score * 0.2
+
+        # Ensure final score is in valid range
+        return max(0.0, min(1.0, score))
+
+    def _detect_conversation_phase(self, conversation_history: List[dict]) -> str:
+        """Detect the current phase of the conversation.
+
+        Analyzes conversation length and content to determine whether this is:
+        - "opening": Initial rapport-building phase (1-2 messages)
+        - "middle": Main information exchange phase (3-8 messages)
+        - "closing": Summarization and next steps phase (9+ messages or explicit signals)
+
+        Args:
+            conversation_history: List of conversation messages with role/content
+
+        Returns:
+            str: One of "opening", "middle", or "closing"
+
+        Example:
+            >>> phase = advisor._detect_conversation_phase([
+            ...     {"role": "user", "content": "Hi, I need help"},
+            ...     {"role": "assistant", "content": "Hello! How can I help?"}
+            ... ])
+            >>> assert phase == "opening"
+        """
+        # Count total messages (both user and assistant)
+        total_messages = len(conversation_history)
+
+        # Opening phase: 1-2 messages (just starting)
+        if total_messages <= 2:
+            return "opening"
+
+        # Check for explicit closing signals
+        closing_keywords = [
+            "thank you",
+            "thanks",
+            "that's all",
+            "that helps",
+            "goodbye",
+            "bye",
+            "next steps",
+            "what should i do next",
+            "how do i proceed",
+        ]
+
+        # Look at last few user messages for closing signals
+        recent_user_messages = [
+            msg["content"].lower()
+            for msg in conversation_history[-4:]
+            if msg.get("role") == "user"
+        ]
+
+        has_closing_signal = any(
+            keyword in msg
+            for keyword in closing_keywords
+            for msg in recent_user_messages
+        )
+
+        # Closing phase: 9+ messages OR explicit closing signals
+        if total_messages >= 9 or has_closing_signal:
+            return "closing"
+
+        # Middle phase: 3-8 messages (main conversation)
+        return "middle"
+
+    def _assess_emotional_state(self, customer_message: str) -> str:
+        """Assess the customer's emotional state from their message.
+
+        Uses keyword matching to detect emotional indicators in customer messages.
+        Helps adapt conversational tone and pacing to customer needs.
+
+        Args:
+            customer_message: The customer's message text
+
+        Returns:
+            str: One of "anxious", "confident", "confused", "frustrated", or "neutral"
+
+        Example:
+            >>> state = advisor._assess_emotional_state("I'm really worried about retirement")
+            >>> assert state == "anxious"
+        """
+        message_lower = customer_message.lower()
+
+        # Anxious/worried indicators
+        anxious_keywords = [
+            "worried",
+            "anxious",
+            "concerned",
+            "stressed",
+            "nervous",
+            "scared",
+            "afraid",
+            "overwhelming",
+            "overwhelmed",
+            "panic",
+            "don't know if",
+            "not sure if",
+            "haven't saved enough",
+        ]
+        if any(keyword in message_lower for keyword in anxious_keywords):
+            return "anxious"
+
+        # Frustrated indicators
+        frustrated_keywords = [
+            "frustrated",
+            "annoyed",
+            "confused",
+            "don't understand",
+            "doesn't make sense",
+            "complicated",
+            "difficult",
+            "hard to understand",
+            "unclear",
+            "why is this so",
+            "this is ridiculous",
+        ]
+        if any(keyword in message_lower for keyword in frustrated_keywords):
+            return "frustrated"
+
+        # Confused indicators
+        confused_keywords = [
+            "confused",
+            "what does",
+            "what is",
+            "i don't get",
+            "explain",
+            "unclear",
+            "don't know",
+            "not sure what",
+            "which one",
+            "what's the difference",
+        ]
+        if any(keyword in message_lower for keyword in confused_keywords):
+            return "confused"
+
+        # Confident indicators
+        confident_keywords = [
+            "want to optimize",
+            "looking to maximize",
+            "ready to",
+            "planning to",
+            "i'm confident",
+            "i understand",
+            "makes sense",
+            "sounds good",
+            "let's do it",
+            "i'm doing well",
+            "on track",
+        ]
+        if any(keyword in message_lower for keyword in confident_keywords):
+            return "confident"
+
+        # Default: neutral
+        return "neutral"

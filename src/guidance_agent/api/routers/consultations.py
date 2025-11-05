@@ -427,6 +427,7 @@ async def end_consultation(
     consultation_id: str,
     request: schemas.EndConsultationRequest = None,
     db: Session = Depends(get_db),
+    advisor: AdvisorAgent = Depends(get_advisor_agent),
 ):
     """End an active consultation.
 
@@ -434,6 +435,7 @@ async def end_consultation(
         consultation_id: UUID of consultation
         request: Optional satisfaction feedback
         db: Database session
+        advisor: Advisor agent instance
 
     Returns:
         Completed consultation details with outcome
@@ -461,6 +463,60 @@ async def end_consultation(
     }
 
     consultation.outcome = outcome
+
+    # Calculate conversational quality (Phase 2)
+    conversation_history = [
+        {"role": turn["role"], "content": turn["content"], "customer_name": consultation.meta.get("customer_name", "")}
+        for turn in consultation.conversation
+        if turn.get("role") != "system"
+    ]
+
+    conversational_quality = await advisor._calculate_conversational_quality(
+        conversation_history=conversation_history,
+        db=None  # Not needed for current implementation
+    )
+    consultation.conversational_quality = conversational_quality
+
+    # Calculate and store dialogue patterns
+    # Extract advisor messages for pattern analysis
+    advisor_messages = [msg["content"] for msg in conversation_history if msg.get("role") == "advisor"]
+
+    if advisor_messages:
+        # Count signposting phrases
+        signpost_phrases = [
+            "let me break this down", "let me explain", "let me help",
+            "here's what this means", "here's what", "building on",
+            "before we", "first,", "let's explore", "let's look",
+            "here's how", "one option", "one approach",
+            "some people find", "it's worth", "it depends"
+        ]
+        signpost_count = sum(
+            1 for msg in advisor_messages
+            if any(phrase in msg.lower() for phrase in signpost_phrases)
+        )
+
+        # Calculate personalization score (name usage)
+        customer_name = consultation.meta.get("customer_name", "")
+        personalization_score = 0.0
+        if customer_name:
+            name_usage = sum(1 for msg in advisor_messages if customer_name.lower() in msg.lower())
+            expected_usage_rate = len(advisor_messages) / 2
+            personalization_score = min(name_usage / expected_usage_rate, 1.0) if expected_usage_rate > 0 else 0.0
+
+        # Calculate engagement score (question usage)
+        question_count = sum(msg.count("?") for msg in advisor_messages)
+        engagement_score = min(question_count / len(advisor_messages), 1.0) if len(advisor_messages) > 0 else 0.0
+
+        # Store dialogue patterns
+        consultation.dialogue_patterns = {
+            "signposting_used": signpost_count > 0,
+            "personalization_level": "high" if personalization_score > 0.7 else "medium" if personalization_score > 0.4 else "low",
+            "engagement_level": "high" if engagement_score > 0.7 else "medium" if engagement_score > 0.4 else "low",
+            "signpost_count": signpost_count,
+            "personalization_score": personalization_score,
+            "engagement_score": engagement_score,
+        }
+
     db.commit()
 
     # Build response

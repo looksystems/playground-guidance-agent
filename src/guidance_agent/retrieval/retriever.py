@@ -50,36 +50,82 @@ class CaseBase:
         query_embedding: list[float],
         top_k: int = 3,
         task_type: Optional[str] = None,
+        conversation_context: Optional[dict[str, Any]] = None,
     ) -> list[dict[str, Any]]:
-        """Retrieve similar cases by semantic similarity.
+        """Retrieve similar cases by semantic similarity with conversational re-ranking.
+
+        This method performs two-stage retrieval:
+        1. Vector similarity search to find relevant cases
+        2. Re-ranking based on conversational context match (if provided)
+
+        Conversational context boosts:
+        - Cases with high conversational quality (quality > 0.7): +0.2
+        - Cases matching conversation phase: +0.1
 
         Args:
             query_embedding: Query vector for similarity search
             top_k: Number of cases to retrieve
             task_type: Optional filter by task type
+            conversation_context: Optional dict with:
+                - phase: "opening", "middle", or "closing"
+                - emotional_state: "anxious", "confident", "confused", "frustrated", "neutral"
+                - literacy_level: customer's financial literacy level
 
         Returns:
             List of case dictionaries with metadata and similarity scores
+
+        Example:
+            >>> context = {"phase": "middle", "emotional_state": "anxious", "literacy_level": "low"}
+            >>> cases = case_base.retrieve(query_embedding, top_k=3, conversation_context=context)
         """
+        # Get more cases than needed for re-ranking
+        search_top_k = top_k * 2 if conversation_context else top_k
+
         filter_dict = {"task_type": task_type} if task_type else None
         results = self.vector_store.search(
-            query_embedding, top_k=top_k, filter_dict=filter_dict
+            query_embedding, top_k=search_top_k, filter_dict=filter_dict
         )
 
-        # Convert to more usable format
+        # Convert to more usable format with conversational re-ranking
         cases = []
         for result in results:
+            metadata = result["metadata"]
+            base_similarity = result["similarity"]
+
+            # Calculate conversational boost if context provided
+            conversational_boost = 0.0
+            if conversation_context:
+                # Boost cases with high conversational quality
+                conversational_quality = metadata.get("conversational_quality", 0.0)
+                if conversational_quality and conversational_quality > 0.7:
+                    conversational_boost += 0.2
+
+                # Boost cases that match conversation phase
+                dialogue_techniques = metadata.get("dialogue_techniques", {})
+                if dialogue_techniques:
+                    phases_covered = dialogue_techniques.get("phases_covered", [])
+                    current_phase = conversation_context.get("phase", "")
+                    if current_phase in phases_covered:
+                        conversational_boost += 0.1
+
+            # Final score combines semantic similarity with conversational boost
+            final_score = base_similarity + conversational_boost
+
             case = {
                 "id": result["id"],
-                "task_type": result["metadata"]["task_type"],
-                "customer_situation": result["metadata"]["customer_situation"],
-                "guidance_provided": result["metadata"]["guidance_provided"],
-                "outcome": result["metadata"]["outcome"],
-                "similarity": result["similarity"],
+                "task_type": metadata["task_type"],
+                "customer_situation": metadata["customer_situation"],
+                "guidance_provided": metadata["guidance_provided"],
+                "outcome": metadata["outcome"],
+                "similarity": base_similarity,
+                "conversational_boost": conversational_boost,
+                "final_score": final_score,
             }
             cases.append(case)
 
-        return cases
+        # Sort by final score and return top_k
+        cases.sort(key=lambda x: x["final_score"], reverse=True)
+        return cases[:top_k]
 
 
 class RulesBase:
@@ -178,12 +224,13 @@ def retrieve_context(
     case_top_k: int = 3,
     rule_top_k: int = 4,
     fca_requirements: Optional[str] = None,
+    conversation_context: Optional[dict[str, Any]] = None,
 ) -> RetrievedContext:
     """Multi-faceted retrieval combining memories, cases, and rules.
 
     Retrieves relevant context from three sources:
     1. Memory stream: Recent observations and reflections (recency + importance + relevance)
-    2. Case base: Similar past cases (semantic similarity)
+    2. Case base: Similar past cases (semantic similarity + conversational context)
     3. Rules base: Applicable guidance rules (semantic similarity + confidence)
 
     Args:
@@ -196,6 +243,10 @@ def retrieve_context(
         case_top_k: Number of cases to retrieve
         rule_top_k: Number of rules to retrieve
         fca_requirements: Optional FCA requirements string
+        conversation_context: Optional conversational context dict with:
+            - phase: "opening", "middle", or "closing"
+            - emotional_state: "anxious", "confident", "confused", "frustrated", "neutral"
+            - literacy_level: customer's financial literacy level
 
     Returns:
         RetrievedContext containing memories, cases, rules, and reasoning
@@ -207,14 +258,19 @@ def retrieve_context(
         ...     memory_stream=stream,
         ...     case_base=cases,
         ...     rules_base=rules,
+        ...     conversation_context={"phase": "middle", "emotional_state": "anxious"}
         ... )
         >>> print(f"Found {len(context.memories)} memories, {len(context.cases)} cases")
     """
     # Retrieve from memory stream (recency + importance + relevance)
     memories = memory_stream.retrieve(query_embedding, top_k=memory_top_k)
 
-    # Retrieve from case base (semantic similarity)
-    cases = case_base.retrieve(query_embedding, top_k=case_top_k)
+    # Retrieve from case base (semantic similarity + conversational context)
+    cases = case_base.retrieve(
+        query_embedding,
+        top_k=case_top_k,
+        conversation_context=conversation_context,
+    )
 
     # Retrieve from rules base (semantic similarity + confidence weighting)
     rules = rules_base.retrieve(query_embedding, top_k=rule_top_k)

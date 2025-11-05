@@ -36,6 +36,195 @@ class TestAdvisorTemplates:
         assert minimal_customer.presenting_question in result
         assert "FCA" in result.upper()
 
+    # ========================================================================
+    # Phase 1 TDD Tests - Conversational Enhancements
+    # ========================================================================
+
+    def test_guidance_main_includes_conversational_guidance(
+        self, sample_advisor, sample_customer, empty_context, empty_conversation_history
+    ):
+        """Test that guidance_main template includes conversational flow instructions.
+
+        Per Phase 1.1 of conversational improvement plan, the template should include:
+        - Signposting language examples
+        - Transition phrases
+        - Varied phrasing alternatives
+        - Dialogue pacing instructions
+        - Personalization directives
+        """
+        engine = get_template_engine()
+
+        result = engine.render(
+            "advisor/guidance_main.jinja",
+            advisor=sample_advisor,
+            customer=sample_customer,
+            conversation_history=empty_conversation_history,
+            context=empty_context,
+        )
+
+        result_lower = result.lower()
+
+        # Check for conversational flow guidance
+        assert any(keyword in result_lower for keyword in [
+            "signpost", "transition", "opening phase", "middle phase", "closing phase"
+        ]), "Template should include conversational flow guidance (opening/middle/closing phases)"
+
+        # Check for signposting examples
+        signpost_examples = [
+            "let me break this down",
+            "here's what this means",
+            "first, let's look at",
+            "before we dive into",
+            "building on"
+        ]
+        has_signposting = any(example in result_lower for example in signpost_examples)
+        assert has_signposting, "Template should include signposting phrase examples"
+
+        # Check for varied phrasing alternatives
+        phrasing_variety = [
+            "one option to explore",
+            "you might want to look into",
+            "some people in your situation",
+            "it's worth thinking about",
+            "you have a few paths"
+        ]
+        has_phrasing_variety = any(phrase in result_lower for phrase in phrasing_variety)
+        assert has_phrasing_variety, "Template should provide varied phrasing alternatives to 'you could consider'"
+
+        # Check for personalization directives
+        assert any(keyword in result_lower for keyword in [
+            "customer's name", "customer name", "personalization", "reference their"
+        ]), "Template should include personalization directives"
+
+    def test_reasoning_includes_conversational_strategy_analysis(
+        self, sample_customer, sample_context
+    ):
+        """Test that reasoning template includes conversational strategy section.
+
+        Per Phase 1.2 of conversational improvement plan, the template should include:
+        - Conversation Phase analysis
+        - Customer Emotional State assessment
+        - Tone & Pacing considerations
+        - Signposting & Transitions planning
+        - Personalization Opportunities
+        """
+        engine = get_template_engine()
+
+        result = engine.render(
+            "advisor/reasoning.jinja",
+            customer=sample_customer,
+            context=sample_context,
+        )
+
+        result_lower = result.lower()
+
+        # Check for conversational strategy section
+        assert "conversational strategy" in result_lower, \
+            "Template should include 'Conversational Strategy' section"
+
+        # Check for conversation phase analysis
+        assert "conversation phase" in result_lower or "phase" in result_lower, \
+            "Template should include conversation phase analysis (opening/middle/closing)"
+
+        # Check for emotional state assessment
+        assert any(keyword in result_lower for keyword in [
+            "emotional state", "emotion", "anxious", "confident", "confused"
+        ]), "Template should include customer emotional state assessment"
+
+        # Check for tone & pacing considerations
+        assert any(keyword in result_lower for keyword in [
+            "tone", "pacing", "communication style"
+        ]), "Template should include tone and pacing considerations"
+
+        # Check for signposting & transitions planning
+        assert any(keyword in result_lower for keyword in [
+            "signpost", "transition"
+        ]), "Template should include signposting and transition planning"
+
+        # Check for personalization opportunities
+        assert any(keyword in result_lower for keyword in [
+            "personalization", "customer's name", "specific detail"
+        ]), "Template should include personalization opportunity analysis"
+
+    def test_guidance_cached_includes_conversational_personality(
+        self, sample_advisor, sample_customer, empty_context, empty_conversation_history
+    ):
+        """Test that cached guidance template includes conversational style definition.
+
+        Per Phase 1.3 of conversational improvement plan, the template should define:
+        - Conversational personality (warm, professional)
+        - Natural vs robotic examples
+        - Key principles (natural flow, variety, personalization, engagement, warmth)
+        """
+        engine = get_template_engine()
+
+        result = engine.render_messages(
+            "advisor/guidance_cached.jinja",
+            advisor=sample_advisor,
+            customer=sample_customer,
+            conversation_history=empty_conversation_history,
+            context=empty_context,
+        )
+
+        # Combine all message content for searching
+        all_content = ""
+        for msg in result:
+            if isinstance(msg.get("content"), str):
+                all_content += msg["content"]
+            elif isinstance(msg.get("content"), list):
+                for content_block in msg["content"]:
+                    if isinstance(content_block, dict) and "text" in content_block:
+                        all_content += content_block["text"]
+
+        all_content_lower = all_content.lower()
+
+        # Check for conversational style section
+        assert "conversational style" in all_content_lower or "conversational" in all_content_lower, \
+            "Template should define conversational style"
+
+        # Check for warmth/rapport keywords
+        assert any(keyword in all_content_lower for keyword in [
+            "warm", "rapport", "empathetic", "friendly", "natural conversation"
+        ]), "Template should emphasize warm, professional personality"
+
+        # Check for natural vs robotic guidance
+        assert any(keyword in all_content_lower for keyword in [
+            "natural", "robotic", "scripted", "human", "conversational"
+        ]), "Template should distinguish natural from robotic style"
+
+        # Check for key principles
+        principles = ["variety", "personalization", "engagement"]
+        found_principles = sum(1 for principle in principles if principle in all_content_lower)
+        assert found_principles >= 2, \
+            "Template should mention key conversational principles (variety, personalization, engagement)"
+
+    def test_guidance_with_reasoning_conversational_integration(
+        self, sample_customer, sample_context, sample_reasoning
+    ):
+        """Test that guidance_with_reasoning integrates conversational elements.
+
+        This template combines reasoning with guidance generation, so it should
+        incorporate conversational strategy from the reasoning phase.
+        """
+        engine = get_template_engine()
+
+        result = engine.render(
+            "advisor/guidance_with_reasoning.jinja",
+            customer=sample_customer,
+            context=sample_context,
+            reasoning=sample_reasoning,
+        )
+
+        result_lower = result.lower()
+
+        # Should include the reasoning
+        assert sample_reasoning.lower() in result_lower
+
+        # Should reference conversational approach
+        assert any(keyword in result_lower for keyword in [
+            "conversational", "natural", "warm", "engage"
+        ]), "Template should reference conversational approach when generating guidance"
+
     def test_guidance_main_full(
         self, sample_advisor, sample_customer, sample_context, sample_conversation_history
     ):

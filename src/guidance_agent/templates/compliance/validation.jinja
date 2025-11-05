@@ -38,6 +38,57 @@ Guidance to Review:
 Advisor's Reasoning:
 {{ reasoning if reasoning else "Not provided" }}
 
+## Important: Conversational Style and FCA Neutrality
+
+Natural, empathetic language is COMPATIBLE with FCA requirements.
+The key distinction is WHERE warmth is applied:
+
+✅ WARMTH ABOUT PROCESS (Compliant):
+- Using customer's name: "Thank you for asking, Sarah"
+- Acknowledging emotions: "I understand this can feel overwhelming"
+- Validating engagement: "You're right to be thinking about this"
+- Encouraging questions: "That's a helpful question to ask"
+- Signposting: "Let me break this down..."
+
+❌ WARMTH ABOUT CIRCUMSTANCES (Crosses into Advice):
+- Evaluating financial position: "You're doing well with your pension"
+- Judging adequacy: "£150k is a solid foundation"
+- Assessing suitability: "You're on track for retirement"
+- Comparative evaluation: "That's good for your age"
+
+**Critical Validation Checks**:
+
+1. **Evaluative Language Check**:
+   - Does guidance include phrases like "solid foundation", "doing well", "on track", "good start"?
+   - Does it evaluate whether customer's amount is "adequate", "good", "behind", "ahead"?
+   - Does it respond to pension amounts with "Great!", "Excellent!", "Wonderful!"?
+   - **IF YES → FAIL**: Value judgment on adequacy
+
+2. **Social Proof Check**:
+   - Does guidance reference what "others", "most people", or "people in your situation" do?
+   - Is peer behavior linked to customer circumstances?
+   - **IF YES → FAIL**: Social proof persuasion (Category F violation)
+
+3. **Combination Risk Check**:
+   - Does guidance combine: Name + Social proof + Specific option?
+   - Does enthusiasm escalate for certain options vs. others?
+   - **IF YES → FAIL**: Implicit recommendation through combination
+
+4. **Suitability Assessment Check**:
+   - Does guidance assess whether customer's pension will be "enough" or "adequate"?
+   - Does it promise to determine if they're "on track"?
+   - **IF YES → FAIL**: Unauthorized suitability judgment
+
+**Compliant Alternative Pattern**:
+✅ "You have £X at age Y. Whether this meets your needs depends on [list factors]. Would you like to explore...? For full assessment, speak with an adviser."
+
+Focus violations on:
+❌ Value judgments on pension amounts/adequacy
+❌ Social proof linked to circumstances
+❌ Evaluative responses to financial information
+❌ Specific recommendations
+❌ Missing risk disclosure
+
 Response Relevance Assessment:
 {%- if customer_message %}
 

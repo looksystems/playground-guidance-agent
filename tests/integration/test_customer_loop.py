@@ -77,7 +77,7 @@ class TestCustomerAdvisorLoop:
             choices=[
                 Mock(
                     message=Mock(
-                        content="Based on your age and income, having £15,000 in your pension is a good start. The general rule of thumb is to save about half your age as a percentage of your salary. At 30, that would be 15% including employer contributions. Let me help you understand if you're on track."
+                        content="You have £15,000 in your pension at age 30. The general rule of thumb is to save about half your age as a percentage of your salary. At 30, that would be 15% including employer contributions. Would you like to explore what this means for your retirement planning?"
                     )
                 )
             ]
@@ -569,3 +569,260 @@ class TestOutcomeQualityMetrics:
         assert outcome.successful is False
         assert outcome.comprehension < 5.0
         assert outcome.customer_satisfaction < 5.0
+
+
+class TestConversationalQualityIntegration:
+    """Integration tests for conversational quality tracking (Phase 5.1)."""
+
+    @pytest.fixture
+    def advisor_profile(self):
+        """Create an advisor profile."""
+        return AdvisorProfile(
+            name="Sarah",
+            description="Experienced pension guidance specialist",
+        )
+
+    @pytest.fixture
+    def customer_with_name(self):
+        """Create a customer profile with name."""
+        return CustomerProfile(
+            demographics=CustomerDemographics(
+                age=35,
+                gender="F",
+                location="London",
+                employment_status="employed",
+                financial_literacy="medium",
+            ),
+            financial=FinancialSituation(
+                annual_income=40000,
+                total_assets=50000,
+                total_debt=5000,
+                dependents=1,
+                risk_tolerance="medium",
+            ),
+            pensions=[
+                PensionPot(
+                    pot_id="pot1",
+                    provider="NEST",
+                    pot_type="defined_contribution",
+                    current_value=25000,
+                    projected_value=35000,
+                    age_accessible=55,
+                )
+            ],
+            goals="Plan for retirement",
+            presenting_question="Am I saving enough for retirement?",
+        )
+
+    @pytest.mark.asyncio
+    async def test_conversational_quality_tracked(self, advisor_profile, customer_with_name):
+        """Test that conversational quality is calculated and stored."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Simulate a conversation with good conversational elements
+        conversation_history = [
+            {
+                "role": "customer",
+                "content": "Hi, I'm Sarah and I need help with my pension",
+                "customer_name": "Sarah"
+            },
+            {
+                "role": "advisor",
+                "content": "Hi Sarah! Let me help you understand your options. First, let's look at your current situation. What would be most helpful to discuss?"
+            },
+            {
+                "role": "customer",
+                "content": "Am I saving enough?",
+                "customer_name": "Sarah"
+            },
+            {
+                "role": "advisor",
+                "content": "Great question, Sarah! Let me break this down for you. Here's what your £25,000 means at age 35. Some people find it helpful to think about it this way. Does that make sense?"
+            }
+        ]
+
+        # Calculate conversational quality
+        quality = await advisor._calculate_conversational_quality(conversation_history, db=None)
+
+        # Verify quality is tracked
+        assert quality is not None
+        assert 0.0 <= quality <= 1.0
+        # Should score reasonably well (has signposting, personalization, engagement)
+        assert quality > 0.5
+
+    @pytest.mark.asyncio
+    async def test_natural_language_variety(self, advisor_profile):
+        """Test that responses use varied language, not repetitive phrases."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Simulate conversation with repetitive advisor responses
+        repetitive_conversation = [
+            {"role": "customer", "content": "Tell me about pensions"},
+            {
+                "role": "advisor",
+                "content": "Based on the information provided, you could consider increasing contributions. You could also consider consolidating pensions."
+            },
+            {"role": "customer", "content": "What are my options?"},
+            {
+                "role": "advisor",
+                "content": "You could consider taking tax-free lump sum. The pros and cons are that you could consider drawdown or annuity."
+            },
+            {"role": "customer", "content": "How much should I save?"},
+            {
+                "role": "advisor",
+                "content": "Based on your age, you could consider saving 15%. The pros and cons are clear. You could consider reviewing annually."
+            },
+        ]
+
+        quality = await advisor._calculate_conversational_quality(repetitive_conversation, db=None)
+
+        # Repetitive language should result in lower quality score
+        assert quality < 0.6, f"Repetitive language should score <0.6, got {quality}"
+
+        # Now test varied language
+        varied_conversation = [
+            {"role": "customer", "content": "Tell me about pensions"},
+            {
+                "role": "advisor",
+                "content": "Let me explain how pensions work. One option to explore is workplace pensions. It's helpful to start with understanding the basics."
+            },
+            {"role": "customer", "content": "What are my options?"},
+            {
+                "role": "advisor",
+                "content": "Here's what you have available. You might want to look into taking a tax-free lump sum. It's worth thinking about drawdown versus annuities too."
+            },
+            {"role": "customer", "content": "How much should I save?"},
+            {
+                "role": "advisor",
+                "content": "A helpful rule of thumb is saving roughly half your age as a percentage. At your age, that would be around 15%. Does that make sense?"
+            },
+        ]
+
+        varied_quality = await advisor._calculate_conversational_quality(varied_conversation, db=None)
+
+        # Varied language should score higher
+        assert varied_quality > quality, "Varied language should score higher than repetitive"
+        assert varied_quality > 0.5, "Varied language should score >0.5"
+
+    @pytest.mark.asyncio
+    async def test_signposting_usage(self, advisor_profile):
+        """Test that responses include signposting and transitions."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Conversation with signposting
+        signposted_conversation = [
+            {"role": "customer", "content": "I'm confused about tax-free lump sums"},
+            {
+                "role": "advisor",
+                "content": "Let me break this down for you. First, let's look at what a tax-free lump sum is. Here's what this means for your situation. Before we dive into the details, do you understand the basics of how your pension works?"
+            },
+            {"role": "customer", "content": "Sort of"},
+            {
+                "role": "advisor",
+                "content": "Building on that, let's explore the 25% rule together. One option to consider is taking the full lump sum at retirement."
+            }
+        ]
+
+        quality = await advisor._calculate_conversational_quality(signposted_conversation, db=None)
+
+        # Should score well due to signposting
+        assert quality > 0.6, f"Signposted responses should score >0.6, got {quality}"
+
+        # Conversation without signposting
+        unsignposted_conversation = [
+            {"role": "customer", "content": "I'm confused about tax-free lump sums"},
+            {
+                "role": "advisor",
+                "content": "A tax-free lump sum is 25% of your pension pot. You can take it when you retire. It's tax-free."
+            },
+            {"role": "customer", "content": "Tell me more"},
+            {
+                "role": "advisor",
+                "content": "The money comes from your pension. You don't pay tax on it. You can use it however you want."
+            }
+        ]
+
+        unsignposted_quality = await advisor._calculate_conversational_quality(unsignposted_conversation, db=None)
+
+        # Signposted should score higher
+        assert quality > unsignposted_quality, "Signposted conversation should score higher"
+
+    @pytest.mark.asyncio
+    async def test_personalization(self, advisor_profile):
+        """Test that advisor uses customer's name appropriately."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Conversation with personalization (using name naturally, not excessively)
+        personalized_conversation = [
+            {"role": "customer", "content": "How am I doing with my pension?", "customer_name": "James"},
+            {
+                "role": "advisor",
+                "content": "Hi James! Let me help you understand your situation. You have £30,000 at age 40. What specific concerns do you have?"
+            },
+            {"role": "customer", "content": "Am I saving enough?", "customer_name": "James"},
+            {
+                "role": "advisor",
+                "content": "That's a great question, James. Let me break down where you stand. Whether this meets your needs depends on several factors. Would it help if we looked at projections together?"
+            }
+        ]
+
+        quality = await advisor._calculate_conversational_quality(personalized_conversation, db=None)
+
+        # Should score well due to personalization
+        assert quality > 0.5, f"Personalized responses should score >0.5, got {quality}"
+
+        # Conversation without personalization
+        impersonal_conversation = [
+            {"role": "customer", "content": "How am I doing with my pension?", "customer_name": "James"},
+            {
+                "role": "advisor",
+                "content": "Let me help you understand your situation. You have £30,000 at age 40. What specific concerns do you have?"
+            },
+            {"role": "customer", "content": "Am I saving enough?", "customer_name": "James"},
+            {
+                "role": "advisor",
+                "content": "That's a great question. Let me break down where you stand. Whether this meets your needs depends on several factors."
+            }
+        ]
+
+        impersonal_quality = await advisor._calculate_conversational_quality(impersonal_conversation, db=None)
+
+        # Personalized should score higher
+        assert quality > impersonal_quality, "Personalized conversation should score higher"
+
+    @pytest.mark.asyncio
+    async def test_conversational_quality_with_empty_name(self, advisor_profile):
+        """Test that quality calculation handles missing customer name gracefully."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Conversation without customer name
+        conversation_no_name = [
+            {"role": "customer", "content": "Help me"},
+            {
+                "role": "advisor",
+                "content": "Let me break this down for you. First, let's explore your options. Some people find it helpful to think differently. What would be most useful?"
+            }
+        ]
+
+        quality = await advisor._calculate_conversational_quality(conversation_no_name, db=None)
+
+        # Should still calculate quality (missing personalization component)
+        assert 0.0 <= quality <= 1.0
+        # Should score reasonably (has signposting and engagement, just no personalization)
+        assert quality > 0.3
+
+    @pytest.mark.asyncio
+    async def test_conversational_quality_short_conversation(self, advisor_profile):
+        """Test quality calculation with very short conversations."""
+        advisor = AdvisorAgent(profile=advisor_profile)
+
+        # Very short conversation
+        short_conversation = [
+            {"role": "customer", "content": "Hi"},
+            {"role": "advisor", "content": "Hello! How can I help you today?"}
+        ]
+
+        quality = await advisor._calculate_conversational_quality(short_conversation, db=None)
+
+        # Should return valid score
+        assert 0.0 <= quality <= 1.0

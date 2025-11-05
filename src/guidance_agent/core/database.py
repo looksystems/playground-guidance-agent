@@ -75,6 +75,9 @@ class Case(Base):
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
+    # Conversational context (Phase 2)
+    dialogue_techniques = Column(JSONB, nullable=True, comment="Successful conversational techniques used")
+
 
 class Rule(Base):
     """Rule table - stores learned guidance rules."""
@@ -111,6 +114,10 @@ class Consultation(Base):
     duration_seconds = Column(Integer)
     meta = Column(JSONB, default={}, name="metadata")
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+    # Conversational quality metrics (Phase 2)
+    conversational_quality = Column(Float, nullable=True, comment="Quality score for conversational naturalness (0-1)")
+    dialogue_patterns = Column(JSONB, nullable=True, comment="Captured dialogue techniques and patterns used")
 
 
 class FCAKnowledge(Base):

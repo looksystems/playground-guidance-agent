@@ -33,6 +33,14 @@ cd frontend && npm test     # Frontend (203 tests)
 - **Rule Learning**: Discovers and refines guidance principles over time
 - **Multi-faceted RAG**: Retrieves from 5 sources (memories, cases, rules, FCA knowledge, pension knowledge)
 
+### Conversational Quality System
+- **Natural Dialogue Flow**: Signposting, transitions, varied phrasing to avoid repetitive language
+- **Conversation Phase Awareness**: Detects opening/middle/closing phases for appropriate tone
+- **Emotional Intelligence**: Assesses customer state (anxious, confident, confused) and adapts responses
+- **Quality Tracking**: Calculates 0-1 conversational quality score per consultation (variety, signposting, personalization, engagement)
+- **Dialogue Learning**: Captures successful conversational patterns in case base for retrieval
+- **FCA Neutrality (Phase 7)**: Strict distinction between process warmth (compliant) and circumstantial evaluation (prohibited)
+
 ### Tech Choices
 - **Backend**: FastAPI + SQLAlchemy (async) + pgvector + LiteLLM + Jinja2 templates
 - **Frontend**: Nuxt 3 + Vercel AI SDK (SSE streaming) + Pinia
@@ -43,9 +51,9 @@ cd frontend && npm test     # Frontend (203 tests)
 ## Database Schema (7 Core Models)
 
 1. **Memory**: Agent memory stream with vector embeddings, importance scoring, temporal decay
-2. **Case**: Successful consultations with task categorization, vector similarity
+2. **Case**: Successful consultations with task categorization, vector similarity, **dialogue_techniques (JSONB)**
 3. **Rule**: Learned guidance principles with confidence scores, evidence tracking
-4. **Consultation**: Full conversation history (JSONB), outcome metrics, compliance scores
+4. **Consultation**: Full conversation history (JSONB), outcome metrics, compliance scores, **conversational_quality (Float 0-1)**, **dialogue_patterns (JSONB)**
 5. **FCAKnowledge**: Categorized compliance content with vector search
 6. **PensionKnowledge**: Domain knowledge (74KB) with category/subcategory structure
 7. **SystemSettings**: Single-row config (ID=1) for model params, compliance toggles
@@ -259,6 +267,39 @@ frontend/tests/           # Frontend tests (203)
 - Generative Agents (https://arxiv.org/abs/2304.03442): Memory stream, reflection, importance scoring
 - Agent Hospital/MedAgent-Zero (https://arxiv.org/abs/2405.02957): SEAL framework, closed-loop learning
 
+## FCA Neutrality Requirements (Phase 7)
+
+**CRITICAL**: Conversational warmth MUST be about process, NOT circumstances.
+
+**The Distinction**:
+- ✅ **Process Warmth (COMPLIANT)**: "Great question!", "I'm glad you're thinking about this", "Let's work through this together"
+- ❌ **Circumstantial Evaluation (PROHIBITED)**: "You're doing well!", "That's a solid foundation", "£150k is excellent for your age"
+
+**Prohibited Patterns**:
+- Evaluative language: "solid foundation", "doing well", "on track", "good start"
+- Social proof + circumstances: "Some people in your situation find it helpful to..."
+- Adequacy assessments: "You're ahead/behind where you should be"
+- Enthusiastic responses to amounts: "Great! £150k is a strong position"
+
+**Compliant Patterns**:
+- Neutral fact-stating: "You have £X in your pension at age Y"
+- Factor listing: "Whether this meets your needs depends on [factors]..."
+- Exploration offers: "Would you like to explore what you'll need for retirement?"
+- Signposting for assessment: "An adviser can assess whether this is adequate for your goals"
+
+**Neutral Response Structure** (4 steps):
+1. Acknowledge neutrally: "Thank you for sharing that"
+2. State facts: "You have £X at age Y"
+3. List adequacy factors: "Whether this meets your needs depends on..."
+4. Offer exploration OR signpost: "Would you like to explore..." / "An adviser can assess..."
+
+**Why This Matters**:
+- Evaluating adequacy = suitability assessment = regulated advice (FCA violation)
+- Process warmth enhances engagement WITHOUT crossing into advice
+- The validator enforces this distinction with 4 critical checks
+
+**Test Coverage**: 23 tests in `tests/integration/test_fca_neutrality.py`
+
 ## Common Gotchas
 
 1. **Embedding dimension mismatch**: If changing `EMBEDDING_DIMENSIONS`, must:
@@ -272,6 +313,8 @@ frontend/tests/           # Frontend tests (203)
 4. **SystemSettings is single-row**: Always ID=1, use `UPDATE` not `INSERT`
 
 5. **Template tests**: All 20 templates have tests in `tests/templates/` - update when modifying prompts
+
+6. **FCA Neutrality**: NEVER evaluate customer circumstances - only process. See "FCA Neutrality Requirements" section above
 
 ---
 
