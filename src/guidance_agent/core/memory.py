@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -22,8 +22,8 @@ class MemoryNode:
 
     memory_id: UUID = field(default_factory=uuid4)
     description: str = ""
-    timestamp: datetime = field(default_factory=datetime.now)
-    last_accessed: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_accessed: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     importance: float = 0.5  # 0-1 scale
     memory_type: MemoryType = MemoryType.OBSERVATION
     embedding: Optional[list[float]] = None
@@ -32,7 +32,7 @@ class MemoryNode:
 
     def access(self) -> None:
         """Update last accessed time when memory is retrieved."""
-        self.last_accessed = datetime.now()
+        self.last_accessed = datetime.now(timezone.utc)
 
     def recency_score(self, current_time: Optional[datetime] = None) -> float:
         """Calculate recency score using exponential decay.
@@ -47,7 +47,7 @@ class MemoryNode:
             Recency score between 0 and 1
         """
         if current_time is None:
-            current_time = datetime.now()
+            current_time = datetime.now(timezone.utc)
 
         hours_since_access = (current_time - self.last_accessed).total_seconds() / 3600
         decay_factor = 0.99  # From Simulacra paper
@@ -148,7 +148,7 @@ class MemoryStream:
             return []
 
         if current_time is None:
-            current_time = datetime.now()
+            current_time = datetime.now(timezone.utc)
 
         # Calculate scores for each memory
         scored_memories = []
@@ -214,7 +214,7 @@ class MemoryStream:
         Returns:
             List of recent memories
         """
-        cutoff_time = datetime.now() - timedelta(hours=hours)
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
         recent = [m for m in self.memories if m.timestamp >= cutoff_time]
         return sorted(recent, key=lambda m: m.timestamp, reverse=True)[:limit]
 

@@ -7,6 +7,7 @@ Tests complete consultation flow with streaming:
 - Performance benchmarks (TTFT, total time)
 """
 
+import os
 import pytest
 import asyncio
 import time
@@ -240,7 +241,10 @@ async def test_streaming_with_different_complexity(advisor_profile):
 
 @pytest.mark.asyncio
 @pytest.mark.integration
-@pytest.mark.skip(reason="Requires Phoenix setup - enable when Phoenix is running")
+@pytest.mark.skipif(
+    os.getenv("PHOENIX_AUTO_SETUP", "false").lower() == "false",
+    reason="Requires Phoenix setup - set PHOENIX_AUTO_SETUP=true and start Phoenix"
+)
 async def test_streaming_with_phoenix_tracing(advisor_profile, test_customer):
     """Verify Phoenix captures streaming traces correctly.
 
@@ -249,6 +253,11 @@ async def test_streaming_with_phoenix_tracing(advisor_profile, test_customer):
     1. Parent span for the streaming operation
     2. Child spans for each LLM call
     3. Streaming metadata (TTFT, chunk count, tokens/sec)
+
+    To run this test:
+    1. Set PHOENIX_AUTO_SETUP=true in .env
+    2. Start Phoenix: docker-compose up phoenix
+    3. Run: pytest tests/integration/test_streaming.py::test_streaming_with_phoenix_tracing -v
     """
     from opentelemetry import trace
 
@@ -278,7 +287,10 @@ async def test_streaming_with_phoenix_tracing(advisor_profile, test_customer):
     # - The parent span "test_streaming_consultation"
     # - Child spans for LLM calls (with streaming=True)
     # - Metrics like TTFT, tokens/sec, chunk count
-    # Manual verification in Phoenix UI
+    print(f"\n✓ Streaming consultation traced with {len(chunks)} chunks")
+    print(f"  TTFT: {first_token_time - start_time:.3f}s")
+    print(f"  Total time: {end_time - start_time:.3f}s")
+    print(f"  → Check Phoenix UI: http://localhost:6006/projects")
 
 
 @pytest.mark.asyncio

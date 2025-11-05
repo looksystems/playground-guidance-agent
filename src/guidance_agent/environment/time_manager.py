@@ -6,7 +6,7 @@ faster than real time. This enables advisors to gain years of experience in days
 Based on Agent Hospital's time acceleration approach.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 
@@ -44,9 +44,9 @@ class VirtualTimeManager:
             virtual_start_time: Starting virtual time. Defaults to current time.
         """
         self.acceleration_factor = acceleration_factor
-        self.virtual_time = virtual_start_time or datetime.now()
+        self.virtual_time = virtual_start_time or datetime.now(timezone.utc)
         self._initial_virtual_time = self.virtual_time  # Store initial virtual time
-        self.real_time_start = datetime.now()
+        self.real_time_start = datetime.now(timezone.utc)
 
     def get_virtual_time(self) -> datetime:
         """Get current virtual time.
@@ -98,7 +98,7 @@ class VirtualTimeManager:
         Returns:
             Timedelta of real time elapsed
         """
-        return datetime.now() - self.real_time_start
+        return datetime.now(timezone.utc) - self.real_time_start
 
     def get_elapsed_virtual_time(self) -> timedelta:
         """Get elapsed virtual time since initialization.

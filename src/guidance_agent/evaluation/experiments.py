@@ -6,7 +6,7 @@ tracing via Phoenix/OpenTelemetry and database storage for results.
 
 import os
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 from opentelemetry import trace
 
@@ -136,7 +136,7 @@ def run_training_experiment(
             "experiment.name": experiment_name,
             "experiment.num_customers": num_customers,
             "experiment.model": os.getenv("LITELLM_MODEL_ADVISOR", "unknown"),
-            "experiment.start_time": datetime.now().isoformat(),
+            "experiment.start_time": datetime.now(timezone.utc).isoformat(),
         },
     ) as span:
         outcomes: List[OutcomeResult] = []

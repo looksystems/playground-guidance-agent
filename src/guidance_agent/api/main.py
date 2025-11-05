@@ -10,7 +10,7 @@ Main application with:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 from guidance_agent.api.routers import consultations, customers, admin
@@ -85,7 +85,7 @@ async def health_check():
         status=status,
         database=db_healthy,
         llm=llm_healthy,
-        timestamp=datetime.now(),
+        timestamp=datetime.now(timezone.utc),
     )
 
 

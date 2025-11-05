@@ -143,7 +143,7 @@ async def list_consultations_admin(
                 role=turn.get("role", "system"),
                 content=turn.get("content", ""),
                 timestamp=datetime.fromisoformat(
-                    turn.get("timestamp", datetime.now().isoformat())
+                    turn.get("timestamp", datetime.now(timezone.utc).isoformat())
                 ),
                 compliance_score=turn.get("compliance_score"),
                 compliance_confidence=turn.get("compliance_confidence"),
@@ -226,7 +226,7 @@ async def get_consultation_review(
             role=turn.get("role", "system"),
             content=turn.get("content", ""),
             timestamp=datetime.fromisoformat(
-                turn.get("timestamp", datetime.now().isoformat())
+                turn.get("timestamp", datetime.now(timezone.utc).isoformat())
             ),
             compliance_score=turn.get("compliance_score"),
             compliance_confidence=turn.get("compliance_confidence"),
@@ -267,7 +267,7 @@ async def get_all_metrics(
         Comprehensive metrics including compliance, usage, and performance data
     """
     # Calculate date range
-    end_date = datetime.now()
+    end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=days)
 
     # Query consultations in date range
@@ -418,7 +418,7 @@ async def get_compliance_metrics(
         Aggregated compliance metrics
     """
     # Calculate date range
-    end_date = datetime.now()
+    end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=days)
 
     # Query consultations in date range
@@ -495,7 +495,7 @@ async def get_time_series_metrics(
         Time series data points
     """
     # Calculate date range
-    end_date = datetime.now()
+    end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=days)
 
     # Query consultations
@@ -564,7 +564,7 @@ async def export_consultation(
         "end_time": consultation.end_time.isoformat() if consultation.end_time else None,
         "duration_seconds": consultation.duration_seconds,
         "metadata": consultation.meta,
-        "exported_at": datetime.now().isoformat(),
+        "exported_at": datetime.now(timezone.utc).isoformat(),
     }
 
     return export_data

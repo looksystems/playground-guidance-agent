@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from uuid import UUID, uuid4
 
@@ -43,7 +43,7 @@ class BaseAgent(ABC):
         """
         self.config = config
         self.memory_stream = MemoryStream()
-        self.current_time = datetime.now()
+        self.current_time = datetime.now(timezone.utc)
 
     def perceive(self, observation: str, importance: Optional[float] = None) -> MemoryNode:
         """Perceive and store an observation.

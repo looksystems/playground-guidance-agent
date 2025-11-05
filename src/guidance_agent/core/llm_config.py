@@ -1,7 +1,7 @@
 """LLM configuration with Phoenix observability integration.
 
 This module sets up automatic tracing of all LiteLLM calls to Phoenix
-using OpenTelemetry instrumentation.
+using OpenTelemetry instrumentation with BatchSpanProcessor for async compatibility.
 """
 
 import os
@@ -13,11 +13,9 @@ load_dotenv()
 # Import Phoenix instrumentation for LiteLLM
 try:
     from openinference.instrumentation.litellm import LiteLLMInstrumentor
-    from opentelemetry import trace as trace_api
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk import trace as trace_sdk
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+    from phoenix.otel import register
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
     PHOENIX_AVAILABLE = True
 except ImportError:
@@ -27,10 +25,11 @@ except ImportError:
 
 
 def setup_phoenix_tracing() -> bool:
-    """Set up Phoenix tracing for LiteLLM.
+    """Set up Phoenix tracing for LiteLLM with async-compatible BatchSpanProcessor.
 
     Configures OpenTelemetry to automatically trace all LiteLLM calls
-    to the Phoenix observability platform.
+    to the Phoenix observability platform. Uses BatchSpanProcessor instead
+    of SimpleSpanProcessor to avoid async conflicts in FastAPI.
 
     Returns:
         True if setup successful, False otherwise
@@ -43,21 +42,34 @@ def setup_phoenix_tracing() -> bool:
     project_name = os.getenv("PHOENIX_PROJECT_NAME", "guidance-agent")
 
     try:
-        # Set up OpenTelemetry tracer for Phoenix
-        resource = Resource.create(attributes={"service.name": project_name})
-        tracer_provider = trace_sdk.TracerProvider(resource=resource)
+        # Register Phoenix tracer provider
+        tracer_provider = register(
+            project_name=project_name,
+            endpoint=endpoint,
+        )
 
-        # Configure OTLP exporter to send to Phoenix
-        span_exporter = OTLPSpanExporter(endpoint=f"{endpoint}/v1/traces")
-        tracer_provider.add_span_processor(SimpleSpanProcessor(span_exporter))
+        # Create a BatchSpanProcessor for async compatibility
+        # This processes spans in batches on a background thread,
+        # avoiding the "socket.send() raised exception" error
+        # that occurs with SimpleSpanProcessor in async contexts
+        exporter = OTLPSpanExporter(
+            endpoint=endpoint,
+            insecure=True  # For local development
+        )
+        batch_processor = BatchSpanProcessor(
+            exporter,
+            max_queue_size=2048,
+            schedule_delay_millis=5000,  # Send every 5 seconds
+            max_export_batch_size=512,
+        )
 
-        # Set as global tracer provider
-        trace_api.set_tracer_provider(tracer_provider)
+        # Add the batch processor to the tracer provider
+        tracer_provider.add_span_processor(batch_processor)
 
         # Instrument LiteLLM - this automatically traces ALL LiteLLM calls!
         LiteLLMInstrumentor().instrument()
 
-        print(f"✓ Phoenix tracing enabled: {endpoint}")
+        print(f"✓ Phoenix tracing enabled (BatchSpanProcessor): {endpoint}")
         print(f"  Project: {project_name}")
         print(f"  UI: http://localhost:6006")
         return True

@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, Type, Union
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 from sqlalchemy import func, cast, String
@@ -338,4 +338,4 @@ class PgVectorStore:
         elif default is not None:
             return default
         else:
-            return datetime.now()
+            return datetime.now(timezone.utc)
