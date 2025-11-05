@@ -16,7 +16,7 @@ An enterprise-grade AI agent that provides FCA-compliant pension guidance throug
 - **Analytics**: Metrics, charts, and time-series data
 - **Review tools**: Detailed transcript review with learning insights
 - **Export**: PDF and JSON export for auditing
-- **Data Management**: Admin interfaces for all 6 core data models (Knowledge Base, Learning System, Customers)
+- **Data Management**: Admin interfaces for all 7 core data models (Memory, Case, Rule, FCA Knowledge, Pension Knowledge, Customer, System Settings)
 
 ### AI Capabilities
 - **Compliant guidance**: Real-time FCA compliance validation with detailed reasoning and issue tracking
@@ -52,7 +52,7 @@ uv sync
 uv run uvicorn guidance_agent.api.main:app --reload
 
 # Terminal 2: Frontend
-cd frontend-nuxt
+cd frontend
 npm install
 npm run dev
 # Access at http://localhost:3000
@@ -62,7 +62,7 @@ npm run dev
 
 **Frontend Tests (83 Playwright tests)**
 ```bash
-cd frontend-nuxt
+cd frontend
 npm test                    # Playwright tests
 npm run test:coverage      # Coverage report
 ```
@@ -88,22 +88,33 @@ npm run test:e2e:report   # View HTML report
 
 ```
 guidance-agent/
-├── src/guidance_agent/        # Backend Python code
+├── src/guidance_agent/        # Backend Python code (11K+ lines)
 │   ├── api/                   # FastAPI REST API
-│   ├── agents/               # AI agent implementations
-│   ├── models/               # Database models
-│   └── knowledge/            # Knowledge base & RAG
-├── frontend-nuxt/             # Nuxt 3 frontend
+│   ├── advisor/               # Advisor agent implementation
+│   ├── compliance/            # FCA compliance validation
+│   ├── core/                  # Core infrastructure (DB, LLM, embeddings)
+│   ├── customer/              # Customer agent (simulated)
+│   ├── learning/              # Case-based & reflection learning
+│   ├── models/                # Database models (7 core models)
+│   ├── retrieval/             # RAG retrieval system
+│   ├── templates/             # Jinja2 prompt templates (20 files)
+│   └── knowledge/             # Knowledge base
+├── frontend/                  # Nuxt 3 frontend (8.5K+ lines)
 │   ├── app/
-│   │   ├── components/       # Vue components
-│   │   ├── pages/            # Page routes (file-based)
-│   │   ├── composables/      # Vue composables
-│   │   └── utils/            # API client
-│   └── tests/                # Playwright tests
-├── tests/                     # Backend tests
-├── docs/                      # Documentation
+│   │   ├── components/        # Vue components
+│   │   ├── pages/             # Page routes (file-based)
+│   │   ├── composables/       # Vue composables
+│   │   ├── stores/            # Pinia state management
+│   │   └── utils/             # API client
+│   └── tests/                 # Playwright tests (203 tests)
+├── tests/                     # Backend tests (214 tests)
+├── docs/                      # Documentation (8 guides)
+├── specs/                     # Specifications (63 files, 700KB+)
+├── scripts/                   # Utility scripts
+├── alembic/                   # Database migrations
 ├── docker-compose.yml         # Multi-service orchestration
-└── Dockerfile                # Backend container
+├── Dockerfile                 # Backend container
+└── CLAUDE.md                  # AI assistant guide
 ```
 
 ## 🧪 Testing
@@ -116,16 +127,16 @@ guidance-agent/
 ### Running Specific Tests
 ```bash
 # Frontend Playwright tests
-cd frontend-nuxt && npm test
+cd frontend && npm test
 
 # Backend API tests
 pytest tests/api/test_consultations.py -v
 
 # Playwright tests with UI
-cd frontend-nuxt && npm run test:ui
+cd frontend && npm run test:ui
 
 # Accessibility tests
-cd frontend-nuxt && npx playwright test accessibility.spec.ts
+cd frontend && npx playwright test accessibility.spec.ts
 ```
 
 ## 🚢 Deployment
@@ -161,12 +172,15 @@ See detailed guides:
 
 ## 📚 Documentation
 
+- **[CLAUDE.md](CLAUDE.md)** - Comprehensive AI assistant guide (900+ lines)
 - **[API Documentation](http://localhost:8000/api/docs)** - Interactive Swagger UI
 - **[Docker Setup Guide](docs/DOCKER_SETUP.md)** - Container deployment
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment (700+ lines)
 - **[Testing Guide](docs/TESTING.md)** - Comprehensive testing documentation
 - **[UI/UX Design Plan](specs/ui-ux-design-plan.md)** - Complete design system
 - **[API Integration](docs/API_INTEGRATION.md)** - Backend API guide
+- **[Architecture](specs/architecture.md)** - System architecture (41KB)
+- **[Implementation Plan](specs/implementation-plan.md)** - Implementation details (105KB)
 
 ## 🛠️ Technology Stack
 
@@ -177,10 +191,10 @@ See detailed guides:
 
 **Backend**:
 - FastAPI, Pydantic, SQLAlchemy
-- LangChain, OpenAI/Claude
+- LiteLLM (multi-provider: OpenAI, Anthropic, AWS Bedrock, Azure, LM Studio, Ollama)
 - PostgreSQL + pgvector
-- Phoenix (observability)
-- Jinja2 (prompt templates)
+- Arize Phoenix (LLM observability)
+- Jinja2 (20 prompt templates)
 
 **Infrastructure**:
 - Docker, Docker Compose
