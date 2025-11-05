@@ -10,9 +10,9 @@
         Back to Customers
       </UButton>
       <div class="flex items-center gap-2 mt-4">
-        <UButton to="/admin" variant="ghost" size="xs">Admin</UButton>
+        <UButton to="/admin" variant="ghost" size="xs" color="indigo">Admin</UButton>
         <span class="text-gray-400">/</span>
-        <UButton to="/admin/users/customers" variant="ghost" size="xs">Customers</UButton>
+        <UButton to="/admin/users/customers" variant="ghost" size="xs" color="indigo">Customers</UButton>
         <span class="text-gray-400">/</span>
         <span class="text-sm text-gray-600 dark:text-gray-400">{{ truncateId(id) }}</span>
       </div>
@@ -33,7 +33,7 @@
       <p class="text-red-600 dark:text-red-400">
         {{ error.statusCode === 404 ? 'Customer not found.' : (error.message || 'Failed to load customer data. Please try again.') }}
       </p>
-      <UButton class="mt-4" @click="refresh">
+      <UButton class="mt-4" @click="refresh" color="indigo">
         Retry
       </UButton>
     </div>

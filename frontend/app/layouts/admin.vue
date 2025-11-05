@@ -3,6 +3,7 @@
     <!-- Mobile Menu Button -->
     <div class="lg:hidden fixed top-4 left-4 z-50">
       <UButton
+        color="indigo"
         icon="i-heroicons-bars-3"
         @click="mobileMenuOpen = !mobileMenuOpen"
         aria-label="Toggle menu"
@@ -18,6 +19,7 @@
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🔐 Admin</h2>
           <UButton
+            color="indigo"
             icon="i-heroicons-x-mark"
             variant="ghost"
             class="lg:hidden"
@@ -35,6 +37,7 @@
           </div>
           <UButton
             to="/admin"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -54,6 +57,7 @@
           </div>
           <UButton
             to="/admin/metrics"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -72,6 +76,7 @@
           </div>
           <UButton
             to="/admin/knowledge/fca"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -83,6 +88,7 @@
           </UButton>
           <UButton
             to="/admin/knowledge/pension"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -101,6 +107,7 @@
           </div>
           <UButton
             to="/admin/learning/memories"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -112,6 +119,7 @@
           </UButton>
           <UButton
             to="/admin/learning/cases"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -123,6 +131,7 @@
           </UButton>
           <UButton
             to="/admin/learning/rules"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -141,6 +150,7 @@
           </div>
           <UButton
             to="/admin/users/customers"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -152,6 +162,7 @@
           </UButton>
           <UButton
             to="/admin/consultations"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -170,6 +181,7 @@
           </div>
           <UButton
             to="/admin/settings"
+            color="indigo"
             variant="ghost"
             block
             justify="start"
@@ -198,7 +210,7 @@
           <h1 class="text-2xl font-bold ml-12 lg:ml-0 text-gray-900 dark:text-gray-100">Admin Dashboard</h1>
           <div class="flex gap-2 items-center">
             <ColorModeToggle />
-            <UButton variant="ghost" icon="i-heroicons-arrow-left-on-rectangle" to="/">
+            <UButton color="indigo" variant="ghost" icon="i-heroicons-arrow-left-on-rectangle" to="/">
               Exit Admin
             </UButton>
           </div>

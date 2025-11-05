@@ -11,6 +11,7 @@
           to="/admin"
           variant="outline"
           icon="i-heroicons-arrow-left"
+          color="indigo"
         >
           Back to Dashboard
         </UButton>
@@ -199,6 +200,7 @@
                     :to="`/admin/consultations/${consultation.id}`"
                     size="sm"
                     variant="outline"
+                    color="indigo"
                   >
                     View
                   </UButton>
@@ -215,16 +217,17 @@
             </div>
             <div class="flex gap-2">
               <UButton
-                variant="outline"
-                size="sm"
+                icon="i-heroicons-chevron-left"
+                color="indigo"
                 :disabled="pagination.page === 1"
                 @click="previousPage"
               >
                 Previous
               </UButton>
               <UButton
-                variant="outline"
-                size="sm"
+                icon="i-heroicons-chevron-right"
+                color="indigo"
+                trailing
                 :disabled="pagination.page >= pagination.pages"
                 @click="nextPage"
               >

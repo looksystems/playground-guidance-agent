@@ -3,7 +3,7 @@
     <div class="space-y-6">
       <!-- Header with Breadcrumb -->
       <div class="mb-6">
-        <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left">
+        <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left" color="indigo">
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Customer Management</h1>
@@ -257,6 +257,7 @@
         <div class="flex gap-2">
           <UButton
             icon="i-heroicons-chevron-left"
+            color="indigo"
             :disabled="pagination.page === 1"
             @click="goToPage(pagination.page - 1)"
           >
@@ -264,6 +265,7 @@
           </UButton>
           <UButton
             icon="i-heroicons-chevron-right"
+            color="indigo"
             trailing
             :disabled="pagination.page === pagination.pages"
             @click="goToPage(pagination.page + 1)"

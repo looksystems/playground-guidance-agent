@@ -53,6 +53,7 @@
             <UButton
               :label="consultation.status === 'active' ? 'Continue' : 'View'"
               :icon="consultation.status === 'active' ? 'i-heroicons-arrow-right' : 'i-heroicons-eye'"
+              color="indigo"
               @click.stop="navigateTo(`/consultation/${consultation.id}`)"
             />
           </div>
@@ -64,7 +65,7 @@
         <UIcon name="i-heroicons-inbox" class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
         <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">No consultations found</h3>
         <p class="text-gray-600 dark:text-gray-400 mb-6">{{ search ? 'Try adjusting your search' : 'Start your first consultation' }}</p>
-        <UButton to="/" size="lg">
+        <UButton to="/" size="lg" color="indigo">
           Start New Consultation
         </UButton>
       </div>

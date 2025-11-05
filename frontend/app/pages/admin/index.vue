@@ -19,8 +19,8 @@
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Consultations</p>
             <p class="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{{ metricsData?.consultations?.total?.toLocaleString() || '0' }}</p>
             <div class="mt-2 flex items-center gap-1">
-              <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span class="text-sm font-medium text-green-600 dark:text-green-400">Last {{ metricsData?.summary?.period_days || 30 }} days</span>
+              <UIcon name="i-heroicons-arrow-trending-up-solid" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Last {{ metricsData?.summary?.period_days || 30 }} days</span>
             </div>
           </div>
           <div class="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg">
@@ -35,12 +35,12 @@
             <p class="text-sm font-medium text-gray-600 dark:text-gray-400">FCA Compliance</p>
             <p class="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{{ metricsData?.consultations?.compliance_rate?.toFixed(1) || '0' }}%</p>
             <div class="mt-2 flex items-center gap-1">
-              <UIcon name="i-heroicons-shield-check-solid" class="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span class="text-sm font-medium text-green-600 dark:text-green-400">Compliant rate</span>
+              <UIcon name="i-heroicons-shield-check-solid" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Compliant rate</span>
             </div>
           </div>
-          <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
+          <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <UIcon name="i-heroicons-shield-check-solid" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
           </div>
         </div>
       </UCard>
@@ -75,8 +75,8 @@
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Recent Consultations</h2>
           <div class="flex gap-2">
-            <UButton icon="i-heroicons-funnel" variant="outline">Filters</UButton>
-            <UButton icon="i-heroicons-arrow-down-tray" variant="outline">Export</UButton>
+            <UButton icon="i-heroicons-funnel" variant="outline" color="indigo">Filters</UButton>
+            <UButton icon="i-heroicons-arrow-down-tray" variant="outline" color="indigo">Export</UButton>
           </div>
         </div>
       </template>
@@ -118,7 +118,7 @@
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm">
-                <UButton size="xs" @click="navigateTo(`/admin/consultations/${row.id}`)">
+                <UButton size="xs" color="indigo" @click="navigateTo(`/admin/consultations/${row.id}`)">
                   View
                 </UButton>
               </td>
@@ -305,8 +305,8 @@ const complianceData = computed(() => {
       {
         label: 'FCA Compliance Score',
         data,
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderColor: 'rgb(79, 70, 229)',
+        backgroundColor: 'rgba(79, 70, 229, 0.1)',
         tension: 0.4
       }
     ]

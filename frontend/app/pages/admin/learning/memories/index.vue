@@ -3,7 +3,7 @@
     <div class="space-y-6">
       <!-- Header with Breadcrumb -->
       <div class="mb-6">
-        <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left">
+        <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left" color="indigo">
           Back to Dashboard
         </UButton>
         <h1 class="text-3xl font-bold mt-4">Memory Bank</h1>
@@ -42,8 +42,8 @@
               <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Reflections</p>
               <p class="mt-2 text-4xl font-bold">{{ stats.reflections }}</p>
             </div>
-            <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div class="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+              <UIcon name="i-heroicons-sparkles-solid" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
             </div>
           </div>
         </UCard>
@@ -294,6 +294,7 @@
         <div class="flex gap-2">
           <UButton
             icon="i-heroicons-chevron-left"
+            color="indigo"
             :disabled="pagination.page === 1"
             @click="goToPage(pagination.page - 1)"
           >
@@ -301,6 +302,7 @@
           </UButton>
           <UButton
             icon="i-heroicons-chevron-right"
+            color="indigo"
             trailing
             :disabled="pagination.page === pagination.pages"
             @click="goToPage(pagination.page + 1)"
@@ -392,20 +394,20 @@ const stats = computed(() => ({
 const getMemoryTypeColor = (type: string) => {
   const colors: Record<string, string> = {
     observation: 'blue',
-    reflection: 'green',
+    reflection: 'indigo',
     plan: 'orange'
   }
   return colors[type] || 'gray'
 }
 
 const getImportanceColor = (importance: number) => {
-  if (importance > 0.7) return 'green'
+  if (importance > 0.7) return 'indigo'
   if (importance >= 0.4) return 'yellow'
   return 'gray'
 }
 
 const getImportanceBarColor = (importance: number) => {
-  if (importance > 0.7) return 'bg-green-500'
+  if (importance > 0.7) return 'bg-indigo-500'
   if (importance >= 0.4) return 'bg-yellow-500'
   return 'bg-gray-400'
 }
@@ -464,7 +466,7 @@ onMounted(() => {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #8b5cf6;
+  background: #4f46e5;
   cursor: pointer;
 }
 
@@ -472,7 +474,7 @@ onMounted(() => {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #8b5cf6;
+  background: #4f46e5;
   cursor: pointer;
   border: none;
 }

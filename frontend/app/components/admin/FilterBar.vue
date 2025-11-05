@@ -101,7 +101,7 @@
           Clear All
           <UBadge
             v-if="activeFilterCount > 0"
-            color="primary"
+            color="indigo"
             class="ml-2"
             :label="activeFilterCount.toString()"
           />

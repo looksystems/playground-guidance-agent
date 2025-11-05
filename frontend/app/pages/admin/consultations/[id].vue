@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="mb-6">
-      <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left">
+      <UButton to="/admin" variant="ghost" icon="i-heroicons-arrow-left" color="indigo">
         Back to Dashboard
       </UButton>
       <h1 class="text-3xl font-bold mt-4">Consultation Review: {{ id }}</h1>
@@ -19,7 +19,7 @@
     <div v-else-if="error" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
       <h2 class="text-lg font-semibold text-red-800 dark:text-red-400 mb-2">Error Loading Consultation</h2>
       <p class="text-red-600 dark:text-red-400">{{ error.message || 'Failed to load consultation data. Please try again.' }}</p>
-      <UButton class="mt-4" @click="refreshNuxtData()">
+      <UButton class="mt-4" @click="refreshNuxtData()" color="indigo">
         Retry
       </UButton>
     </div>
@@ -63,10 +63,10 @@
             </div>
 
             <div class="pt-4 space-y-2">
-              <UButton block icon="i-heroicons-document-arrow-down">
+              <UButton block icon="i-heroicons-document-arrow-down" color="indigo">
                 Export PDF
               </UButton>
-              <UButton block variant="outline" icon="i-heroicons-folder-plus">
+              <UButton block variant="outline" icon="i-heroicons-folder-plus" color="indigo">
                 Add to Cases
               </UButton>
             </div>

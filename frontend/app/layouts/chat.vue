@@ -7,15 +7,15 @@
             Pension Guidance Service
           </NuxtLink>
           <nav class="flex gap-2 items-center">
-            <UButton to="/history" variant="ghost">
+            <UButton to="/history" variant="ghost" color="indigo">
               <UIcon name="i-heroicons-clock" class="w-5 h-5" />
               History
             </UButton>
-            <UButton variant="ghost">
+            <UButton variant="ghost" color="indigo">
               <UIcon name="i-heroicons-question-mark-circle" class="w-5 h-5" />
               Help
             </UButton>
-            <UButton variant="outline">
+            <UButton variant="outline" color="indigo">
               <UIcon name="i-heroicons-arrow-left-on-rectangle" class="w-5 h-5" />
               Sign Out
             </UButton>

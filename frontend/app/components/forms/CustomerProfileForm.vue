@@ -60,9 +60,9 @@
             class="radio-option-wrapper"
           >
             <label
-              class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-primary-500 dark:hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20"
+              class="flex items-center cursor-pointer p-4 border-2 rounded-lg transition-all hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
               :class="{
-                'border-primary-500 dark:border-primary-400 bg-primary-50 dark:bg-primary-900/20': form.topic === option.value,
+                'border-indigo-500 dark:border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20': form.topic === option.value,
                 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800': form.topic !== option.value
               }"
               :data-testid="`topic-${option.value}`"
@@ -76,10 +76,10 @@
                 :aria-label="option.label"
               />
               <span class="flex items-center justify-center w-5 h-5 mr-3 border-2 rounded-full" :class="{
-                'border-primary-500 dark:border-primary-400': form.topic === option.value,
+                'border-indigo-500 dark:border-indigo-400': form.topic === option.value,
                 'border-gray-400 dark:border-gray-500': form.topic !== option.value
               }">
-                <span v-if="form.topic === option.value" class="w-3 h-3 bg-primary-500 dark:bg-primary-400 rounded-full"></span>
+                <span v-if="form.topic === option.value" class="w-3 h-3 bg-indigo-500 dark:bg-indigo-400 rounded-full"></span>
               </span>
               <span class="text-base font-medium text-gray-900 dark:text-gray-100">{{ option.label }}</span>
             </label>
@@ -101,6 +101,7 @@
       <div class="pt-4">
         <UButton
           type="submit"
+          color="indigo"
           size="xl"
           block
           :loading="loading"

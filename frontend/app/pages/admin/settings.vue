@@ -120,8 +120,8 @@
 
       <!-- Save Button -->
       <div class="flex justify-end gap-3">
-        <UButton variant="outline" @click="resetSettings" :disabled="loading">Reset</UButton>
-        <UButton @click="saveSettings" :loading="loading" :disabled="loading">
+        <UButton variant="outline" color="gray" @click="resetSettings" :disabled="loading">Reset</UButton>
+        <UButton color="indigo" @click="saveSettings" :loading="loading" :disabled="loading">
           {{ loading ? 'Saving...' : 'Save Settings' }}
         </UButton>
       </div>
