@@ -12,10 +12,25 @@ from guidance_agent.core.provider_config import (
 )
 
 
-@pytest.fixture(autouse=True)
-def clean_embedding_env(monkeypatch):
-    """Clean EMBEDDING_DIMENSION env var for each test."""
-    monkeypatch.delenv("EMBEDDING_DIMENSION", raising=False)
+@pytest.fixture(scope="module", autouse=True)
+def clean_embedding_env():
+    """Clean EMBEDDING_DIMENSION env var for this test module.
+
+    Module-scoped because all tests in this module need a clean environment
+    for embedding dimension testing, but don't need per-test cleanup.
+
+    Note: We use os.environ directly instead of monkeypatch because
+    monkeypatch is function-scoped and can't be used with module scope.
+    """
+    import os
+    original_value = os.environ.get("EMBEDDING_DIMENSION")
+    os.environ.pop("EMBEDDING_DIMENSION", None)
+
+    yield
+
+    # Restore original value after module
+    if original_value is not None:
+        os.environ["EMBEDDING_DIMENSION"] = original_value
 
 
 class TestDetectProvider:

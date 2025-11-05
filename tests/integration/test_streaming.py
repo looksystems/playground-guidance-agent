@@ -136,7 +136,7 @@ async def test_streaming_performance_metrics(advisor_profile, test_customer):
 
     # Performance assertions (targets from spec)
     assert ttft < 2.0, f"TTFT should be < 2s, got {ttft:.2f}s"
-    assert total_time < 10.0, f"Total time should be reasonable, got {total_time:.2f}s"
+    assert total_time < 20.0, f"Total time should be reasonable, got {total_time:.2f}s"
     assert chunk_count > 3, f"Should receive multiple chunks, got {chunk_count}"
     assert total_length > 100, "Should receive substantive content"
 

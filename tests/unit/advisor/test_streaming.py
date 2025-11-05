@@ -70,16 +70,34 @@ class TestProvideGuidanceStream:
         )
 
     @pytest.mark.asyncio
-    async def test_provide_guidance_stream_exists(self, advisor_profile, customer_profile):
-        """Test that provide_guidance_stream method exists."""
-        agent = AdvisorAgent(profile=advisor_profile)
+    async def test_provide_guidance_stream_is_async_generator(self, advisor_profile):
+        """Verify provide_guidance_stream is an async generator function."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
 
-        # Method should exist
-        assert hasattr(agent, "provide_guidance_stream")
-
-        # Should be an async generator function
         import inspect
         assert inspect.isasyncgenfunction(agent.provide_guidance_stream)
+
+    @pytest.mark.asyncio
+    async def test_provide_guidance_stream_produces_output(self, advisor_profile, customer_profile):
+        """Verify streaming guidance produces text chunks."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
+        conversation = []
+
+        # Mock the stream to produce test chunks
+        async def mock_stream(*args, **kwargs):
+            yield "Streaming "
+            yield "guidance "
+            yield "works!"
+
+        with patch.object(agent, "_generate_guidance_stream", mock_stream):
+            chunks = []
+            async for chunk in agent.provide_guidance_stream(customer_profile, conversation, use_reasoning=False):
+                chunks.append(chunk)
+
+            # Verify streaming produced output
+            assert len(chunks) > 0
+            full_text = "".join(chunks)
+            assert "guidance" in full_text.lower()
 
     @pytest.mark.asyncio
     async def test_provide_guidance_stream_yields_chunks(self, advisor_profile, customer_profile):
@@ -198,20 +216,23 @@ class TestGenerateGuidanceStream:
         )
 
     @pytest.mark.asyncio
-    async def test_generate_guidance_stream_exists(self, advisor_profile):
-        """Test that _generate_guidance_stream method exists."""
-        agent = AdvisorAgent(profile=advisor_profile)
+    async def test_generate_guidance_stream_exists_and_is_async_generator(self, advisor_profile):
+        """Test that _generate_guidance_stream method exists and is an async generator."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
 
+        # Verify the method exists
         assert hasattr(agent, "_generate_guidance_stream")
+
+        # Verify it's an async generator function
         import inspect
         assert inspect.isasyncgenfunction(agent._generate_guidance_stream)
 
     @pytest.mark.asyncio
-    async def test_generate_guidance_stream_calls_llm_with_streaming(
+    async def test_provide_guidance_stream_calls_llm_with_streaming(
         self, advisor_profile, customer_profile, context
     ):
-        """Test that stream calls LLM with stream=True."""
-        agent = AdvisorAgent(profile=advisor_profile)
+        """Test that provide_guidance_stream calls LLM with stream=True."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
         conversation = []
 
         # Mock streaming LLM response
@@ -228,8 +249,8 @@ class TestGenerateGuidanceStream:
             mock_completion.return_value = MockStreamResponse()
 
             chunks = []
-            async for chunk in agent._generate_guidance_stream(
-                customer_profile, context, conversation
+            async for chunk in agent.provide_guidance_stream(
+                customer_profile, conversation
             ):
                 chunks.append(chunk)
 
@@ -239,11 +260,11 @@ class TestGenerateGuidanceStream:
             assert call_kwargs.get("stream") == True
 
     @pytest.mark.asyncio
-    async def test_generate_guidance_stream_yields_content_only(
+    async def test_provide_guidance_stream_filters_none_content(
         self, advisor_profile, customer_profile, context
     ):
-        """Test that stream yields only content chunks, not None."""
-        agent = AdvisorAgent(profile=advisor_profile)
+        """Test that stream yields only content chunks, filtering out None."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
         conversation = []
 
         # Mock streaming response with some None content
@@ -260,8 +281,8 @@ class TestGenerateGuidanceStream:
             mock_completion.return_value = MockStreamResponse()
 
             chunks = []
-            async for chunk in agent._generate_guidance_stream(
-                customer_profile, context, conversation
+            async for chunk in agent.provide_guidance_stream(
+                customer_profile, conversation
             ):
                 chunks.append(chunk)
 
@@ -380,62 +401,48 @@ class TestParallelValidation:
         )
 
     @pytest.mark.asyncio
-    async def test_validate_and_record_async_exists(self, advisor_profile):
-        """Test that _validate_and_record_async method exists."""
-        agent = AdvisorAgent(profile=advisor_profile)
-
-        assert hasattr(agent, "_validate_and_record_async")
-        assert asyncio.iscoroutinefunction(agent._validate_and_record_async)
-
-    @pytest.mark.asyncio
-    async def test_validate_and_record_async_calls_validator(
+    async def test_streaming_guidance_validates_asynchronously(
         self, advisor_profile, customer_profile
     ):
-        """Test that async validation calls the compliance validator."""
-        agent = AdvisorAgent(profile=advisor_profile)
-        context = RetrievedContext()
-        guidance = "Test guidance text"
+        """Test that streaming guidance triggers async compliance validation."""
+        agent = AdvisorAgent(profile=advisor_profile, use_chain_of_thought=False)
+        conversation = []
 
-        # Mock the async validator
-        mock_validate_async = AsyncMock(return_value=ValidationResult(
-            passed=True,
-            confidence=0.95,
-            issues=[],
-            requires_human_review=False,
-        ))
+        # Mock streaming LLM
+        class MockStreamResponse:
+            def __iter__(self):
+                chunks = [
+                    MagicMock(choices=[MagicMock(delta=MagicMock(content="Test "))]),
+                    MagicMock(choices=[MagicMock(delta=MagicMock(content="guidance"))]),
+                    MagicMock(choices=[MagicMock(delta=MagicMock(content=None))]),
+                ]
+                return iter(chunks)
 
-        with patch.object(agent.compliance_validator, "validate_async", mock_validate_async):
-            result = await agent._validate_and_record_async(guidance, customer_profile, context)
-
-            # Verify validator was called
-            assert mock_validate_async.called
-            call_args = mock_validate_async.call_args
-            assert call_args.kwargs["guidance"] == guidance
-
-    @pytest.mark.asyncio
-    async def test_validate_and_record_async_returns_validation_result(
-        self, advisor_profile, customer_profile
-    ):
-        """Test that async validation returns ValidationResult."""
-        agent = AdvisorAgent(profile=advisor_profile)
-        context = RetrievedContext()
-        guidance = "Test guidance"
-
-        expected_result = ValidationResult(
-            passed=True,
-            confidence=0.90,
-            issues=[],
-            requires_human_review=False,
+        # Track async validator calls
+        mock_validate_async = AsyncMock(
+            return_value=ValidationResult(
+                passed=True,
+                confidence=0.95,
+                issues=[],
+                requires_human_review=False,
+            )
         )
 
-        mock_validate_async = AsyncMock(return_value=expected_result)
+        with patch("guidance_agent.advisor.agent.completion") as mock_completion:
+            mock_completion.return_value = MockStreamResponse()
 
-        with patch.object(agent.compliance_validator, "validate_async", mock_validate_async):
-            result = await agent._validate_and_record_async(guidance, customer_profile, context)
+            with patch.object(agent.compliance_validator, "validate_async", mock_validate_async):
+                chunks = []
+                async for chunk in agent.provide_guidance_stream(customer_profile, conversation):
+                    chunks.append(chunk)
 
-            assert result == expected_result
-            assert result.passed == True
-            assert result.confidence == 0.90
+                # Give async validation task time to complete
+                await asyncio.sleep(0.1)
+
+                # Verify async validator was called with the full guidance
+                assert mock_validate_async.called
+                call_args = mock_validate_async.call_args
+                assert "Test guidance" in call_args.kwargs["guidance"]
 
     @pytest.mark.asyncio
     async def test_parallel_validation_during_streaming(

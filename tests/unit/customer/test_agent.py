@@ -48,6 +48,7 @@ class TestCustomerAgentInitialization:
 
         agent = CustomerAgent(profile=profile)
 
+        # Verify agent was created with proper attributes
         assert agent is not None
         assert agent.profile == profile
         assert hasattr(agent, "conversation_memory")
@@ -247,10 +248,11 @@ class TestSimulateComprehension:
         agent = CustomerAgent(profile=profile)
         initial_level = agent.comprehension_level
 
-        agent.simulate_comprehension("Some guidance here...", [])
+        agent.simulate_comprehension("You can access your pension at 55.", [])
 
-        # Comprehension level should be tracked
+        # Verify comprehension level is tracked
         assert hasattr(agent, "comprehension_level")
+        assert agent.comprehension_level is not None
 
 
 class TestRespond:

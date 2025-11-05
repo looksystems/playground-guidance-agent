@@ -1,44 +1,24 @@
 """Unit tests for multi-faceted retrieval system."""
 
-import os
 import pytest
 from uuid import uuid4
 from datetime import datetime
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load .env to get correct EMBEDDING_DIMENSION
-env_path = Path(__file__).parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
 
 from guidance_agent.retrieval.retriever import retrieve_context, CaseBase, RulesBase
 from guidance_agent.core.memory import MemoryNode, MemoryStream
 from guidance_agent.core.types import MemoryType, RetrievedContext
 from guidance_agent.core.database import Memory, Case, Rule, get_session
-
-# Get embedding dimension from environment (loaded from .env)
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+from tests.fixtures.embeddings import EMBEDDING_DIMENSION as EMBEDDING_DIM
 
 
 @pytest.fixture
-def db_session():
-    """Get a test database session."""
-    session = get_session()
-    # Cleanup
-    session.query(Memory).delete()
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
+def db_session(transactional_db_session):
+    """Get a test database session with automatic rollback.
 
-    yield session
-
-    # Cleanup
-    session.query(Memory).delete()
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
-    session.close()
+    Uses the transactional_db_session fixture from conftest.py
+    which automatically rolls back all changes after each test.
+    """
+    return transactional_db_session
 
 
 @pytest.fixture
@@ -154,10 +134,33 @@ def populated_rules_base(db_session):
 class TestCaseBase:
     """Tests for CaseBase class."""
 
-    def test_create_case_base(self, db_session):
-        """Test creating a case base."""
+    def test_case_base_retrieves_similar_cases_by_embedding(self, db_session):
+        """Test that case base can store and retrieve similar cases."""
         case_base = CaseBase(session=db_session)
-        assert case_base is not None
+
+        # Add a test case about pension withdrawal
+        case_id = uuid4()
+        case_base.add(
+            id=case_id,
+            embedding=[0.8] * EMBEDDING_DIM,
+            metadata={
+                "task_type": "pension_withdrawal",
+                "customer_situation": "55 year old customer wants to access pension",
+                "guidance_provided": "Explained tax-free lump sum and drawdown options",
+                "outcome": {"successful": True, "customer_satisfied": 9},
+            },
+        )
+
+        # Retrieve similar cases using a similar embedding
+        query_embedding = [0.79] * EMBEDDING_DIM  # Very similar to stored case
+        results = case_base.retrieve(query_embedding, top_k=1)
+
+        # Verify we can retrieve the case
+        assert len(results) == 1
+        assert results[0]["task_type"] == "pension_withdrawal"
+        assert results[0]["customer_situation"] == "55 year old customer wants to access pension"
+        assert results[0]["outcome"]["successful"] is True
+        assert "similarity" in results[0]
 
     def test_add_case(self, db_session):
         """Test adding a case to the case base."""

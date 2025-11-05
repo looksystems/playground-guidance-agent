@@ -20,6 +20,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from guidance_agent.environment import VirtualEnvironment
 from guidance_agent.core.types import AdvisorProfile
 
+# Initialize Phoenix tracing for training experiments
+from guidance_agent.core import llm_config  # noqa: F401
+
 
 def main():
     """Run advisor training session."""

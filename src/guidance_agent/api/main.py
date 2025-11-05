@@ -17,6 +17,9 @@ from guidance_agent.api.routers import consultations, customers, admin
 from guidance_agent.api import schemas
 from guidance_agent.core.database import get_session
 
+# Initialize Phoenix tracing before any LLM calls
+from guidance_agent.core import llm_config  # noqa: F401
+
 # Create FastAPI application
 app = FastAPI(
     title="Pension Guidance Chat API",

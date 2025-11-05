@@ -1,22 +1,12 @@
 """Unit tests for memory module."""
 
-import os
 import pytest
 from datetime import datetime, timedelta
 from uuid import UUID
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load .env to get correct EMBEDDING_DIMENSION
-env_path = Path(__file__).parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
 
 from guidance_agent.core.memory import MemoryNode, MemoryStream
 from guidance_agent.core.types import MemoryType
-
-# Get embedding dimension from environment (loaded from .env)
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+from tests.fixtures.embeddings import EMBEDDING_DIMENSION as EMBEDDING_DIM
 
 
 class TestMemoryNode:
@@ -192,17 +182,44 @@ class TestMemoryStream:
         assert populated_memory_stream.get_memory_count() == 0
         assert populated_memory_stream.memories == []
 
-    def test_cosine_similarity(self):
-        """Test cosine similarity calculation."""
-        vec1 = [1.0, 0.0, 0.0]
-        vec2 = [1.0, 0.0, 0.0]
-        vec3 = [0.0, 1.0, 0.0]
+    def test_memory_retrieval_by_similarity(self, memory_stream):
+        """Test that memory retrieval returns most similar memories.
 
-        # Identical vectors should have similarity of 1
-        assert MemoryStream._cosine_similarity(vec1, vec2) == pytest.approx(1.0)
+        This test verifies the similarity algorithm behavior by ensuring
+        that memories with similar embeddings are retrieved over dissimilar ones.
+        """
+        # Create memories with different embeddings
+        # Memory 1: embedding along x-axis
+        similar_memory = MemoryNode(
+            description="Pension consolidation advice",
+            importance=0.5,
+            embedding=[1.0] + [0.0] * (EMBEDDING_DIM - 1)  # [1, 0, 0, ...]
+        )
 
-        # Orthogonal vectors should have similarity of 0
-        assert MemoryStream._cosine_similarity(vec1, vec3) == pytest.approx(0.0)
+        # Memory 2: embedding along y-axis (orthogonal to query)
+        different_memory = MemoryNode(
+            description="Mortgage advice",
+            importance=0.5,
+            embedding=[0.0, 1.0] + [0.0] * (EMBEDDING_DIM - 2)  # [0, 1, 0, ...]
+        )
 
-        # Different length vectors should return 0
-        assert MemoryStream._cosine_similarity([1.0], [1.0, 0.0]) == 0.0
+        # Add both memories
+        memory_stream.add(similar_memory)
+        memory_stream.add(different_memory)
+
+        # Query with embedding similar to first memory (along x-axis)
+        query_embedding = [1.0] + [0.0] * (EMBEDDING_DIM - 1)
+
+        # Retrieve with pure relevance weighting
+        results = memory_stream.retrieve(
+            query_embedding,
+            top_k=2,
+            relevance_weight=1.0,
+            importance_weight=0.0,
+            recency_weight=0.0
+        )
+
+        # Should return similar memory first (tests cosine similarity behavior)
+        assert len(results) == 2
+        assert results[0].description == "Pension consolidation advice"
+        assert results[1].description == "Mortgage advice"

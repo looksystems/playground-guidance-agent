@@ -79,6 +79,10 @@ def disable_phoenix_tracing() -> None:
         print(f"Warning: Failed to disable Phoenix tracing: {e}")
 
 
-# Auto-setup on module import if Phoenix is available
-if PHOENIX_AVAILABLE and os.getenv("PHOENIX_AUTO_SETUP", "true").lower() == "true":
+# Auto-setup on module import if Phoenix is available and in development environment
+if (
+    PHOENIX_AVAILABLE
+    and os.getenv("ENVIRONMENT") == "development"
+    and os.getenv("PHOENIX_AUTO_SETUP", "true").lower() == "true"
+):
     setup_phoenix_tracing()

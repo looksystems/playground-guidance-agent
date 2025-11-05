@@ -9,6 +9,25 @@ from sqlalchemy.orm import Session
 from guidance_agent.core.database import Consultation
 
 
+@pytest.fixture(scope="module", autouse=True)
+def clean_database_for_module():
+    """Clean database before running tests in this module.
+
+    This ensures test isolation by removing all consultations before
+    the module tests run. This is necessary because these tests use
+    client_with_real_db which doesn't provide transactional isolation.
+    """
+    from guidance_agent.core.database import get_session
+
+    db = get_session()
+    try:
+        # Delete all consultations to ensure clean state
+        db.query(Consultation).delete()
+        db.commit()
+    finally:
+        db.close()
+
+
 @pytest.fixture
 def admin_headers():
     """Admin authorization headers."""

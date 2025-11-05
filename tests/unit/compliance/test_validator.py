@@ -144,10 +144,13 @@ class TestComplianceValidator:
             goals="Understanding my pension withdrawal options",
         )
 
-    def test_create_validator(self, validator):
-        """Test creating a ComplianceValidator."""
+    def test_validator_exists_and_is_callable(self, validator):
+        """Test that validator exists and has validation capability."""
         assert validator is not None
+
+        # Verify validator has the validate method
         assert hasattr(validator, "validate")
+        assert callable(validator.validate)
 
     def test_validate_compliant_guidance(self, validator, simple_customer):
         """Test validation of compliant guidance."""

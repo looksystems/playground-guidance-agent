@@ -148,10 +148,10 @@ async def test_list_consultations(client: AsyncClient, mock_db_session):
 
 
 @pytest.mark.asyncio
-async def test_send_message(
+async def test_send_message_appears_in_conversation(
     client: AsyncClient, sample_consultation_id, mock_db_session, mock_advisor_agent
 ):
-    """Test sending a customer message (returns immediate acknowledgment)."""
+    """Test that sending a message adds it to conversation history."""
     # Mock consultation
     mock_consultation = MagicMock()
     mock_consultation.id = sample_consultation_id
@@ -162,17 +162,26 @@ async def test_send_message(
         mock_consultation
     )
 
+    # Send a message
+    message_content = "I have four different pensions from previous jobs"
     response = await client.post(
         f"/api/consultations/{sample_consultation_id}/messages",
-        json={"content": "I'm not sure what type they are"},
+        json={"content": message_content},
     )
 
     assert response.status_code == 200
     data = response.json()
-
     assert "message_id" in data
-    assert "status" in data
     assert data["status"] == "received"
+
+    # Verify message was added to conversation
+    assert len(mock_consultation.conversation) == 1
+    assert mock_consultation.conversation[0]["role"] == "customer"
+    assert mock_consultation.conversation[0]["content"] == message_content
+    assert "timestamp" in mock_consultation.conversation[0]
+
+    # Verify database commit was called
+    mock_db_session.commit.assert_called()
 
 
 @pytest.mark.asyncio

@@ -7,20 +7,11 @@ These tests verify that the entire learning system works end-to-end:
 - Rule performance tracking
 """
 
-import os
 import pytest
 from unittest.mock import patch
 from uuid import uuid4
-from pathlib import Path
-from dotenv import load_dotenv
 
-# Load .env to get correct EMBEDDING_DIMENSION
-env_path = Path(__file__).parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
-
-# Get embedding dimension from environment (loaded from .env)
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+from tests.fixtures.embeddings import EMBEDDING_DIMENSION as EMBEDDING_DIM
 
 from guidance_agent.learning import (
     learn_from_successful_consultation,
@@ -41,21 +32,13 @@ from guidance_agent.core.database import Case, Rule, get_session
 
 
 @pytest.fixture
-def db_session():
-    """Get a test database session."""
-    session = get_session()
-    # Cleanup
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
+def db_session(transactional_db_session):
+    """Get a test database session with automatic rollback.
 
-    yield session
-
-    # Cleanup
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
-    session.close()
+    Uses the transactional_db_session fixture from conftest.py
+    which automatically rolls back all changes after each test.
+    """
+    return transactional_db_session
 
 
 @pytest.fixture
@@ -70,42 +53,7 @@ def rules_base(db_session):
     return RulesBase(session=db_session)
 
 
-@pytest.fixture
-def customer_profile():
-    """Create a customer profile."""
-    demographics = CustomerDemographics(
-        age=55,
-        gender="male",
-        location="London",
-        employment_status="employed",
-        financial_literacy="medium",
-    )
-
-    financial = FinancialSituation(
-        annual_income=50000.0,
-        total_assets=200000.0,
-        total_debt=50000.0,
-        dependents=2,
-        risk_tolerance="medium",
-    )
-
-    pension = PensionPot(
-        pot_id="pot-123",
-        provider="ABC Pension Co",
-        pot_type="defined_contribution",
-        current_value=150000.0,
-        projected_value=200000.0,
-        age_accessible=55,
-    )
-
-    return CustomerProfile(
-        customer_id=uuid4(),
-        demographics=demographics,
-        financial=financial,
-        pensions=[pension],
-        goals="Planning retirement at age 60",
-        presenting_question="What are my options for accessing my pension?",
-    )
+# Note: customer_profile fixture now provided by tests/fixtures/customers.py
 
 
 class TestCompleteLearningLoop:
@@ -195,33 +143,17 @@ class TestCompleteLearningLoop:
         assert rules[0].domain == "communication"
         assert rules[0].confidence == 0.85
 
-    @patch("guidance_agent.learning.reflection.embed")
-    @patch("guidance_agent.learning.reflection.judge_rule_value")
-    @patch("guidance_agent.learning.reflection.refine_principle")
-    @patch("guidance_agent.learning.reflection.validate_principle")
-    @patch("guidance_agent.learning.reflection.reflect_on_failure")
     @patch("guidance_agent.learning.case_learning.embed")
-    def test_mixed_success_and_failure_learning(
+    def test_learning_from_multiple_successful_consultations(
         self,
         mock_embed_case,
-        mock_reflect,
-        mock_validate,
-        mock_refine,
-        mock_judge,
-        mock_embed_rule,
         case_base,
-        rules_base,
         customer_profile,
         db_session,
     ):
-        """Test learning from both successful and failed consultations."""
-        # Setup mocks
+        """Verify system learns from multiple successful outcomes."""
+        # Setup mock
         mock_embed_case.return_value = [0.1] * EMBEDDING_DIM
-        mock_embed_rule.return_value = [0.2] * EMBEDDING_DIM
-        mock_reflect.return_value = {"principle": "Test", "domain": "test"}
-        mock_validate.return_value = {"valid": True, "confidence": 0.75, "reason": "OK"}
-        mock_refine.return_value = "Refined test principle"
-        mock_judge.return_value = True
 
         # Learn from 2 successes
         for i in range(2):
@@ -230,16 +162,44 @@ class TestCompleteLearningLoop:
                 case_base, customer_profile, f"Guidance {i}", outcome
             )
 
-        # Learn from 1 failure
+        # Verify successful cases were stored
+        cases = db_session.query(Case).all()
+        assert len(cases) == 2
+        assert all(case.outcome.get("successful") is True for case in cases)
+
+    @patch("guidance_agent.learning.reflection.embed")
+    @patch("guidance_agent.learning.reflection.judge_rule_value")
+    @patch("guidance_agent.learning.reflection.refine_principle")
+    @patch("guidance_agent.learning.reflection.validate_principle")
+    @patch("guidance_agent.learning.reflection.reflect_on_failure")
+    def test_learning_from_failed_consultation_generates_rule(
+        self,
+        mock_reflect,
+        mock_validate,
+        mock_refine,
+        mock_judge,
+        mock_embed_rule,
+        rules_base,
+        customer_profile,
+        db_session,
+    ):
+        """Verify system generates improvement rules from failures."""
+        # Setup mocks
+        mock_embed_rule.return_value = [0.2] * EMBEDDING_DIM
+        mock_reflect.return_value = {"principle": "Test", "domain": "test"}
+        mock_validate.return_value = {"valid": True, "confidence": 0.75, "reason": "OK"}
+        mock_refine.return_value = "Refined test principle"
+        mock_judge.return_value = True
+
+        # Learn from failure
         outcome = OutcomeResult(successful=False, customer_satisfaction=3.0)
         learn_from_failure(rules_base, customer_profile, "Bad guidance", outcome)
 
-        # Verify both types of learning occurred
-        cases = db_session.query(Case).all()
+        # Verify rule was generated
         rules = db_session.query(Rule).all()
-
-        assert len(cases) == 2  # Two successful cases
-        assert len(rules) == 1  # One rule from failure
+        assert len(rules) == 1
+        assert rules[0].confidence == 0.75
+        assert rules[0].principle == "Refined test principle"
 
     @patch("guidance_agent.learning.reflection.embed")
     @patch("guidance_agent.learning.reflection.judge_rule_value")

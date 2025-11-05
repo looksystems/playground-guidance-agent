@@ -1,42 +1,22 @@
 """Unit tests for vector store."""
 
-import os
 import pytest
 from uuid import uuid4
 from sqlalchemy.orm import Session
-from pathlib import Path
-from dotenv import load_dotenv
-
-# Load .env to get correct EMBEDDING_DIMENSION
-env_path = Path(__file__).parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
 
 from guidance_agent.retrieval.vector_store import PgVectorStore
 from guidance_agent.core.database import Memory, Case, Rule, MemoryTypeEnum, get_session
-
-# Get embedding dimension from environment (loaded from .env)
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
+from tests.fixtures.embeddings import EMBEDDING_DIMENSION as EMBEDDING_DIM
 
 
 @pytest.fixture
-def db_session():
-    """Get a test database session."""
-    session = get_session()
-    # Cleanup BEFORE test: Delete all test data
-    session.query(Memory).delete()
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
+def db_session(transactional_db_session):
+    """Get a test database session with automatic rollback.
 
-    yield session
-
-    # Cleanup AFTER test: Delete all test data
-    session.query(Memory).delete()
-    session.query(Case).delete()
-    session.query(Rule).delete()
-    session.commit()
-    session.close()
+    Uses the transactional_db_session fixture from conftest.py
+    which automatically rolls back all changes after each test.
+    """
+    return transactional_db_session
 
 
 @pytest.fixture
@@ -54,10 +34,55 @@ def sample_embedding():
 class TestPgVectorStore:
     """Tests for PgVectorStore class."""
 
-    def test_create_vector_store(self, memory_vector_store):
-        """Test creating a vector store instance."""
-        assert memory_vector_store is not None
-        assert memory_vector_store.model == Memory
+    def test_vector_store_stores_memory(self, memory_vector_store, sample_embedding, db_session):
+        """Verify vector store can persist memory with embedding."""
+        memory_id = uuid4()
+        metadata = {
+            "description": "Customer expressed concern about pension transfer risks",
+            "timestamp": "2024-01-01T12:00:00",
+            "last_accessed": "2024-01-01T12:00:00",
+            "importance": 0.8,
+            "memory_type": "observation",
+        }
+
+        # Store a memory
+        memory_vector_store.add(
+            id=memory_id,
+            embedding=sample_embedding,
+            metadata=metadata,
+        )
+
+        # Verify it was persisted to database
+        memory = db_session.query(Memory).filter(Memory.id == memory_id).first()
+        assert memory is not None
+        assert memory.description == "Customer expressed concern about pension transfer risks"
+        assert memory.importance == 0.8
+
+    def test_vector_store_retrieves_by_similarity(self, memory_vector_store, sample_embedding, db_session):
+        """Verify vector store retrieves memories by embedding similarity."""
+        memory_id = uuid4()
+        metadata = {
+            "description": "Test memory for retrieval",
+            "timestamp": "2024-01-01T12:00:00",
+            "last_accessed": "2024-01-01T12:00:00",
+            "importance": 0.7,
+            "memory_type": "observation",
+        }
+
+        # Store a memory
+        memory_vector_store.add(
+            id=memory_id,
+            embedding=sample_embedding,
+            metadata=metadata,
+        )
+
+        # Retrieve by similarity search
+        results = memory_vector_store.search(sample_embedding, top_k=1)
+
+        # Verify we retrieved the memory
+        assert len(results) == 1
+        assert results[0]["metadata"]["description"] == "Test memory for retrieval"
+        assert results[0]["similarity"] > 0.99  # Should be nearly identical to query
 
     def test_add_memory_vector(self, memory_vector_store, sample_embedding, db_session):
         """Test adding a vector with metadata to the store."""

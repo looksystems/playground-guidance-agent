@@ -1,16 +1,10 @@
 """Unit tests for rule validation and confidence adjustment."""
 
-import os
 import pytest
 from uuid import uuid4
 from datetime import datetime
-from pathlib import Path
-from dotenv import load_dotenv
 
-# Load .env to get correct EMBEDDING_DIMENSION
-env_path = Path(__file__).parent.parent.parent.parent / ".env"
-if env_path.exists():
-    load_dotenv(env_path)
+from tests.fixtures.embeddings import EMBEDDING_DIMENSION as EMBEDDING_DIM
 
 from guidance_agent.learning.validation import (
     update_rule_confidence,
@@ -23,24 +17,15 @@ from guidance_agent.core.types import OutcomeResult, OutcomeStatus
 from guidance_agent.retrieval.retriever import RulesBase
 from guidance_agent.core.database import Rule, get_session
 
-# Get embedding dimension from environment (loaded from .env)
-EMBEDDING_DIM = int(os.getenv("EMBEDDING_DIMENSION", "1536"))
-
 
 @pytest.fixture
-def db_session():
-    """Get a test database session."""
-    session = get_session()
-    # Cleanup
-    session.query(Rule).delete()
-    session.commit()
+def db_session(transactional_db_session):
+    """Get a test database session with automatic rollback.
 
-    yield session
-
-    # Cleanup
-    session.query(Rule).delete()
-    session.commit()
-    session.close()
+    Uses the transactional_db_session fixture from conftest.py
+    which automatically rolls back all changes after each test.
+    """
+    return transactional_db_session
 
 
 @pytest.fixture

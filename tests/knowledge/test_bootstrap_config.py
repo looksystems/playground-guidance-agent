@@ -1,8 +1,6 @@
 """Tests for bootstrap script configuration."""
 
-import os
 import pytest
-from unittest.mock import patch
 
 
 class TestBootstrapConfiguration:
@@ -36,17 +34,21 @@ class TestBootstrapConfiguration:
         # Check that LITELLM_DROP_PARAMS is set to true
         assert "LITELLM_DROP_PARAMS=true" in env_content, "LITELLM_DROP_PARAMS should be set to true"
 
-    @patch.dict(os.environ, {"LITELLM_MODEL_ADVISOR": "openai/qwen/qwen3-30b-a3b"})
-    def test_advisor_model_name_format(self):
+    def test_advisor_model_name_format(self, monkeypatch):
         """Test that advisor model name uses correct format."""
+        monkeypatch.setenv("LITELLM_MODEL_ADVISOR", "openai/qwen/qwen3-30b-a3b")
+
+        import os
         model_name = os.getenv("LITELLM_MODEL_ADVISOR")
 
         # Model name should start with "openai/" for LM Studio's OpenAI-compatible API
         assert model_name.startswith("openai/"), f"Expected model name to start with 'openai/', got: {model_name}"
 
-    @patch.dict(os.environ, {"LITELLM_MODEL_COMPLIANCE": "openai/qwen/qwen3-30b-a3b"})
-    def test_compliance_model_name_format(self):
+    def test_compliance_model_name_format(self, monkeypatch):
         """Test that compliance model name uses correct format."""
+        monkeypatch.setenv("LITELLM_MODEL_COMPLIANCE", "openai/qwen/qwen3-30b-a3b")
+
+        import os
         model_name = os.getenv("LITELLM_MODEL_COMPLIANCE")
 
         # Model name should start with "openai/" for LM Studio's OpenAI-compatible API
