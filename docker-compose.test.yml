@@ -23,6 +23,25 @@ services:
     networks:
       - test-network
 
+  # Phoenix for LLM observability (single container, SQLite storage)
+  phoenix-test:
+    image: arizephoenix/phoenix:latest
+    ports:
+      - "6006:6006"  # Phoenix UI
+      - "4317:4317"  # OTLP gRPC endpoint
+    environment:
+      PHOENIX_WORKING_DIR: /phoenix-data
+    volumes:
+      - phoenix_data:/phoenix-data  # Persist traces and data
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f http://localhost:6006/healthz || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+    networks:
+      - app-network
+    restart: unless-stopped
+
   # Backend FastAPI service for testing
   backend-test:
     build:

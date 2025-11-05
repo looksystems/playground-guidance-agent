@@ -76,3 +76,9 @@ docker-compose.override.yml
 # Logs
 backend.log
 frontend.log
+backend-dev.log
+frontend-dev.log
+.backend.pid
+.frontend.pid
+.backend-dev.pid
+.frontend-dev.pid

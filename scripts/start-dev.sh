@@ -203,6 +203,8 @@ if [ "$START_BACKEND" = true ]; then
     echo -e "${BLUE}Syncing Python dependencies with uv...${NC}"
     cd "$PROJECT_ROOT"
     uv sync
+    # Install the package itself in editable mode
+    uv pip install -e .
     echo -e "${GREEN}✓ Dependencies synced${NC}"
     echo ""
 

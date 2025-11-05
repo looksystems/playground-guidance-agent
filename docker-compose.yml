@@ -31,11 +31,11 @@ services:
       PHOENIX_WORKING_DIR: /phoenix-data
     volumes:
       - phoenix_data:/phoenix-data  # Persist traces and data
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:6006/healthz || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f http://localhost:6006/healthz || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
     networks:
       - app-network
     restart: unless-stopped

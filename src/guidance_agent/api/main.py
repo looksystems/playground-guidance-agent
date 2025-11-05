@@ -11,6 +11,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime, timezone
+from sqlalchemy import text
 import os
 
 # CRITICAL: Initialize Phoenix tracing BEFORE importing anything that uses litellm
@@ -63,7 +64,7 @@ async def health_check():
     db_healthy = True
     try:
         session = get_session()
-        session.execute("SELECT 1")
+        session.execute(text("SELECT 1"))
         session.close()
     except Exception:
         db_healthy = False
