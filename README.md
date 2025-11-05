@@ -214,6 +214,48 @@ See detailed guides:
                             └──────> Phoenix (Tracing)
 ```
 
+## 📖 Knowledge Base & Metadata
+
+The system uses two knowledge models with rich metadata support:
+
+### FCA Knowledge Model
+Stores FCA compliance guidelines with metadata including:
+- **principle**: Core principle text
+- **fca_reference**: Reference to FCA documentation
+- **mandatory**: Boolean for mandatory requirements
+- **example_type**: Classification ("compliant" or "non_compliant")
+- **parent_principle**: Links examples to parent principles
+- **template_type**: Template categorization
+- **key_elements**: List of required elements
+
+### Pension Knowledge Model
+Stores UK pension domain knowledge with metadata including:
+- Pension type details (description, fca_considerations)
+- Regulation specifics (age limits, contribution rules)
+- Scenario information (age_range, pension_count_range, total_value_range)
+- Common customer goals and patterns
+
+### Current Metadata Usage
+- **API Responses**: Metadata exposed via REST endpoints for admin dashboard display
+- **Data Provenance**: Tracking source information and classifications
+- **Linking**: Connecting related knowledge items (examples to principles)
+- **Supplementary Data**: Storing structured information for display and audit purposes
+
+### Bootstrap & Population
+```bash
+# Bootstrap all knowledge bases (FCA, Pension, Cases, Rules)
+uv run python scripts/bootstrap_all_knowledge.py
+
+# Verify knowledge bases
+uv run python scripts/verify_knowledge_bases.py
+```
+
+**Knowledge Base Status** (as of November 2025):
+- FCA Compliance: 16 entries with embeddings
+- Pension Domain: 10 entries with embeddings
+- Case Base: 12 seed cases
+- Rules Base: 8 seed rules
+
 ## 🎯 Performance
 
 - **Time to first token**: <2 seconds (70% improvement via SSE)

@@ -674,6 +674,88 @@ uv run python scripts/bootstrap_all_knowledge.py
 - Comprehensive validation and quality control
 - LLM-assisted generation for cases and rules
 
+**Metadata Usage in Knowledge Models**:
+
+Both FCAKnowledge and PensionKnowledge models include a `meta` field (JSONB column named `"metadata"`) that stores rich structured information for each knowledge entry.
+
+**FCA Knowledge Metadata Structure** (`bootstrap_fca_knowledge.py`):
+```python
+# For main principles:
+meta = {
+    "principle": principle_text,          # Core principle
+    "fca_reference": "PERG 8.24.1",      # FCA documentation reference
+    "mandatory": True                     # Mandatory vs advisory
+}
+
+# For examples:
+meta = {
+    "example_type": "compliant",          # "compliant" or "non_compliant"
+    "parent_principle": principle_text    # Links to parent principle
+}
+
+# For templates:
+meta = {
+    "template_type": "db_warnings",       # Template category
+    "key_elements": [                     # Required elements
+        "transfer value",
+        "loss of guarantees"
+    ]
+}
+```
+
+**Pension Knowledge Metadata Structure** (`load_pension_knowledge.py`):
+```python
+# Complete dictionary stored as metadata:
+meta = {
+    "description": "Defined Contribution pension...",
+    "fca_considerations": "Regulatory considerations...",
+    "age_range": [55, 75],                # For scenarios
+    "pension_count_range": [2, 4],        # Typical pension count
+    "total_value_range": [50000, 500000], # Value ranges
+    "common_goals": [                     # Customer objectives
+        "Early retirement",
+        "Tax-efficient withdrawal"
+    ]
+}
+```
+
+**Current Metadata Usage**:
+
+1. **API Responses** (`admin.py`):
+   - Exposed via REST endpoints: `/admin/fca-knowledge`, `/admin/pension-knowledge`
+   - Returned in `FCAKnowledgeResponse` and `PensionKnowledgeResponse` schemas
+   - Displayed in admin dashboard for review and auditing
+
+2. **Data Provenance & Classification**:
+   - Tracking source information (`fca_reference`)
+   - Categorizing examples (`example_type`)
+   - Linking related knowledge items (`parent_principle`)
+   - Storing structured supplementary data
+
+3. **Database Schema** (`core/database.py`):
+   ```python
+   class FCAKnowledge(Base):
+       meta = Column(JSONB, default={}, name="metadata")
+
+   class PensionKnowledge(Base):
+       meta = Column(JSONB, default={}, name="metadata")
+   ```
+
+**Current Limitation** ⚠️:
+
+Metadata is **NOT currently used** in:
+- **RAG retrieval logic**: Vector search only uses `content` field and `embedding`
+- **Advisor guidance generation**: Metadata not passed to prompts
+- **Filtering/ranking**: API filtering is by category/subcategory only, not metadata fields
+
+The metadata primarily serves as **supplementary information** for display, audit, and data tracking purposes rather than actively influencing retrieval or guidance generation.
+
+**Potential Future Enhancements**:
+- Filter retrieval results by metadata attributes (e.g., `mandatory=True`)
+- Include metadata context in advisor prompts (e.g., FCA references)
+- Metadata-based ranking/scoring in similarity search
+- Advanced analytics using metadata categories
+
 ### ✅ Phase 4: Customer Agent and Generation - COMPLETED
 
 **Status**: All tasks completed and tested
