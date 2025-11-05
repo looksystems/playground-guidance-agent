@@ -197,10 +197,8 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                   <UButton
-                    :to="`/admin/consultations/${consultation.id}`"
-                    size="sm"
-                    variant="outline"
-                    color="indigo"
+                    size="xs"
+                    @click="navigateTo(`/admin/consultations/${consultation.id}`)"
                   >
                     View
                   </UButton>

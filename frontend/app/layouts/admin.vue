@@ -44,7 +44,7 @@
             icon="i-heroicons-chart-bar"
             :active="$route.path === '/admin'"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path === '/admin' }"
           >
             Overview
@@ -65,7 +65,7 @@
             icon="i-heroicons-chart-pie"
             :active="$route.path === '/admin/metrics'"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path === '/admin/metrics' }"
           >
             Metrics
@@ -86,7 +86,7 @@
             icon="i-heroicons-clipboard-document-list"
             :active="$route.path.startsWith('/admin/knowledge/fca')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/knowledge/fca') }"
           >
             FCA Knowledge
@@ -100,7 +100,7 @@
             icon="i-heroicons-academic-cap"
             :active="$route.path.startsWith('/admin/knowledge/pension')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/knowledge/pension') }"
           >
             Pension Knowledge
@@ -121,7 +121,7 @@
             icon="i-heroicons-light-bulb"
             :active="$route.path.startsWith('/admin/learning/memories')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/learning/memories') }"
           >
             Memories
@@ -135,7 +135,7 @@
             icon="i-heroicons-cube"
             :active="$route.path.startsWith('/admin/learning/cases')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/learning/cases') }"
           >
             Cases
@@ -149,7 +149,7 @@
             icon="i-heroicons-scale"
             :active="$route.path.startsWith('/admin/learning/rules')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/learning/rules') }"
           >
             Rules
@@ -170,7 +170,7 @@
             icon="i-heroicons-user-group"
             :active="$route.path.startsWith('/admin/users/customers')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/users/customers') }"
           >
             Customers
@@ -184,7 +184,7 @@
             icon="i-heroicons-chat-bubble-left-right"
             :active="$route.path.startsWith('/admin/consultations')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/consultations') }"
           >
             Consultations
@@ -205,7 +205,7 @@
             icon="i-heroicons-cog-6-tooth"
             :active="$route.path.startsWith('/admin/settings')"
             @click="mobileMenuOpen = false"
-            class="text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            class="!justify-start text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             :class="{ 'bg-indigo-100 dark:bg-indigo-900/50 font-semibold border-l-4 border-indigo-600 dark:border-indigo-400': $route.path.startsWith('/admin/settings') }"
           >
             System Settings

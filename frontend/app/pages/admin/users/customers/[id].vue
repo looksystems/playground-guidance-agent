@@ -202,7 +202,7 @@
         <div class="space-y-4">
           <div
             v-for="consultation in customer.recent_consultations"
-            :key="consultation.consultation_id"
+            :key="consultation.id"
             class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:border-blue-300 transition-colors"
           >
             <div class="flex items-start justify-between">
@@ -210,7 +210,7 @@
                 <!-- Consultation Header -->
                 <div class="flex items-center gap-3">
                   <code class="text-sm font-mono text-gray-600 dark:text-gray-400">
-                    {{ truncateId(consultation.consultation_id) }}
+                    {{ truncateId(consultation.id) }}
                   </code>
                   <UBadge
                     :color="getStatusColor(consultation.status)"
@@ -221,37 +221,16 @@
                   </UBadge>
                 </div>
 
-                <!-- Topic -->
-                <div v-if="consultation.topic" class="flex items-center gap-2">
-                  <UIcon name="i-heroicons-tag" class="w-4 h-4 text-gray-400" />
-                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ consultation.topic }}</span>
-                </div>
-
                 <!-- Date -->
                 <div class="flex items-center gap-2">
                   <UIcon name="i-heroicons-calendar" class="w-4 h-4 text-gray-400" />
                   <span class="text-sm text-gray-600 dark:text-gray-400">{{ formatDateTime(consultation.created_at) }}</span>
                 </div>
 
-                <!-- Compliance Score -->
-                <div v-if="consultation.compliance_score !== null && consultation.compliance_score !== undefined">
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Compliance:</span>
-                    <div class="flex-1 max-w-[150px] h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        class="h-full rounded-full"
-                        :class="getComplianceColorClass(consultation.compliance_score)"
-                        :style="{ width: `${consultation.compliance_score * 100}%` }"
-                      ></div>
-                    </div>
-                    <UBadge
-                      :color="getComplianceColor(consultation.compliance_score)"
-                      variant="subtle"
-                      size="xs"
-                    >
-                      {{ (consultation.compliance_score * 100).toFixed(0) }}%
-                    </UBadge>
-                  </div>
+                <!-- Advisor -->
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-heroicons-user" class="w-4 h-4 text-gray-400" />
+                  <span class="text-sm text-gray-700 dark:text-gray-300">{{ consultation.advisor_name }}</span>
                 </div>
               </div>
 
@@ -259,7 +238,7 @@
               <div>
                 <UButton
                   size="xs"
-                  @click="navigateTo(`/admin/consultations/${consultation.consultation_id}`)"
+                  @click="navigateTo(`/admin/consultations/${consultation.id}`)"
                 >
                   View Details
                 </UButton>
@@ -278,30 +257,28 @@
         </div>
       </UCard>
 
-      <!-- Compliance Trend Chart (Placeholder) -->
+      <!-- Consultation History Timeline -->
       <UCard v-if="customer.recent_consultations && customer.recent_consultations.length > 1">
         <template #header>
-          <h2 class="text-xl font-semibold">Compliance Trend</h2>
+          <h2 class="text-xl font-semibold">Consultation Timeline</h2>
         </template>
 
         <div class="space-y-4">
-          <!-- Simple visual representation -->
-          <div class="flex items-end gap-2 h-48">
+          <!-- Simple visual timeline -->
+          <div class="flex items-center justify-between gap-2">
             <div
               v-for="(consultation, index) in customer.recent_consultations.slice().reverse()"
               :key="index"
               class="flex-1 flex flex-col items-center gap-2"
             >
-              <div
-                class="w-full rounded-t transition-all"
-                :class="getComplianceColorClass(consultation.compliance_score || 0)"
-                :style="{ height: `${(consultation.compliance_score || 0) * 100}%` }"
-              ></div>
+              <div class="w-full h-16 bg-indigo-100 dark:bg-indigo-900 rounded flex items-center justify-center">
+                <UIcon name="i-heroicons-chat-bubble-left-right" class="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+              </div>
               <span class="text-xs text-gray-600 dark:text-gray-400">{{ formatShortDate(consultation.created_at) }}</span>
             </div>
           </div>
           <div class="text-sm text-gray-600 dark:text-gray-400 text-center">
-            Compliance scores over time (most recent consultations)
+            Recent consultation activity
           </div>
         </div>
       </UCard>
