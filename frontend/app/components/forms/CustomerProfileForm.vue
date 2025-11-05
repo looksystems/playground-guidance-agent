@@ -101,7 +101,7 @@
       <div class="pt-4">
         <UButton
           type="submit"
-          color="indigo"
+          color="primary"
           size="xl"
           block
           :loading="loading"
