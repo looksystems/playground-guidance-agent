@@ -177,13 +177,13 @@ class TestEmotionalStateAssessment:
 
         assert state == "anxious", "'panic' should indicate anxious state"
 
-    def test_confident_state_with_optimize_keyword(self, advisor_agent):
-        """Test that 'optimize' indicates confident state."""
-        message = "I want to optimize my pension contributions for maximum growth"
+    def test_confident_state_with_optimise_keyword(self, advisor_agent):
+        """Test that 'optimise' indicates confident state."""
+        message = "I want to optimise my pension contributions for maximum growth"
 
         state = advisor_agent._assess_emotional_state(message)
 
-        assert state == "confident", "'optimize' should indicate confident state"
+        assert state == "confident", "'optimise' should indicate confident state"
 
     def test_confident_state_with_ready_to_keyword(self, advisor_agent):
         """Test that 'ready to' indicates confident state."""
@@ -632,11 +632,11 @@ class TestRealisticConversationalScenarios:
         confident_conversation = [
             {
                 "role": "user",
-                "content": "I'm feeling good about my pension, I want to optimize my contributions",
+                "content": "I'm feeling good about my pension, I want to optimise my contributions",
             },
             {
                 "role": "assistant",
-                "content": "That's great to hear! Since you're ready to optimize, let's explore some strategies. What specific aspect would you like to focus on - contribution levels, investment approach, or tax efficiency?",
+                "content": "That's great to hear! Since you're ready to optimise, let's explore some strategies. What specific aspect would you like to focus on - contribution levels, investment approach, or tax efficiency?",
             },
             {
                 "role": "user",
@@ -644,7 +644,7 @@ class TestRealisticConversationalScenarios:
             },
             {
                 "role": "assistant",
-                "content": "Perfect. Here are three approaches worth considering. One path is maximizing your annual allowance. Another is taking advantage of any employer matching. Let's work through what might give you the best outcome.",
+                "content": "Perfect. Here are three approaches worth considering. One path is maximising your annual allowance. Another is taking advantage of any employer matching. Let's work through what might give you the best outcome.",
             },
         ]
 

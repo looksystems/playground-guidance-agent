@@ -195,7 +195,7 @@ PENSION_KNOWLEDGE = {
             "pension_count_range": (3, 8),
             "total_value_range": (50000, 400000),
             "common_types": ["defined_contribution", "defined_benefit", "personal_pensions"],
-            "common_goals": ["consolidation", "access_planning", "understand_options", "maximize_income"],
+            "common_goals": ["consolidation", "access_planning", "understand_options", "maximise_income"],
             "special_considerations": ["protected_tax_free_cash", "guaranteed_annuity_rates", "db_safeguarded_benefits"]
         },
         "divorce_pension_sharing": {
@@ -209,7 +209,7 @@ PENSION_KNOWLEDGE = {
             "pension_attachment": {
                 "description": "Ex-spouse receives share when benefits taken",
                 "ongoing_dependency": "Continues link between parties",
-                "less_common": "Generally less favored than sharing orders"
+                "less_common": "Generally less favoured than sharing orders"
             },
             "considerations": ["cetv_valuation", "offsetting_vs_sharing", "tax_implications", "remarriage_impact"]
         },

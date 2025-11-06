@@ -23,7 +23,7 @@ from guidance_agent.evaluation.judge_validation import (
     calculate_cohens_kappa,
     calculate_fn_rate,
     calculate_fp_rate,
-    analyze_confidence_calibration,
+    analyse_confidence_calibration,
 )
 
 __all__ = [
@@ -43,5 +43,5 @@ __all__ = [
     "calculate_cohens_kappa",
     "calculate_fn_rate",
     "calculate_fp_rate",
-    "analyze_confidence_calibration",
+    "analyse_confidence_calibration",
 ]

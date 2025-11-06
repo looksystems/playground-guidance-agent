@@ -262,10 +262,10 @@ def calculate_fp_rate(results: List[Dict[str, Any]]) -> float:
     return false_positives / len(negatives)
 
 
-def analyze_confidence_calibration(
+def analyse_confidence_calibration(
     results: List[Dict[str, Any]]
 ) -> Dict[str, float]:
-    """Analyze confidence score calibration.
+    """Analyse confidence score calibration.
 
     Compares expert confidence scores with judge confidence scores to
     assess calibration quality.
@@ -283,7 +283,7 @@ def analyze_confidence_calibration(
         ...     {"expert_confidence": 0.9, "judge_confidence": 0.8},
         ...     {"expert_confidence": 0.7, "judge_confidence": 0.75},
         ... ]
-        >>> calibration = analyze_confidence_calibration(results)
+        >>> calibration = analyse_confidence_calibration(results)
     """
     if not results:
         return {"mean_error": 0.0, "rmse": 0.0}
@@ -390,7 +390,7 @@ def validate_llm_judges(
     cohens_kappa = calculate_cohens_kappa(results)
     fn_rate = calculate_fn_rate(results)
     fp_rate = calculate_fp_rate(results)
-    calibration = analyze_confidence_calibration(results)
+    calibration = analyse_confidence_calibration(results)
 
     return ValidationReport(
         total_consultations=total,

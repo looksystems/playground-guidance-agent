@@ -13,7 +13,7 @@ from guidance_agent.evaluation.judge_validation import (
     calculate_cohens_kappa,
     calculate_fn_rate,
     calculate_fp_rate,
-    analyze_confidence_calibration,
+    analyse_confidence_calibration,
 )
 
 
@@ -181,10 +181,10 @@ class TestCalculateFpRate:
         assert fp_rate == 0.0
 
 
-class TestAnalyzeConfidenceCalibration:
-    """Test analyze_confidence_calibration function."""
+class TestAnalyseConfidenceCalibration:
+    """Test analyse_confidence_calibration function."""
 
-    def test_analyze_confidence_calibration_perfect(self):
+    def test_analyse_confidence_calibration_perfect(self):
         """Test calibration with perfect confidence alignment."""
         results = [
             {
@@ -199,12 +199,12 @@ class TestAnalyzeConfidenceCalibration:
             },
         ]
 
-        calibration = analyze_confidence_calibration(results)
+        calibration = analyse_confidence_calibration(results)
 
         # Perfect calibration
         assert calibration["mean_error"] == pytest.approx(0.0)
 
-    def test_analyze_confidence_calibration_with_errors(self):
+    def test_analyse_confidence_calibration_with_errors(self):
         """Test calibration with some errors."""
         results = [
             {
@@ -219,19 +219,19 @@ class TestAnalyzeConfidenceCalibration:
             },
         ]
 
-        calibration = analyze_confidence_calibration(results)
+        calibration = analyse_confidence_calibration(results)
 
         # Mean absolute error should be 0.2
         assert calibration["mean_error"] == pytest.approx(0.2)
 
-    def test_analyze_confidence_calibration_includes_rmse(self):
+    def test_analyse_confidence_calibration_includes_rmse(self):
         """Test that calibration includes RMSE metric."""
         results = [
             {"expert_confidence": 0.9, "judge_confidence": 0.7, "agreement": True},
             {"expert_confidence": 0.6, "judge_confidence": 0.8, "agreement": True},
         ]
 
-        calibration = analyze_confidence_calibration(results)
+        calibration = analyse_confidence_calibration(results)
 
         # Should include RMSE
         assert "rmse" in calibration

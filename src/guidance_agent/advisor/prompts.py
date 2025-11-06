@@ -185,9 +185,9 @@ def build_guidance_prompt_cached(
     context: RetrievedContext,
     conversation_history: List[dict],
 ) -> List[dict]:
-    """Build cache-optimized prompt for guidance generation.
+    """Build cache-optimised prompt for guidance generation.
 
-    This function structures the prompt to maximize cache hit rates:
+    This function structures the prompt to maximise cache hit rates:
     - Static content (system prompt, FCA requirements) goes first and is cached
     - Semi-static content (customer context) is cached within conversations
     - Variable content (current question) is not cached

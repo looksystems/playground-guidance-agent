@@ -25,7 +25,7 @@ def reflect_on_failure(
 ) -> dict[str, str]:
     """Reflect on a failed consultation to extract a learning principle.
 
-    Uses an LLM to analyze the failure and extract a principle that could
+    Uses an LLM to analyse the failure and extract a principle that could
     prevent similar failures in the future.
 
     Args:

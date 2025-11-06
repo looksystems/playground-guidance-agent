@@ -11,7 +11,7 @@ from guidance_agent.learning.case_learning import (
     learn_from_successful_consultation,
     extract_case_from_consultation,
     classify_task_type,
-    summarize_customer_situation,
+    summarise_customer_situation,
 )
 from guidance_agent.core.types import (
     OutcomeResult,
@@ -192,12 +192,12 @@ class TestClassifyTaskType:
         assert task_type == TaskType.GENERAL_INQUIRY
 
 
-class TestSummarizeCustomerSituation:
-    """Tests for summarize_customer_situation function."""
+class TestSummariseCustomerSituation:
+    """Tests for summarise_customer_situation function."""
 
-    def test_summarize_basic_profile(self, sample_customer_profile):
-        """Test summarization of customer profile."""
-        summary = summarize_customer_situation(sample_customer_profile)
+    def test_summarise_basic_profile(self, sample_customer_profile):
+        """Test summarisation of customer profile."""
+        summary = summarise_customer_situation(sample_customer_profile)
 
         assert isinstance(summary, str)
         assert len(summary) > 0
@@ -206,14 +206,14 @@ class TestSummarizeCustomerSituation:
         # Should include pension value
         assert "150" in summary or "£150" in summary
 
-    def test_summarize_includes_goals(self, sample_customer_profile):
+    def test_summarise_includes_goals(self, sample_customer_profile):
         """Test that summary includes customer goals."""
-        summary = summarize_customer_situation(sample_customer_profile)
+        summary = summarise_customer_situation(sample_customer_profile)
         assert "retirement" in summary.lower()
 
-    def test_summarize_includes_financial_literacy(self, sample_customer_profile):
+    def test_summarise_includes_financial_literacy(self, sample_customer_profile):
         """Test that summary includes financial literacy level."""
-        summary = summarize_customer_situation(sample_customer_profile)
+        summary = summarise_customer_situation(sample_customer_profile)
         assert "medium" in summary.lower() or "moderate" in summary.lower()
 
 

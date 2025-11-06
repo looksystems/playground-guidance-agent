@@ -234,7 +234,7 @@ class TestComplianceViolationsStillCaught:
         """Test that directive language is still caught as violation."""
         guidance = """Sarah, you should definitely increase your pension contributions
         to at least 15% of your salary. I recommend you do this immediately. The best
-        option for you is to maximize your employer match right away."""
+        option for you is to maximise your employer match right away."""
 
         customer_message = "What should I do about my pension?"
 

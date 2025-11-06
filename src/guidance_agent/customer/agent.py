@@ -1,4 +1,4 @@
-"""Customer agent for simulating customer behavior in virtual training.
+"""Customer agent for simulating customer behaviour in virtual training.
 
 This module implements the CustomerAgent class that simulates realistic
 customer responses and comprehension during pension guidance consultations.
@@ -14,7 +14,7 @@ from guidance_agent.core.template_engine import render_template
 
 
 class CustomerAgent:
-    """Customer agent that simulates customer behavior during guidance sessions.
+    """Customer agent that simulates customer behaviour during guidance sessions.
 
     The customer agent:
     - Presents their initial inquiry

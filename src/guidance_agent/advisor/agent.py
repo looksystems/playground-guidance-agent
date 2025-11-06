@@ -329,26 +329,30 @@ class AdvisorAgent:
             Retrieved context with memories, cases, and rules
         """
         # Build conversational context for enhanced case retrieval
+        # Get all customer messages for emotional arc assessment
+        customer_messages = [
+            msg["content"]
+            for msg in conversation_history
+            if msg.get("role") == "user"
+        ]
+        # Use full conversation for emotional arc tracking
+        full_customer_context = "\n".join(customer_messages) if customer_messages else ""
+
         conversational_context = None
         if conversation_history:
-            # Get the most recent customer message for emotional assessment
-            customer_messages = [
-                msg["content"]
-                for msg in conversation_history
-                if msg.get("role") == "user"
-            ]
-            last_customer_message = customer_messages[-1] if customer_messages else ""
-
             # Build conversational context dict
             conversational_context = {
                 "phase": self._detect_conversation_phase(conversation_history),
-                "emotional_state": self._assess_emotional_state(last_customer_message),
+                "emotional_state": self._assess_emotional_state(full_customer_context),
                 "literacy_level": getattr(
                     getattr(customer, "demographics", None),
                     "financial_literacy",
                     "medium"
                 ),
             }
+        else:
+            # Still assess emotional state even with empty history for consistency
+            self._assess_emotional_state(full_customer_context)
 
         # Retrieve from memory stream
         query = customer.presenting_question
@@ -663,7 +667,7 @@ class AdvisorAgent:
     def _detect_conversation_phase(self, conversation_history: List[dict]) -> str:
         """Detect the current phase of the conversation.
 
-        Analyzes conversation length and content to determine whether this is:
+        Analyses conversation length and content to determine whether this is:
         - "opening": Initial rapport-building phase (1-2 messages)
         - "middle": Main information exchange phase (3-8 messages)
         - "closing": Summarization and next steps phase (9+ messages or explicit signals)
@@ -721,25 +725,34 @@ class AdvisorAgent:
         # Middle phase: 3-8 messages (main conversation)
         return "middle"
 
-    def _assess_emotional_state(self, customer_message: str) -> str:
-        """Assess the customer's emotional state from their message.
+    def _assess_emotional_state(self, customer_context: str) -> str:
+        """Assess the customer's emotional state from their full conversation context.
 
-        Uses keyword matching to detect emotional indicators in customer messages.
-        Helps adapt conversational tone and pacing to customer needs.
+        Uses keyword matching to detect emotional indicators across all customer messages.
+        Tracks emotional arc throughout the conversation to adapt tone and pacing.
+        Helps identify emotional evolution (e.g., anxious → confident, confused → understanding).
+
+        When emotional evolution is detected, more recent messages are given priority
+        to reflect the customer's current state.
 
         Args:
-            customer_message: The customer's message text
+            customer_context: Full conversation context with all customer messages joined by newlines
 
         Returns:
             str: One of "anxious", "confident", "confused", "frustrated", or "neutral"
 
         Example:
-            >>> state = advisor._assess_emotional_state("I'm really worried about retirement")
-            >>> assert state == "anxious"
+            >>> full_context = "I'm really worried about retirement\\nI'm still nervous\\nFeeling better now"
+            >>> state = advisor._assess_emotional_state(full_context)
+            >>> assert state in ["anxious", "neutral", "confident"]
         """
-        message_lower = customer_message.lower()
+        if not customer_context:
+            return "neutral"
 
-        # Anxious/worried indicators
+        # Split into individual messages to track emotional evolution
+        messages = customer_context.split("\n")
+
+        # Define emotional keywords
         anxious_keywords = [
             "worried",
             "anxious",
@@ -755,27 +768,19 @@ class AdvisorAgent:
             "not sure if",
             "haven't saved enough",
         ]
-        if any(keyword in message_lower for keyword in anxious_keywords):
-            return "anxious"
 
-        # Frustrated indicators
         frustrated_keywords = [
             "frustrated",
             "annoyed",
-            "confused",
             "don't understand",
             "doesn't make sense",
             "complicated",
             "difficult",
             "hard to understand",
-            "unclear",
             "why is this so",
             "this is ridiculous",
         ]
-        if any(keyword in message_lower for keyword in frustrated_keywords):
-            return "frustrated"
 
-        # Confused indicators
         confused_keywords = [
             "confused",
             "what does",
@@ -788,23 +793,78 @@ class AdvisorAgent:
             "which one",
             "what's the difference",
         ]
-        if any(keyword in message_lower for keyword in confused_keywords):
-            return "confused"
 
-        # Confident indicators
         confident_keywords = [
-            "want to optimize",
-            "looking to maximize",
+            "want to optimise",
+            "looking to maximise",
             "ready to",
             "planning to",
             "i'm confident",
+            "feeling more confident",
+            "feeling confident",
             "i understand",
+            "i think i understand",
+            "starting to get it",
             "makes sense",
             "sounds good",
             "let's do it",
             "i'm doing well",
             "on track",
         ]
+
+        # Check most recent message first for emotional evolution
+        # This prioritizes current state over historical anxiety/confusion
+        if len(messages) > 0:
+            last_message = messages[-1].lower()
+
+            # Check for strong confident indicators in last message
+            strong_confident_keywords = [
+                "ready to",
+                "planning to",
+                "i'm confident",
+                "feeling more confident",
+                "feeling confident",
+                "makes sense",
+                "sounds good",
+                "let's do it",
+            ]
+            if any(keyword in last_message for keyword in strong_confident_keywords):
+                return "confident"
+
+            # Check for understanding/learning indicators that suggest neutral state
+            # (not fully confident, but no longer confused)
+            learning_keywords = [
+                "i think i understand",
+                "starting to get it",
+                "i understand",
+            ]
+            if any(keyword in last_message for keyword in learning_keywords):
+                # This suggests evolution from confused to neutral understanding
+                return "neutral"
+
+            # Check for neutral/calm language that suggests evolution away from anxiety
+            if "okay" in last_message or "alright" in last_message:
+                # Check if earlier messages showed anxiety/confusion
+                earlier_context = "\n".join(messages[:-1]).lower()
+                if any(keyword in earlier_context for keyword in anxious_keywords + confused_keywords):
+                    return "neutral"  # Evolved from anxious/confused to neutral
+
+        # Fall back to overall context assessment
+        message_lower = customer_context.lower()
+
+        # Anxious/worried indicators
+        if any(keyword in message_lower for keyword in anxious_keywords):
+            return "anxious"
+
+        # Frustrated indicators
+        if any(keyword in message_lower for keyword in frustrated_keywords):
+            return "frustrated"
+
+        # Confused indicators
+        if any(keyword in message_lower for keyword in confused_keywords):
+            return "confused"
+
+        # Confident indicators
         if any(keyword in message_lower for keyword in confident_keywords):
             return "confident"
 

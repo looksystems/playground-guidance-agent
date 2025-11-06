@@ -214,13 +214,13 @@ class TestEmotionalStateAssessment:
 
         assert state == "confused", "'explain' should indicate confused state"
 
-    def test_confident_state_with_want_to_optimize(self, advisor_agent):
-        """Test that 'want to optimize' is detected as confident state."""
-        message = "I want to optimize my pension contributions for maximum growth"
+    def test_confident_state_with_want_to_optimise(self, advisor_agent):
+        """Test that 'want to optimise' is detected as confident state."""
+        message = "I want to optimise my pension contributions for maximum growth"
 
         state = advisor_agent._assess_emotional_state(message)
 
-        assert state == "confident", "'want to optimize' should indicate confident state"
+        assert state == "confident", "'want to optimise' should indicate confident state"
 
     def test_confident_state_with_ready_to(self, advisor_agent):
         """Test that 'ready to' is detected as confident state."""
@@ -358,9 +358,9 @@ class TestConversationalContextIntegration:
 
         # Confident customer message
         confident_history = [
-            {"role": "user", "content": "I want to optimize my pension"},
+            {"role": "user", "content": "I want to optimise my pension"},
             {"role": "assistant", "content": "Great!"},
-            {"role": "user", "content": "I'm ready to maximize my contributions"},
+            {"role": "user", "content": "I'm ready to maximise my contributions"},
         ]
 
         context = advisor_agent._retrieve_context(customer_profile, confident_history)

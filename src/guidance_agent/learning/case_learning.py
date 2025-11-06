@@ -73,20 +73,20 @@ def classify_task_type(question: str) -> TaskType:
     return TaskType.GENERAL_INQUIRY
 
 
-def summarize_customer_situation(customer_profile: CustomerProfile) -> str:
-    """Summarize customer's situation in a concise format.
+def summarise_customer_situation(customer_profile: CustomerProfile) -> str:
+    """Summarise customer's situation in a concise format.
 
     Creates a text summary of the customer's key characteristics that will
     be embedded and used for similarity matching.
 
     Args:
-        customer_profile: Customer profile to summarize
+        customer_profile: Customer profile to summarise
 
     Returns:
         String summary of customer situation
 
     Example:
-        >>> summary = summarize_customer_situation(profile)
+        >>> summary = summarise_customer_situation(profile)
         >>> print(summary)
         '55 year old employed male from London with medium financial literacy...'
     """
@@ -164,7 +164,7 @@ def extract_case_from_consultation(
     task_type = classify_task_type(customer_profile.presenting_question)
 
     # Summarize customer situation
-    customer_situation = summarize_customer_situation(customer_profile)
+    customer_situation = summarise_customer_situation(customer_profile)
 
     # Create embedding for similarity search
     # Embed the customer situation for matching similar cases

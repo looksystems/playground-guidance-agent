@@ -11,7 +11,7 @@ from guidance_agent.learning.case_learning import (
     learn_from_successful_consultation,
     extract_case_from_consultation,
     classify_task_type,
-    summarize_customer_situation,
+    summarise_customer_situation,
 )
 from guidance_agent.learning.reflection import (
     learn_from_failure,
@@ -33,7 +33,7 @@ __all__ = [
     "learn_from_successful_consultation",
     "extract_case_from_consultation",
     "classify_task_type",
-    "summarize_customer_situation",
+    "summarise_customer_situation",
     # Reflection learning
     "learn_from_failure",
     "reflect_on_failure",

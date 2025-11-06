@@ -255,7 +255,7 @@ async def get_consultation_review(
 @router.get("/metrics")
 async def get_all_metrics(
     db: Session = Depends(get_db),
-    days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
+    days: int = Query(30, ge=1, le=365, description="Number of days to analyse"),
 ):
     """Get comprehensive metrics for admin dashboard.
 
@@ -406,7 +406,7 @@ async def get_all_metrics(
 @router.get("/metrics/compliance", response_model=schemas.ComplianceMetrics)
 async def get_compliance_metrics(
     db: Session = Depends(get_db),
-    days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
+    days: int = Query(30, ge=1, le=365, description="Number of days to analyse"),
 ):
     """Get overall compliance metrics.
 
@@ -483,7 +483,7 @@ async def get_compliance_metrics(
 @router.get("/metrics/time-series", response_model=schemas.TimeSeriesMetrics)
 async def get_time_series_metrics(
     db: Session = Depends(get_db),
-    days: int = Query(30, ge=1, le=365, description="Number of days to analyze"),
+    days: int = Query(30, ge=1, le=365, description="Number of days to analyse"),
 ):
     """Get compliance metrics over time.
 
