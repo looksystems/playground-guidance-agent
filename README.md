@@ -7,21 +7,23 @@ The aim of this project is to apply the principles discussed in the [Agent Hospi
 
 See the AI generated [idiots guide](./docs/IDIOTS_GUIDE.md) for a bit more of an overview.
 
-It's also worth reviewing the [specs](./specs) folder as that contains the original plans and intent for the project.
+It's also worth reviewing the [specs](./specs) folder as that contains the [original implementation plan](./specs/implementation-plan.md) and intent for the project.
 
 :
 
-An  AI agent that provides FCA-compliant pension guidance through an intuitive chat interface. Built with FastAPI, Vue 3, and advanced agentic learning capabilities.
+An AI agent that provides FCA-compliant pension guidance through an intuitive chat interface. Built with FastAPI, Vue 3, and advanced agentic learning capabilities.
 
 ## 🌟 Features
 
 ### Customer-Facing Chat Interface
+
 - **Real-time streaming**: SSE-powered responses with <2s latency
 - **Accessible design**: WCAG 2.1 AA compliant
 - **Responsive**: Works on desktop, tablet, and mobile
 - **User-friendly**: Natural conversation flow with typing indicators
 
 ### Admin Dashboard
+
 - **Compliance monitoring**: Real-time compliance scores per message with detailed validation reasoning
 - **Validation transparency**: Expandable compliance analysis showing LLM reasoning, issues found, and pass/fail status
 - **Analytics**: Metrics, charts, and time-series data
@@ -30,6 +32,7 @@ An  AI agent that provides FCA-compliant pension guidance through an intuitive c
 - **Data Management**: Admin interfaces for all 7 core data models (Memory, Case, Rule, FCA Knowledge, Pension Knowledge, Customer, System Settings)
 
 ### AI Capabilities
+
 - **Compliant guidance**: Real-time FCA compliance validation with detailed reasoning and issue tracking
 - **Validation transparency**: Full LLM reasoning stored and displayed for audit trails
 - **Learning system**: Improves from past consultations
@@ -39,6 +42,7 @@ An  AI agent that provides FCA-compliant pension guidance through an intuitive c
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Docker & Docker Compose
 - Node.js 18+ (for local frontend development)
 - Python 3.11+
@@ -46,6 +50,7 @@ An  AI agent that provides FCA-compliant pension guidance through an intuitive c
 ### Running the Full Stack
 
 **Option 1: Docker (Recommended for Backend)**
+
 ```bash
 # Start backend services
 docker-compose up -d postgres phoenix backend
@@ -57,6 +62,7 @@ docker-compose up -d postgres phoenix backend
 ```
 
 **Option 2: Local Development**
+
 ```bash
 # Terminal 1: Backend
 uv sync
@@ -72,6 +78,7 @@ npm run dev
 ### Running Tests
 
 **Frontend Tests (83 Playwright tests)**
+
 ```bash
 cd frontend
 npm test                    # Playwright tests
@@ -79,6 +86,7 @@ npm run test:coverage      # Coverage report
 ```
 
 **Backend Tests (146 API + 8 integration + 40 template + 20 regression tests)**
+
 ```bash
 pytest tests/api/          # API tests (146 tests)
 pytest tests/integration/  # Integration tests (8 tests)
@@ -88,6 +96,7 @@ pytest --cov              # With coverage
 ```
 
 **Frontend E2E Tests (99 Playwright tests)**
+
 ```bash
 cd frontend
 npm run test:e2e          # Playwright E2E tests
@@ -131,11 +140,13 @@ guidance-agent/
 ## 🧪 Testing
 
 ### Test Coverage
+
 - **Frontend**: 203 Playwright tests (83 component/page + 99 E2E + 21 validation reasoning, 100% pass rate)
 - **Backend**: 214 tests (146 API + 8 integration + 40 template + 20 regression, 100% pass rate)
 - **Total**: 417+ tests
 
 ### Running Specific Tests
+
 ```bash
 # Frontend Playwright tests
 cd frontend && npm test
@@ -155,11 +166,13 @@ cd frontend && npx playwright test accessibility.spec.ts
 ### Docker Deployment (Production)
 
 **Quick Deploy**:
+
 ```bash
 ./scripts/deploy.sh
 ```
 
 **Manual Deploy**:
+
 ```bash
 # Build images
 docker-compose build
@@ -176,7 +189,9 @@ docker-compose logs -f backend
 ```
 
 ### Cloud Deployment
+
 See detailed guides:
+
 - AWS: [docs/DEPLOYMENT.md#aws](docs/DEPLOYMENT.md#aws)
 - GCP: [docs/DEPLOYMENT.md#google-cloud](docs/DEPLOYMENT.md#google-cloud)
 - Azure: [docs/DEPLOYMENT.md#azure](docs/DEPLOYMENT.md#azure)
@@ -196,11 +211,13 @@ See detailed guides:
 ## 🛠️ Technology Stack
 
 **Frontend**:
+
 - Nuxt 3, Vue 3, TypeScript
 - Nuxt UI 4, Tailwind CSS, Vercel AI SDK
 - Playwright (E2E testing)
 
 **Backend**:
+
 - FastAPI, Pydantic, SQLAlchemy
 - LiteLLM (multi-provider: OpenAI, Anthropic, AWS Bedrock, Azure, LM Studio, Ollama)
 - PostgreSQL + pgvector
@@ -208,6 +225,7 @@ See detailed guides:
 - Jinja2 (20 prompt templates)
 
 **Infrastructure**:
+
 - Docker, Docker Compose
 - Nginx, Uvicorn
 - GitHub Actions (CI/CD)
@@ -230,7 +248,9 @@ See detailed guides:
 The system uses two knowledge models with rich metadata support:
 
 ### FCA Knowledge Model
+
 Stores FCA compliance guidelines with metadata including:
+
 - **principle**: Core principle text
 - **fca_reference**: Reference to FCA documentation
 - **mandatory**: Boolean for mandatory requirements
@@ -240,19 +260,23 @@ Stores FCA compliance guidelines with metadata including:
 - **key_elements**: List of required elements
 
 ### Pension Knowledge Model
+
 Stores UK pension domain knowledge with metadata including:
+
 - Pension type details (description, fca_considerations)
 - Regulation specifics (age limits, contribution rules)
 - Scenario information (age_range, pension_count_range, total_value_range)
 - Common customer goals and patterns
 
 ### Current Metadata Usage
+
 - **API Responses**: Metadata exposed via REST endpoints for admin dashboard display
 - **Data Provenance**: Tracking source information and classifications
 - **Linking**: Connecting related knowledge items (examples to principles)
 - **Supplementary Data**: Storing structured information for display and audit purposes
 
 ### Bootstrap & Population
+
 ```bash
 # Bootstrap all knowledge bases (FCA, Pension, Cases, Rules)
 uv run python scripts/bootstrap_all_knowledge.py
@@ -262,6 +286,7 @@ uv run python scripts/verify_knowledge_bases.py
 ```
 
 **Knowledge Base Status** (as of November 2025):
+
 - FCA Compliance: 16 entries with embeddings
 - Pension Domain: 10 entries with embeddings
 - Case Base: 12 seed cases
@@ -284,6 +309,7 @@ uv run python scripts/verify_knowledge_bases.py
 ## 🤝 Contributing
 
 See implementation summaries:
+
 - [Phase 1: Frontend Foundation](specs/archive/PHASE1_SUMMARY.md)
 - [Phase 2: Chat Interface](specs/archive/PHASE2_UI_SUMMARY.md)
 - [Phase 3: Backend API](specs/archive/PHASE3_IMPLEMENTATION_SUMMARY.md)
