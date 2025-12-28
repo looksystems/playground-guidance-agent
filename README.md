@@ -178,7 +178,7 @@ docker-compose logs -f backend
 ### Cloud Deployment
 See detailed guides:
 - AWS: [docs/DEPLOYMENT.md#aws](docs/DEPLOYMENT.md#aws)
-- GCP: [docs/DEPLOYMENT.md#gcp](docs/DEPLOYMENT.md#gcp)
+- GCP: [docs/DEPLOYMENT.md#google-cloud](docs/DEPLOYMENT.md#google-cloud)
 - Azure: [docs/DEPLOYMENT.md#azure](docs/DEPLOYMENT.md#azure)
 
 ## 📚 Documentation
@@ -188,7 +188,7 @@ See detailed guides:
 - **[Docker Setup Guide](docs/DOCKER_SETUP.md)** - Container deployment
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment (700+ lines)
 - **[Testing Guide](docs/TESTING.md)** - Comprehensive testing documentation
-- **[UI/UX Design Plan](specs/ui-ux-design-plan.md)** - Complete design system
+- **[UI/UX Design Plan](specs/archive/ui-ux-design-plan.md)** - Complete design system
 - **[API Integration](docs/API_INTEGRATION.md)** - Backend API guide
 - **[Architecture](specs/architecture.md)** - System architecture (41KB)
 - **[Implementation Plan](specs/implementation-plan.md)** - Implementation details (105KB)
@@ -284,15 +284,15 @@ uv run python scripts/verify_knowledge_bases.py
 ## 🤝 Contributing
 
 See implementation summaries:
-- [Phase 1: Frontend Foundation](PHASE1_SUMMARY.md)
-- [Phase 2: Chat Interface](PHASE2_UI_SUMMARY.md)
-- [Phase 3: Backend API](docs/PHASE3_IMPLEMENTATION_SUMMARY.md)
-- [Phase 4: Admin Dashboard](PHASE4_UI_SUMMARY.md)
-- [Phase 5: Admin Settings Complete](specs/PHASE5_ADMIN_SETTINGS_COMPLETE.md)
-- [Phase 6: Admin Data Models](specs/PHASE6_ADMIN_DATA_MODELS.md) - ✅ Complete (All Phases)
-- [Phase 10: QA Testing Report](specs/PHASE10_QA_COMPLETION_REPORT.md) - ✅ Complete
-- [Validation Reasoning Display](specs/validation-reasoning-display-plan.md) - ✅ Complete (TDD Implementation)
-- [Jinja Template Migration](specs/JINJA_MIGRATION_COMPLETE.md) - ✅ Complete (20 templates, 60 tests, TDD)
+- [Phase 1: Frontend Foundation](specs/archive/PHASE1_SUMMARY.md)
+- [Phase 2: Chat Interface](specs/archive/PHASE2_UI_SUMMARY.md)
+- [Phase 3: Backend API](specs/archive/PHASE3_IMPLEMENTATION_SUMMARY.md)
+- [Phase 4: Admin Dashboard](specs/archive/PHASE4_UI_SUMMARY.md)
+- [Phase 5: Admin Settings Complete](specs/archive/PHASE5_ADMIN_SETTINGS_COMPLETE.md)
+- [Phase 6: Admin Data Models](specs/archive/PHASE6_ADMIN_DATA_MODELS.md) - ✅ Complete (All Phases)
+- [Phase 10: QA Testing Report](specs/archive/PHASE10_QA_COMPLETION_REPORT.md) - ✅ Complete
+- [Validation Reasoning Display](specs/archive/validation-reasoning-display-plan.md) - ✅ Complete (TDD Implementation)
+- [Jinja Template Migration](specs/archive/JINJA_MIGRATION_COMPLETE.md) - ✅ Complete (20 templates, 60 tests, TDD)
 
 ## 📝 License
 
