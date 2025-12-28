@@ -7,7 +7,7 @@ The aim of this project is to apply the principles discussed in the [Agent Hospi
 
 See the AI generated [idiots guide](./docs/IDIOTS_GUIDE.md) for a bit more of an overview.
 
-It's also worth reviewing the [specs](./specs) folder as that contains the [original implementation plan](./specs/implementation-plan.md) and intent for the project.
+It's also worth reviewing the [specs](./specs) folder as that contains the [original implementation plan](./specs/implementation-plan.md).
 
 :
 
