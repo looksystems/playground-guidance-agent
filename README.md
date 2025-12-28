@@ -1,6 +1,17 @@
 # Pension Guidance Chat - AI-Powered Compliant Pension Advice
 
-An enterprise-grade AI agent that provides FCA-compliant pension guidance through an intuitive chat interface. Built with FastAPI, Vue 3, and advanced agentic learning capabilities.
+> [!WARNING]
+> This is an experimental/learning project only - generated entirely by claude code.
+
+The aim of this project is to apply the principles discussed in the [Agent Hospital: A Simulacrum of Hospital with Evolvable Medical Agents](https://arxiv.org/abs/2405.02957) paper to create a self-learning financial guidance agent.
+
+See the AI generated [idiots guide](./docs/IDIOTS_GUIDE.md) for a bit more of an overview.
+
+It's also worth reviewing the [specs](./specs) folder as that contains the original plans and intent for the project.
+
+:
+
+An  AI agent that provides FCA-compliant pension guidance through an intuitive chat interface. Built with FastAPI, Vue 3, and advanced agentic learning capabilities.
 
 ## 🌟 Features
 
